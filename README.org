@@ -1,0 +1,14 @@
+* org-dog
+Org-dog is an extra workflow layer for Org mode.
+It aims to be a successor to my [[https://github.com/akirak/org-starter][org-starter]] and (deprecated) [[https://github.com/akirak/org-multi-wiki][org-multi-wiki]] packages but takes a different, unified approach.
+It lets you program Org workflow by user-defined /conventions/.
+And this package is for those who don't use [[https://github.com/org-roam/org-roam][org-roam]].
+It should work the best if you have one Org file per subject/project (or at a slightly bigger granularity), but not per topic or keyword (that is considered too many files).
+** About the name
+At first, I considered naming this package =org-cat(s)= because each Org file correspond to one category by default so having a bunch of Org files means having many categories (cats).
+However, cats are independent-minded.
+This is not an offence to cat lovers, but cats can be troublesome, and I don't want to allow them to live in my computer.
+Zookeepers are great, but apparently I am unsuitable for the job.
+I would want to become a shepherd.
+I think dogs are more programmable, if you get it right.
+This is why this package should be named org-dog.
