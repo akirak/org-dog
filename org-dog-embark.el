@@ -50,6 +50,8 @@
   :parent nil
   ("o" find-file-other-window)
   ("a" org-dog-find-file-ace-window)
+  ("s" org-dog-search-in-file)
+  ("/" org-dog-search-file-ace-window)
   ("r" org-dog-refile-to-file)
   ("c" org-dog-capture-to-file))
 
@@ -58,6 +60,7 @@
 ;;;; Commands
 
 (org-dog-embark-aw-command find-file)
+(org-dog-embark-aw-command org-dog-search-in-file "search-file")
 
 (provide 'org-dog-embark)
 ;;; org-dog-embark.el ends here

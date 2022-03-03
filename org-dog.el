@@ -97,6 +97,7 @@
 
 (cl-defgeneric org-dog-file-refile (file))
 (cl-defgeneric org-dog-file-capture (file))
+(cl-defgeneric org-dog-file-search (file))
 
 ;;;;; Utilities
 
@@ -145,6 +146,14 @@ Only interesting items are returned."
   "Open an Org FILE."
   (interactive (list (org-dog-complete-file)))
   (find-file file))
+
+;;;###autoload
+(defun org-dog-search-in-file (file)
+  "Open an Org FILE."
+  (interactive (list (org-dog-complete-file)))
+  (cl-etypecase file
+    (string (org-dog-file-search (org-dog--file-object file)))
+    (org-dog-file (org-dog-file-search file))))
 
 ;;;###autoload
 (defun org-dog-refile-to-file (file)
