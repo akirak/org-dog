@@ -83,8 +83,17 @@
 
 (cl-defgeneric org-dog-annotate-file (x))
 (cl-defmethod org-dog-annotate-file ((x org-dog-file))
-  (concat " "
-          (propertize (oref x root) 'face 'font-lock-comment-face)))
+  (let ((class (eieio-object-class x)))
+    (concat (if (eq class org-dog-default-file-class)
+                ""
+              (concat " "
+                      (propertize (thread-last
+                                    (symbol-name class)
+                                    (string-remove-prefix "org-dog-")
+                                    (string-remove-suffix "-file"))
+                                  'face 'font-lock-constant-face)))
+            " "
+            (propertize (oref x root) 'face 'font-lock-comment-face))))
 
 (cl-defgeneric org-dog-file-refile (file))
 (cl-defgeneric org-dog-file-capture (file))
