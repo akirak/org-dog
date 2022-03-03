@@ -251,7 +251,7 @@ Only interesting items are returned."
 (defun org-dog--file-route (root relative)
   (if-let (repo-entry (assoc root org-dog-repository-alist))
       (catch 'result
-        (let ((rules (plist-get (cdr repo-entry) :file-classes)))
+        (let ((rules (plist-get (cdr repo-entry) :routes)))
           (while rules
             (pcase-let ((`(,pattern . ,ent) (pop rules)))
               (when (or (and (stringp pattern)
