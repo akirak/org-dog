@@ -241,7 +241,7 @@ Only interesting items are returned."
                      :root abbr-root
                      :directories (cons abbr-root real-subdirs)))))
 
-(defun org-dog-update-files ()
+(defun org-dog-reload-files ()
   (interactive)
   (unless org-dog-repository-instances
     (org-dog-load-repositories))
