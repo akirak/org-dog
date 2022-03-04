@@ -62,7 +62,7 @@
                               (org-dog-current-buffer-object))
                          (org-dog-complete-file))))
   (let ((file (cl-etypecase file
-                (string (org-dog--file-object file))
+                (string (org-dog-file-object file))
                 (org-dog-facade-datetree-file file))))
     (pcase (org-dog-facade-read-section file)
       (`(,_name ,_key ,marker)

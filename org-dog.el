@@ -66,7 +66,7 @@
     (thread-last (map-values org-dog-file-table)
                  (seq-filter pred))))
 
-(defun org-dog--file-object (file)
+(defun org-dog-file-object (file)
   "Find a `org-dog-file' object associated with a FILE."
   (or (gethash file org-dog-file-table)
       (let ((abbr (abbreviate-file-name file)))
@@ -83,7 +83,7 @@
 (defun org-dog-current-buffer-object ()
   (let* ((filename (abbreviate-file-name (buffer-file-name)))
          (obj (when filename
-                (org-dog--file-object filename))))
+                (org-dog-file-object filename))))
     (when (and obj (org-dog-facade-datetree-file-p obj))
       obj)))
 
@@ -160,7 +160,7 @@ Only interesting items are returned."
   "Open an Org FILE."
   (interactive (list (org-dog-complete-file)))
   (cl-etypecase file
-    (string (org-dog-file-search (org-dog--file-object file)))
+    (string (org-dog-file-search (org-dog-file-object file)))
     (org-dog-file (org-dog-file-search file))))
 
 ;;;###autoload
@@ -168,7 +168,7 @@ Only interesting items are returned."
   "Refile the current entry to FILE."
   (interactive (list (org-dog-complete-file)))
   (cl-etypecase file
-    (string (org-dog-file-refile (org-dog--file-object file)))
+    (string (org-dog-file-refile (org-dog-file-object file)))
     (org-dog-file (org-dog-file-refile file))))
 
 ;;;###autoload
@@ -176,7 +176,7 @@ Only interesting items are returned."
   "Capture an entry to FILE."
   (interactive (list (org-dog-complete-file)))
   (cl-etypecase file
-    (string (org-dog-file-capture (org-dog--file-object file)))
+    (string (org-dog-file-capture (org-dog-file-object file)))
     (org-dog-file (org-dog-file-capture file))))
 
 ;;;; Directories
