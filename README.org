@@ -9,9 +9,7 @@ It should work the best if you have one Org file per subject/project (or at a sl
 At first, I considered naming this package =org-cat(s)= because each Org file correspond to one category by default so having a bunch of Org files means having many categories (cats).
 
 However, cats are independent-minded.
-This is not an offence to cat lovers, but cats can be troublesome, and I don't want to allow them to live in my computer.
-Zookeepers are great, but apparently I am unsuitable for the job.
+This is not an offence to cat lovers, but cats can be troublesome, and I don't want to allow them to live inside my computer.
 
-I would want to become a shepherd.
 I think dogs are more programmable, if you get it right.
 This is why this package should be named org-dog.
