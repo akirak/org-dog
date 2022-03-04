@@ -80,6 +80,13 @@
                     (root (oref file root)))
           (org-dog--file-route root (string-remove-prefix root abbr))))))
 
+(defun org-dog-current-buffer-object ()
+  (let* ((filename (abbreviate-file-name (buffer-file-name)))
+         (obj (when filename
+                (org-dog--file-object filename))))
+    (when (and obj (org-dog-facade-datetree-file-p obj))
+      obj)))
+
 ;;;;; Methods
 
 (cl-defgeneric org-dog-annotate-file (x))
