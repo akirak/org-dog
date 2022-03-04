@@ -80,6 +80,15 @@
                     (root (oref file root)))
           (org-dog--file-route root (string-remove-prefix root abbr))))))
 
+(cl-defun org-dog-find-file-object (slot value &key (test #'equal))
+  "Find a file object where a slot satisfies a certain condition."
+  (map-some (apply-partially
+             (lambda (test slot value _key obj)
+               (when (funcall test value (slot-value obj slot))
+                 obj))
+             test slot value)
+            org-dog-file-table))
+
 (defun org-dog-current-buffer-object ()
   (let* ((filename (abbreviate-file-name (buffer-file-name)))
          (obj (when filename
