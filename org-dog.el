@@ -33,6 +33,7 @@
 
 (require 'eieio)
 (require 'seq)
+(require 'org)
 
 ;;;; Faces
 
@@ -76,7 +77,7 @@
                                          (string-prefix-p (oref x root)
                                                           ,abbr))
                                       org-dog-repository-instances))
-                    (root (oref x root)))
+                    (root (oref file root)))
           (org-dog--file-route root (string-remove-prefix root abbr))))))
 
 ;;;;; Methods
@@ -101,12 +102,12 @@
 
 ;;;;; Utilities
 
-(defun org-doc-maybe-file-buffer (file-obj)
+(defun org-dog-maybe-file-buffer (file-obj)
   "Return a file buffer visiting X if any."
   (let ((file (oref file-obj absolute)))
     (find-buffer-visiting file)))
 
-(defun org-doc-file-buffer (file-obj)
+(defun org-dog-file-buffer (file-obj)
   "Return a file buffer visiting X."
   (let ((file (oref file-obj absolute)))
     (or (find-buffer-visiting file)
@@ -114,7 +115,7 @@
 
 (defun org-dog-file-title (file-obj &optional force)
   (or (oref file-obj title)
-      (when-let (buffer (org-doc-maybe-file-buffer file-obj))
+      (when-let (buffer (org-dog-maybe-file-buffer file-obj))
         (with-current-buffer buffer
           (org-with-wide-buffer
            (when-let (title (org-dog-file-header "title"))
@@ -184,7 +185,7 @@ Only interesting items are returned."
   ""
   :type 'string)
 
-(cl-defmethod org-dog--repo-file-alist ((x org-dog-repository))
+(defun org-dog--repo-file-alist (x)
   (let ((root (oref x root)))
     (cl-flet
         ((scan-subdir (dir)
@@ -245,7 +246,7 @@ Only interesting items are returned."
   (interactive)
   (unless org-dog-repository-instances
     (org-dog-load-repositories))
-  (if org-dog-file-table
+  (if (and org-dog-file-table (hash-table-p org-dog-file-table))
       (clrhash org-dog-file-table)
     (setq org-dog-file-table (make-hash-table :test #'equal)))
   (pcase-dolist (`(,absolute . ,plist) (thread-last
@@ -300,7 +301,7 @@ Only interesting items are returned."
 
 (cl-defun org-dog-file-completion (&key class)
   (unless org-dog-file-table
-    (org-dog-update-files))
+    (org-dog-reload-files))
   (let* ((objs (org-dog-files-matching :class class))
          (files (mapcar (lambda (obj)
                           (let ((absolute (oref obj absolute)))
