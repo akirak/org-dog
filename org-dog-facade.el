@@ -34,11 +34,11 @@
 (require 'org-dog-datetree)
 
 (defcustom org-dog-facade-default-sections
-  '(("Backlog" "b")
-    ("Keywords" "k")
-    ("Projects" "p")
-    ("Activities" "a")
-    ("Resources" "r"))
+  '(("b" "Backlog")
+    ("k" "Keywords")
+    ("p" "Projects")
+    ("a" "Activities")
+    ("r" "Resources"))
   "")
 
 (defcustom org-dog-facade-datetree-key
@@ -51,11 +51,23 @@
    (datetree-capture-templates :initarg :datetree-capture-templates
                                :initform nil)))
 
-(cl-defmethod org-dog-file-refile ((file org-dog-facade-datetree-file)))
+(cl-defmethod org-dog-file-refile ((file org-dog-facade-datetree-file))
+  (pcase (org-dog-facade-read-section file t)
+    (`nil nil)
+    ((and `(,key . ,_) (guard (equal key org-dog-facade-datetree-key)))
+     (org-reverse-datetree-refile-to-file (oref file absolute)))
+    (`(,_ ,_ ,marker)
+     TODO: Allow customization
+     (let ((parent))
+       (cond
+        ((derived-mode-p 'org-agenda-mode)
+         (error "Not implemented"))
+        ((derived-mode-p 'org-mode)
+         (org-refile nil nil (error "Not implemented: rfloc"))))))))
 
 (cl-defmethod org-dog-file-capture ((file org-dog-facade-datetree-file)))
 
-(cl-defmethod org-dog-file-search ((file org-dog-facade-datetree-file)))
+;; (cl-defmethod org-dog-file-search ((file org-dog-facade-datetree-file)))
 
 (defun org-dog-facade-goto-section (file)
   (interactive (list (or (and (not current-prefix-arg)
@@ -69,14 +81,17 @@
        (switch-to-buffer (org-dog-file-buffer file))
        (org-goto-marker-or-bmk marker)))))
 
-(defun org-dog-facade-read-section (file)
+(defun org-dog-facade-read-section (file &optional include-datetree)
   (let ((available-sections (org-dog-facade--sections file)))
-    (pcase (read-char-choice (concat (mapconcat (pcase-lambda (`(,name ,key . ,_))
+    (when include-datetree
+      (setq available-sections (cons (list org-dog-facade-datetree-key "Datetree")
+                                     available-sections)))
+    (pcase (read-char-choice (concat (mapconcat (pcase-lambda (`(,key ,name . ,_))
                                                   (format "[%s] %s" key name))
                                                 available-sections
                                                 " ")
                                      ": ")
-                             (mapcar (lambda (key)
+                             (mapcar (pcase-lambda (`(,key . ,_))
                                        (car (string-to-list key)))
                                      available-sections))
       (`nil nil)
@@ -90,9 +105,12 @@
        (when (symbolp sections)
          (setq sections (symbol-value sections)))
        (goto-char (point-min))
-       (pcase-dolist (`(,olp ,key . ,_) sections)
-         (when-let (marker (org-find-olp (if (stringp olp) (list olp) olp) t))
-           (push (list key olp marker) result)))
+       (pcase-dolist (`(,key ,olp . ,_) sections)
+         ;; An error is shown when no olp is found, so suppress the error
+         (let ((inhibit-message t))
+           (when-let (marker (ignore-errors
+                               (org-find-olp (if (stringp olp) (list olp) olp) t)))
+             (push (list key olp marker) result))))
        (nreverse result)))))
 
 (provide 'org-dog-facade)
