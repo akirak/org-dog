@@ -78,7 +78,9 @@
                                                           ,abbr))
                                       org-dog-repository-instances))
                     (root (oref file root)))
-          (org-dog--file-route root (string-remove-prefix root abbr))))))
+          (org-dog--file-route root (string-remove-prefix root abbr))))
+      (unless (file-readable-p file)
+        (error "File %s is not readable" file))))
 
 (cl-defun org-dog-find-file-object (slot value &key (test #'equal))
   "Find a file object where a slot satisfies a certain condition."
