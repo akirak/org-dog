@@ -79,6 +79,7 @@ accessed."
 
 (defun org-dog-file-object (file)
   "Find a `org-dog-file' object associated with a FILE."
+  (org-dog--ensure-file-table)
   (or (gethash file org-dog-file-table)
       (let ((abbr (abbreviate-file-name file)))
         (unless (equal abbr file)
@@ -378,6 +379,37 @@ as well."
 (org-link-set-parameters "org-dog"
                          :follow #'org-dog-follow-link
                          :complete #'org-dog-complete-link)
+
+;;;; Minor mode
+
+(defvar org-dog-file-mode-map (make-sparse-keymap))
+
+;;;###autoload
+(define-minor-mode org-dog-file-mode
+  "Minor mode which can be activated in an Org Dog file.
+
+For now, this is only used for enabling `org-dog-file-mode-map'."
+  :lighter "Dog"
+  (when org-dog-file-mode
+    (cond
+     ((org-dog-current-buffer-object)
+      t)
+     ((derived-mode-p 'org-mode)
+      (progn
+        (org-dog-file-mode -1)
+        (error "There is no route for this file, or the file is not in an repository.")))
+     (t
+      (error "This mode must be turned on in an `org-mode' buffer.")))))
+
+;;;###autoload
+(defun org-dog-file-mode-maybe ()
+  "Turn on `org-dog-file-mode' if possible.
+
+You can add this function "
+  (interactive)
+  (let ((inhibit-message t))
+    (ignore-errors
+      (org-dog-file-mode t))))
 
 (provide 'org-dog)
 ;;; org-dog.el ends here
