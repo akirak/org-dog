@@ -60,7 +60,16 @@
 
 (defvar org-dog-file-table nil)
 
+(defun org-dog--ensure-file-table ()
+  "Ensure the file table is initialized.
+
+This function should be called before `org-dog-file-table' is
+accessed."
+  (unless org-dog-file-table
+    (org-dog-reload-files)))
+
 (cl-defun org-dog-files-matching (&key class)
+  (org-dog--ensure-file-table)
   (let ((pred (if class
                   `(lambda (obj)
                      (object-of-class-p obj ',class))
@@ -320,8 +329,6 @@ Only interesting items are returned."
 ;;;; Completion
 
 (cl-defun org-dog-file-completion (&key class)
-  (unless org-dog-file-table
-    (org-dog-reload-files))
   (let* ((objs (org-dog-files-matching :class class))
          (files (mapcar (lambda (obj)
                           (let ((absolute (oref obj absolute)))
