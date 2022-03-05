@@ -27,7 +27,7 @@
 
 ;;; Commentary:
 
-;; FIXME
+;; This library provides the core of a configuration mechanism for Org files.
 
 ;;; Code:
 
@@ -47,7 +47,15 @@
 
 (defface org-dog-file-directory-face
   '((t :foreground "#aaaadd"))
-  "Face for directory components in filename completion.")
+  "Face for sub-directory components in completion of `org-dog-file' category.")
+
+(defface org-dog-file-class-face
+  '((t :inherit font-lock-constant-face))
+  "Face for class names in completion of `org-dog-file' category.")
+
+(defface org-dog-repository-face
+  '((t :inherit font-lock-comment-face))
+  "Face for repository directories in completion of `org-dog-file' category.")
 
 ;;;; Files
 
@@ -75,6 +83,7 @@ accessed."
     (org-dog-reload-files)))
 
 (cl-defun org-dog-files-matching (&key class)
+  "Return a list of `org-dog-file' objects matching a criteria."
   (org-dog--ensure-file-table)
   (let ((pred (if class
                   `(lambda (obj)
@@ -110,13 +119,16 @@ accessed."
             org-dog-file-table))
 
 (defun org-dog-current-buffer-object ()
-  (when-let (filename (abbreviate-file-name (buffer-file-name)))
-    (org-dog-file-object filename)))
+  "Return the `org-dog-file' object for the current buffer, if any."
+  (when-let (filename (buffer-file-name))
+    (org-dog-file-object (abbreviate-file-name filename))))
 
 ;;;;; Methods
 
-(cl-defgeneric org-dog-annotate-file (x))
+(cl-defgeneric org-dog-annotate-file (x)
+  "Annotation function for completion of `org-dog-file' category.")
 (cl-defmethod org-dog-annotate-file ((x org-dog-file))
+  "Annotation function for completion of `org-dog-file' category."
   (let ((class (eieio-object-class x)))
     (concat (if (eq class org-dog-default-file-class)
                 ""
@@ -125,13 +137,16 @@ accessed."
                                     (symbol-name class)
                                     (string-remove-prefix "org-dog-")
                                     (string-remove-suffix "-file"))
-                                  'face 'font-lock-constant-face)))
+                                  'face 'org-dog-file-class-face)))
             " "
-            (propertize (oref x root) 'face 'font-lock-comment-face))))
+            (propertize (oref x root) 'face 'org-dog-repository-face))))
 
-(cl-defgeneric org-dog-file-refile (file))
-(cl-defgeneric org-dog-file-capture (file))
-(cl-defgeneric org-dog-file-search (file))
+(cl-defgeneric org-dog-file-refile (file)
+  "Refile the current Org entry to FILE.")
+(cl-defgeneric org-dog-file-capture (file)
+  "Capture an entry or text to FILE.")
+(cl-defgeneric org-dog-file-search (file)
+  "Search in FILE.")
 
 ;;;;; Utilities
 
@@ -147,6 +162,7 @@ accessed."
         (find-file-noselect file))))
 
 (defun org-dog-file-title (file-obj &optional force)
+  "Return the title of a file in its header."
   (or (oref file-obj title)
       (when-let (buffer (org-dog-maybe-file-buffer file-obj))
         (with-current-buffer buffer
@@ -205,6 +221,13 @@ Only interesting items are returned."
     (string (org-dog-file-capture (org-dog-file-object file)))
     (org-dog-file (org-dog-file-capture file))))
 
+;;;###autoload
+(defun org-dog-capture-to-this-file ()
+  "Capture an entry to the current buffer."
+  (interactive)
+  (when-let (obj (org-dog-current-buffer-object))
+    (org-dog-capture-to-file obj)))
+
 ;;;; Directories
 
 ;;;;; Class
@@ -215,11 +238,12 @@ Only interesting items are returned."
 
 (defcustom org-dog-exclude-file-pattern
   (regexp-quote ".sync-conflict")
-  ""
-  :type 'string)
+  "Pattern of Org files that should not be ignored."
+  :type 'regexp)
 
-(defun org-dog--repo-file-alist (x)
-  (let ((root (oref x root)))
+(defun org-dog--repo-file-alist (repo)
+  "Return an alist of repositories in REPO."
+  (let ((root (oref repo root)))
     (cl-flet
         ((scan-subdir (dir)
            (let ((rel-dir (string-remove-prefix root dir)))
@@ -233,18 +257,24 @@ Only interesting items are returned."
                                :root root
                                :relative (concat rel-dir file))))))))
       (thread-last
-        (oref x directories)
+        (oref repo directories)
         (mapcar #'scan-subdir)
         (apply #'append)))))
 
 ;;;;; Instance management
 
 (defcustom org-dog-repository-alist nil
-  ""
+  "Alist of Org repositories.
+
+This is an alist of entries where the key is a directory and the
+value is a plist which specifies how to treat Org files in the directory."
   :type '(alist :key-type directory
                 :value-type plist))
 
-(defvar org-dog-repository-instances nil)
+(defvar org-dog-repository-instances nil
+  "A list of `org-dog-repository' instances.
+
+The user should not manually set this variable.")
 
 (defun org-dog--init-repositories ()
   "Inititialize the list of directories."
@@ -257,6 +287,7 @@ Only interesting items are returned."
                (setq org-dog-repository-instances)))
 
 (cl-defun org-dog--make-repository (root &key subdirs &allow-other-keys)
+  "Make an instance of `org-dog-repository'."
   (cl-flet
       ((normalize-dir (dir)
          (file-name-as-directory (abbreviate-file-name dir))))
@@ -305,6 +336,7 @@ as well."
   org-dog-file-table)
 
 (defun org-dog--file-route (root relative)
+  "Return a route for a file in a repository, if any."
   (if-let (repo-entry (assoc root org-dog-repository-alist))
       (catch 'result
         (let ((rules (plist-get (cdr repo-entry) :routes)))
@@ -321,6 +353,7 @@ as well."
 ;;;;; Utilities
 
 (defun org-dog-subdirs-with-predicate (predicate root)
+  "Return a list of subdirectories matching a predicate."
   (let ((predicate-fn (pcase predicate
                         ((pred functionp)
                          predicate)
@@ -337,6 +370,17 @@ as well."
 ;;;; Completion
 
 (cl-defun org-dog-file-completion (&key class)
+  "A completion function for `org-dog-file' matching a criteria.
+
+If CLASS is specified, only files associated with an instance of
+the class or its descendant are suggested as candidates.
+
+The category will be CLASS is specified, or `org-dog-file' if omitted.
+
+To customize the annotation, override `org-dog-annotate-file' method.
+
+For a usage example, see the implementation of
+`org-dog-complete-file'."
   (let* ((objs (org-dog-files-matching :class class))
          (files (mapcar (lambda (obj)
                           (let ((absolute (oref obj absolute)))
@@ -357,12 +401,14 @@ as well."
          (complete-with-action action ',files string pred)))))
 
 (defun org-dog--annotate-file (file)
+  "Annotation function for `org-dog-file'."
   (when-let (entry (gethash file org-dog-file-table))
     (org-dog-annotate-file entry)))
 
 (defvar org-dog-file-completion-history nil)
 
 (defun org-dog-complete-file (&optional prompt initial-input _history)
+  "Complete an Org file."
   (completing-read (or prompt "Org file: ")
                    (org-dog-file-completion)
                    nil nil
@@ -371,11 +417,12 @@ as well."
 ;;;; Links
 
 (defun org-dog-follow-link (relative _arg)
+  "Follow a link to an Org Dog file."
   (when-let (obj (org-dog-find-file-object 'relative relative))
     (find-file (oref obj absolute))))
 
 (defun org-dog-complete-link (&optional _arg)
-  "Complete a link to an org-dog file."
+  "Complete a link to an Org Dog file."
   (let ((absolute (org-dog-complete-file)))
     (concat "org-dog:" (oref (org-dog-file-object absolute) relative))))
 
