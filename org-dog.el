@@ -242,9 +242,8 @@ Only interesting items are returned."
 
 (defvar org-dog-repository-instances nil)
 
-(defun org-dog-load-repositories ()
+(defun org-dog--init-repositories ()
   "Inititialize the list of directories."
-  (interactive)
   (thread-last org-dog-repository-alist
                (mapcar (pcase-lambda (`(,root . ,plist))
                          (when (file-directory-p root)
@@ -271,10 +270,15 @@ Only interesting items are returned."
                      :root abbr-root
                      :directories (cons abbr-root real-subdirs)))))
 
-(defun org-dog-reload-files ()
-  (interactive)
-  (unless org-dog-repository-instances
-    (org-dog-load-repositories))
+(defun org-dog-reload-files (&optional arg)
+  "Reload the file table.
+
+When a universal prefix is given, the repositories are reloaded
+as well."
+  (interactive "P")
+  (when (or (not org-dog-repository-instances)
+            arg)
+    (org-dog--init-repositories))
   (if (and org-dog-file-table (hash-table-p org-dog-file-table))
       (clrhash org-dog-file-table)
     (setq org-dog-file-table (make-hash-table :test #'equal)))
