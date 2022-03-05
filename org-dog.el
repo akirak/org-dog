@@ -35,6 +35,8 @@
 (require 'seq)
 (require 'org)
 
+(declare-function org-link-set-parameters "ext:ol")
+
 ;;;; Faces
 
 (defface org-dog-file-directory-face
@@ -350,6 +352,21 @@ Only interesting items are returned."
                    (org-dog-file-completion)
                    nil nil
                    initial-input org-dog-file-completion-history))
+
+;;;; Links
+
+(defun org-dog-follow-link (relative _arg)
+  (when-let (obj (org-dog-find-file-object 'relative relative))
+    (find-file (oref obj absolute))))
+
+(defun org-dog-complete-link (&optional _arg)
+  "Complete a link to an org-dog file."
+  (let ((absolute (org-dog-complete-file)))
+    (concat "org-dog:" (oref (org-dog-file-object absolute) relative))))
+
+(org-link-set-parameters "org-dog"
+                         :follow #'org-dog-follow-link
+                         :complete #'org-dog-complete-link)
 
 (provide 'org-dog)
 ;;; org-dog.el ends here
