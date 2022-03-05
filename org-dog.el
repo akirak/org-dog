@@ -110,11 +110,8 @@ accessed."
             org-dog-file-table))
 
 (defun org-dog-current-buffer-object ()
-  (let* ((filename (abbreviate-file-name (buffer-file-name)))
-         (obj (when filename
-                (org-dog-file-object filename))))
-    (when (and obj (org-dog-file-p obj))
-      obj)))
+  (when-let (filename (abbreviate-file-name (buffer-file-name)))
+    (org-dog-file-object filename)))
 
 ;;;;; Methods
 
