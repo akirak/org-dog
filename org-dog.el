@@ -292,7 +292,7 @@ Only interesting items are returned."
               (when (or (and (stringp pattern)
                              (string-prefix-p pattern relative))
                         (and (not pattern)
-                             (string-match-p "/" relative))
+                             (not (string-match-p "/" relative)))
                         (eq pattern t))
                 (throw 'result ent))))))
     (error "Did not match root %s" root)))
