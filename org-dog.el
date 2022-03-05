@@ -82,15 +82,36 @@ accessed."
   (unless org-dog-file-table
     (org-dog-reload-files)))
 
-(cl-defun org-dog-files-matching (&key class)
-  "Return a list of `org-dog-file' objects matching a criteria."
+(cl-defun org-dog-make-file-pred (&key class
+                                       relative
+                                       relative-prefix
+                                       basename-regexp
+                                       negate-basename-regexp)
+  (if-let (conds (thread-last
+                   (list (when class
+                           `(object-of-class-p obj ',class))
+                         (when relative
+                           `(equal ,relative (oref obj relative)))
+                         (when relative-prefix
+                           `(string-prefix-p ,relative-prefix (oref obj relative)))
+                         (when basename-regexp
+                           `(string-match-p ,(concat "^" basename-regexp "$")
+                                            (file-name-base (oref obj relative))))
+                         (when negate-basename-regexp
+                           `(not (string-match-p ,(concat "^" negate-basename-regexp "$")
+                                                 (file-name-base (oref obj relative))))))
+                   (delq nil)))
+      `(lambda (obj)
+         (and ,@conds))
+    #'identity))
+
+(defun org-dog-select-files (&optional pred)
+  "Return a list of `org-dog-file' objects optionally matching PRED."
   (org-dog--ensure-file-table)
-  (let ((pred (if class
-                  `(lambda (obj)
-                     (object-of-class-p obj ',class))
-                (lambda (_) t))))
-    (thread-last (map-values org-dog-file-table)
-                 (seq-filter pred))))
+  (if pred
+      (thread-last (map-values org-dog-file-table)
+                   (seq-filter pred))
+    (map-values org-dog-file-table)))
 
 (defun org-dog-file-object (file)
   "Find a `org-dog-file' object associated with a FILE."
@@ -109,13 +130,12 @@ accessed."
       (unless (file-readable-p file)
         (error "File %s is not readable" file))))
 
-(cl-defun org-dog-find-file-object (slot value &key (test #'equal))
-  "Find a file object where a slot satisfies a certain condition."
-  (map-some (apply-partially
-             (lambda (test slot value _key obj)
-               (when (funcall test value (slot-value obj slot))
-                 obj))
-             test slot value)
+(cl-defun org-dog-find-file-object (pred)
+  "Find a file object where a slot satisfies PRED."
+  (map-some (apply-partially (lambda (pred _key obj)
+                               (when (funcall pred obj)
+                                 obj))
+                             pred)
             org-dog-file-table))
 
 (defun org-dog-current-buffer-object ()
@@ -124,6 +144,14 @@ accessed."
     (org-dog-file-object (abbreviate-file-name filename))))
 
 ;;;;; Methods
+
+(defun org-dog-file-equal (x y)
+  "Return non-nil if X and Y are the same object of `org-dog-file'."
+  (and (object-of-class-p x 'org-dog-file)
+       (eq (object-class x)
+           (object-class y))
+       (equal (oref x absolute)
+              (oref y absolute))))
 
 (cl-defgeneric org-dog-annotate-file (x)
   "Annotation function for completion of `org-dog-file' category.")
@@ -194,13 +222,13 @@ Only interesting items are returned."
 ;;;###autoload
 (defun org-dog-find-file (file)
   "Open an Org FILE."
-  (interactive (list (org-dog-complete-file)))
+  (interactive (list (org-dog-complete-file current-prefix-arg)))
   (find-file file))
 
 ;;;###autoload
 (defun org-dog-search-in-file (file)
   "Open an Org FILE."
-  (interactive (list (org-dog-complete-file)))
+  (interactive (list (org-dog-complete-file current-prefix-arg)))
   (cl-etypecase file
     (string (org-dog-file-search (org-dog-file-object file)))
     (org-dog-file (org-dog-file-search file))))
@@ -208,7 +236,7 @@ Only interesting items are returned."
 ;;;###autoload
 (defun org-dog-refile-to-file (file)
   "Refile the current entry to FILE."
-  (interactive (list (org-dog-complete-file)))
+  (interactive (list (org-dog-complete-file current-prefix-arg)))
   (cl-etypecase file
     (string (org-dog-file-refile (org-dog-file-object file)))
     (org-dog-file (org-dog-file-refile file))))
@@ -216,7 +244,7 @@ Only interesting items are returned."
 ;;;###autoload
 (defun org-dog-capture-to-file (file)
   "Capture an entry to FILE."
-  (interactive (list (org-dog-complete-file)))
+  (interactive (list (org-dog-complete-file current-prefix-arg)))
   (cl-etypecase file
     (string (org-dog-file-capture (org-dog-file-object file)))
     (org-dog-file (org-dog-file-capture file))))
@@ -333,6 +361,7 @@ as well."
                         :root root
                         (cdr route))
                  org-dog-file-table))))
+  (message "Found %d Org files" (map-length org-dog-file-table))
   org-dog-file-table)
 
 (defun org-dog--file-route (root relative)
@@ -367,9 +396,130 @@ as well."
                  (seq-filter predicate-fn)
                  (mapcar (lambda (name) (expand-file-name name root))))))
 
+;;;; Contexts
+
+(cl-defstruct org-dog-context file-selected-p file-hidden-p)
+
+(defcustom org-dog-context-alist
+  '((project
+     :value-fn project-current
+     :test equal
+     :callback org-dog-project-context-1)
+    (major-mode
+     :callback org-dog-major-mode-context-1))
+  "")
+
+(defvar org-dog-context-cache nil)
+
+(defun org-dog-context (&optional force)
+  (thread-last
+    org-dog-context-alist
+    (mapcar (pcase-lambda (`(,type . ,_))
+              (org-dog-context-edge type force)))
+    (delq nil)))
+
+(defun org-dog-context-make-file-filter ()
+  (apply-partially (lambda (predicates operand)
+                     (seq-reduce (lambda (cur p)
+                                   (when cur
+                                     (not (funcall p operand))))
+                                 predicates
+                                 t))
+                   (thread-last
+                     (org-dog-context)
+                     (mapcar (pcase-lambda (`(,_ . ,context))
+                               (org-dog-context-file-hidden-p context)))
+                     (delq nil))))
+
+(defun org-dog-context-edge (type &optional force arg)
+  (let* ((plist (cdr (or (assq type org-dog-context-alist)
+                         (error "No entry for %s in org-dog-context-alist" type))))
+         (callback (or (plist-get plist :callback)
+                       (message "Missing :callback for %s" type)))
+         (arg (cond
+               (arg arg)
+               ((plist-get plist :value-fn)
+                (funcall (plist-get plist :value-fn)))
+               (t
+                (or (buffer-local-value type (current-buffer))
+                    (symbol-value type))))))
+    (when arg
+      (cons (cons type arg)
+            (if force
+                (let ((tbl (or (cdr (assq type org-dog-context-cache))
+                               (org-dog-context--make-table type))))
+                  (pcase (gethash arg tbl :dflt)
+                    (:dflt
+                     (when-let (context (funcall callback arg))
+                       (let ((files (org-dog-select-files
+                                     (org-dog-context-file-selected-p context))))
+                         (puthash arg files tbl)
+                         files)))
+                    (`nil
+                     nil)
+                    (files
+                     files)))
+              (funcall callback arg))))))
+
+(defun org-dog-context--make-table (type &optional test)
+  (let ((tbl (make-hash-table :test (or test #'eq))))
+    (push (cons type tbl) org-dog-context-cache)
+    tbl))
+
+(defun org-dog-context--flatten-to-alist (&optional context)
+  (let (result)
+    (cl-labels
+        ((go (path triples)
+           (pcase-dolist (`(,key ,value . ,children) triples)
+             (let ((newpath (cons (cons key value) (reverse path))))
+               (dolist (x children)
+                 (if (object-of-class-p x 'org-dog-file)
+                     (push (cons x (reverse newpath)) result)
+                   (go newpath x)))))))
+      (go nil (or context (org-dog-context))))
+    (nreverse result)))
+
+;;;;; Example context functions
+
+(defun org-dog-project-context-1 (project)
+  (pcase (file-name-split (abbreviate-file-name (project-root project)))
+    (`("~" "work" ,_ ,group ,name "")
+     (let ((regexp (rx-to-string `(and (or ,name ,group) (?  "-devel")))))
+       (make-org-dog-context
+        :file-selected-p
+        (byte-compile
+         (org-dog-make-file-pred :relative-prefix "projects/"
+                                 :basename-regexp regexp))
+        :file-hidden-p
+        (byte-compile
+         (org-dog-make-file-pred :relative-prefix "projects/"
+                                 :negate-basename-regexp regexp)))))))
+
+(defun org-dog-major-mode-context-1 (mode)
+  (let ((mode mode)
+        filenames)
+    (while mode
+      (push (string-remove-suffix "-mode" (symbol-name mode))
+            filenames)
+      (setq mode (get mode 'derived-mode-parent)))
+    (let ((regexp (rx-to-string `(or ,@filenames))))
+      (make-org-dog-context
+       :file-selected-p
+       (org-dog-make-file-pred :relative-prefix "programming/"
+                               :basename-regexp regexp)
+       :file-hidden-p
+       (org-dog-make-file-pred :relative-prefix "programming/"
+                               :negate-basename-regexp regexp)))))
+
 ;;;; Completion
 
-(cl-defun org-dog-file-completion (&key class)
+(defcustom org-dog-complete-contextually 'clocking
+  ""
+  :type '(choice (const t)
+                 (const clocking)
+                 (const nil)))
+
+(cl-defun org-dog-file-completion (&key class pred)
   "A completion function for `org-dog-file' matching a criteria.
 
 If CLASS is specified, only files associated with an instance of
@@ -381,7 +531,8 @@ To customize the annotation, override `org-dog-annotate-file' method.
 
 For a usage example, see the implementation of
 `org-dog-complete-file'."
-  (let* ((objs (org-dog-files-matching :class class))
+  (let* ((objs (org-dog-select-files (or pred
+                                         (org-dog-make-file-pred :class class))))
          (files (mapcar (lambda (obj)
                           (let ((absolute (oref obj absolute)))
                             (when-let (dir (file-name-directory absolute))
@@ -407,10 +558,15 @@ For a usage example, see the implementation of
 
 (defvar org-dog-file-completion-history nil)
 
-(defun org-dog-complete-file (&optional prompt initial-input _history)
+(cl-defun org-dog-complete-file (no-context &optional prompt initial-input _history)
   "Complete an Org file."
   (completing-read (or prompt "Org file: ")
-                   (org-dog-file-completion)
+                   (org-dog-file-completion
+                    :pred (when (and (not no-context)
+                                     (cl-case org-dog-complete-contextually
+                                       (t t)
+                                       (clocking (org-clocking-p))))
+                            (org-dog-context-make-file-filter)))
                    nil nil
                    initial-input org-dog-file-completion-history))
 
@@ -418,12 +574,12 @@ For a usage example, see the implementation of
 
 (defun org-dog-follow-link (relative _arg)
   "Follow a link to an Org Dog file."
-  (when-let (obj (org-dog-find-file-object 'relative relative))
+  (when-let (obj (org-dog-find-file-object (org-dog-make-file-pred :relative relative)))
     (find-file (oref obj absolute))))
 
 (defun org-dog-complete-link (&optional _arg)
   "Complete a link to an Org Dog file."
-  (let ((absolute (org-dog-complete-file)))
+  (let ((absolute (org-dog-complete-file t)))
     (concat "org-dog:" (oref (org-dog-file-object absolute) relative))))
 
 (org-link-set-parameters "org-dog"
