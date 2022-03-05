@@ -211,7 +211,7 @@ Only interesting items are returned."
         ((scan-subdir (dir)
            (let ((rel-dir (string-remove-prefix root dir)))
              (thread-last
-               (directory-files dir nil "^[a-z].*\\.org\\(?:\\.gpg\\)?\\'" 'nosort)
+               (directory-files dir nil "^[a-zA-Z].*\\.org\\(?:\\.gpg\\)?\\'" 'nosort)
                (cl-remove-if (lambda (name)
                                (when org-dog-exclude-file-pattern
                                  (string-match-p org-dog-exclude-file-pattern name))))
