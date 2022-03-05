@@ -97,7 +97,7 @@
   (let* ((filename (abbreviate-file-name (buffer-file-name)))
          (obj (when filename
                 (org-dog-file-object filename))))
-    (when (and obj (org-dog-facade-datetree-file-p obj))
+    (when (and obj (org-dog-file-p obj))
       obj)))
 
 ;;;;; Methods
