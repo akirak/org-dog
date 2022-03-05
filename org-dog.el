@@ -5,7 +5,7 @@
 ;; Author: Akira Komamura <akira.komamura@gmail.com>
 ;; Version: 0.1
 ;; Package-Requires: ((emacs "27.1") (org "9.5"))
-;; Keywords: org outlines
+;; Keywords: org convenience
 ;; URL: https://github.com/akirak/org-dog
 
 ;; This file is not part of GNU Emacs.
@@ -36,6 +36,12 @@
 (require 'org)
 
 (declare-function org-link-set-parameters "ext:ol")
+
+(defgroup org-dog nil
+  "A programmable workflow layer for Org mode."
+  :prefix "org-dog-"
+  :group 'convenience
+  :group 'org)
 
 ;;;; Faces
 
