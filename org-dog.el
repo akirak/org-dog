@@ -119,6 +119,9 @@ The user should not manually set this variable.")
 (defvar org-dog-file-mode-map (make-sparse-keymap)
   "Keymap for `org-dog-file-mode'.")
 
+(defvar org-dog-id-files nil
+  "List used to track Org files in `org-dog-id-mode'.")
+
 ;;;; Files
 
 ;;;;; Class
@@ -181,8 +184,12 @@ accessed."
                                              (string-prefix-p (oref x root)
                                                               ,abbr))
                                           org-dog-repository-instances))
-                        (root (oref file root)))
-              (org-dog--make-file-instance :root root :absolute abbr))))
+                        (root (oref file root))
+                        (instance (org-dog--make-file-instance
+                                   :root root :absolute abbr)))
+              (when (bound-and-true-p org-dog-id-mode)
+                (add-to-list 'org-dog-id-files abbr))
+              instance)))
       (unless (file-readable-p file)
         (error "File %s is not readable" file))))
 
@@ -402,6 +409,8 @@ as well."
              (if (> error-count 0)
                  (format " (%d errors)" error-count)
                ""))
+    (when (bound-and-true-p org-dog-id-mode)
+      (setq org-dog-id-files (map-keys org-dog-file-table)))
     org-dog-file-table))
 
 (cl-defun org-dog--make-file-instance (&key root absolute relative)
@@ -657,6 +666,46 @@ You can add this function "
   (let ((inhibit-message t))
     (ignore-errors
       (org-dog-file-mode t))))
+
+;;;###autoload
+(define-minor-mode org-dog-id-mode
+  "Use Org Dog as the source of `org-id-extra-files'.
+
+When this mode is on, `org-id-extra-files' is set to
+`org-dog-id-files' and all files loaded by Org Dog are added to
+the variable.
+
+Alternatively, you can use `org-dog-update-id-locations' for
+scanning dog files for IDs without modifying
+`org-id-extra-files'."
+  :global t
+  :lighter "DogId"
+  ;; TODO: More comprehensive cleanup (e.g. restoring and saving the original
+  ;; value)
+  (require 'org-id)
+  (if org-dog-id-mode
+      (progn
+        (setq org-id-extra-files 'org-dog-id-files)
+        (unless org-id-track-globally
+          (setq org-id-track-globally t))
+        (when (and (not org-dog-id-files)
+                   org-dog-file-table)
+          (setq org-dog-id-files (map-keys org-dog-file-table))))
+    (setq org-id-extra-files
+          (eval (car (get 'org-id-extra-files 'standard-value))))))
+
+(defun org-dog-update-id-locations ()
+  "Scan dog files for IDs.
+
+This function calls `org-id-update-id-locations' for scanning IDs
+with dog files as extra files. `org-id-extra-files' are scanned
+as well, so you should call this when `org-dog-id-mode' is off.
+If `org-dog-id-mode' is on, you should use
+`org-id-update-id-locations' instead."
+  (interactive)
+  (unless org-dog-file-table
+    (user-error "The files are not loaded yet"))
+  (org-id-update-id-locations (map-keys org-dog-file-table)))
 
 (provide 'org-dog)
 ;;; org-dog.el ends here
