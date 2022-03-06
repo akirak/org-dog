@@ -470,7 +470,7 @@ explicitly given. Maybe unnecessary."
 
 ;;;; Contexts
 
-(cl-defstruct org-dog-context file-selected-p file-hidden-p)
+(cl-defstruct org-dog-context file-whitelisted-p file-masked-p)
 
 (defun org-dog-context (&optional force)
   (thread-last
@@ -489,7 +489,14 @@ explicitly given. Maybe unnecessary."
                    (thread-last
                      (org-dog-context)
                      (mapcar (pcase-lambda (`(,_ . ,context))
-                               (org-dog-context-file-hidden-p context)))
+                               (apply-partially
+                                (lambda (context x)
+                                  (and (funcall (org-dog-context-file-masked-p context)
+                                                x)
+                                       (not
+                                        (funcall (org-dog-context-file-whitelisted-p context)
+                                                 x))))
+                                context)))
                      (delq nil))))
 
 (defun org-dog-context-edge (type &optional force arg)
@@ -548,14 +555,11 @@ explicitly given. Maybe unnecessary."
     (`("~" "work" ,_ ,group ,name "")
      (let ((regexp (rx-to-string `(and (or ,name ,group) (?  "-devel")))))
        (make-org-dog-context
-        :file-selected-p
-        (byte-compile
-         (org-dog-make-file-pred :relative-prefix "projects/"
-                                 :basename-regexp regexp))
-        :file-hidden-p
-        (byte-compile
-         (org-dog-make-file-pred :relative-prefix "projects/"
-                                 :negate-basename-regexp regexp)))))))
+        :file-whitelisted-p
+        (org-dog-make-file-pred :relative-prefix "projects/"
+                                :basename-regexp regexp)
+        :file-masked-p
+        (org-dog-make-file-pred :relative-prefix "projects/"))))))
 
 (defun org-dog-major-mode-context-1 (mode)
   (let ((mode mode)
@@ -566,12 +570,11 @@ explicitly given. Maybe unnecessary."
       (setq mode (get mode 'derived-mode-parent)))
     (let ((regexp (rx-to-string `(or ,@filenames))))
       (make-org-dog-context
-       :file-selected-p
+       :file-whitelisted-p
        (org-dog-make-file-pred :relative-prefix "programming/"
                                :basename-regexp regexp)
-       :file-hidden-p
-       (org-dog-make-file-pred :relative-prefix "programming/"
-                               :negate-basename-regexp regexp)))))
+       :file-masked-p
+       (org-dog-make-file-pred :relative-prefix "programming/")))))
 
 (defun org-dog-language-context-1 (language)
   (let ((language (save-match-data
@@ -583,10 +586,10 @@ explicitly given. Maybe unnecessary."
                       ((rx bol (group (+ (not (any "-")))))
                        (match-string 1 language))))))
     (make-org-dog-context
-     :file-selected-p
+     :file-whitelisted-p
      (org-dog-make-file-pred :relative-prefix "languages/"
                              :basename-regexp (regexp-quote language))
-     :file-hidden-p
+     :file-masked-p
      (org-dog-make-file-pred :relative-prefix "languages/"))))
 
 ;;;; Completion
