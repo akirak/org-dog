@@ -5,6 +5,64 @@ It lets you program Org workflow by user-defined /conventions/.
 
 And this package is for those who don't use [[https://github.com/org-roam/org-roam][org-roam]].
 It should work the best if you have one Org file per subject/project (or at a slightly bigger granularity), but not per topic or keyword (that is considered too many files).
+** Features
+The following is a short list of primary intended features, but there are more features to be planned:
+
+- Let you easily manage dozens of Org files. You can organize files in directories. Add certain files to =org-agenda-files=.
+- Files have a structure that follow certain conventions. Many files may have the same structure, but different files can have different structures. A file structure is defined by an eieio class.
+- Hide files by context. Focus on relevant information.
+- Integrate with consult and embark.
+** Example use case
+Assume if you have the following directory structure where each directory contains Org files:
+
+- =~/org/= containing =hacking.org=, =learning.org=, etc.
+  - =languages/= containing =Chinese.org=, =Korean.org=, etc.
+  - =technology/= containing =devops.org=, =web.org=, =emacs.org=, etc.
+  - =archive/= containing many files you are no longer interested in
+
+The following is an example configuration for this repository:
+
+#+begin_src emacs-lisp
+  (setq org-dog-repository-alist
+        `(("~/org/"
+           :subdirs
+           ,(apply-partially #'org-dog-subdirs-with-predicate
+                             (lambda (name)
+                               (not (equal name "archive"))))
+           :routes
+           (("hacking" org-dog-facade-datetree-file
+             :agenda t)
+            ("learning" org-dog-facade-datetree-file
+             :agenda t)
+            (nil org-dog-file)
+            (t org-dog-facade-datetree-file
+               :agenda ,(rx (or (and "languages/" "Chinese")
+                                (and "technology/" (or "devops"
+                                                       "web"
+                                                       "emacs")))))))))
+
+#+end_src
+
+Here are some descriptions of the configuration:
+
+- You always care about learning and hacking, so they are added to your agenda. They contain date trees.
+- You once learned Korean, but you are currently focusing on Chinese, so the file for Chinese is added to the agenda. However, you can still recall information on Korean whenever you want.
+- =archive= directory is ignored, because it only contains files that are no longer relevant. You won't see files in the directory.
+
+For more details, see the info manual (which is work in progress).
+** What's wrong with org-starter?
+[[https://github.com/akirak/org-starter][org-starter]] is a project I started in 2018, several months after I switched from Spacemacs to vanilla Emacs.
+It is the repository that has received the most stars among mine, but I have to admit that my Emacs Lisp skills were inferior at that time.
+With my current Emacs Lisp skills and insights from actual use of Org mode, I think I can take a better approach.
+Org Dog is an attempt to implement it.
+
+Nonetheless, I created the package because I tried to get started with Org mode, and I actually used it for years.
+There may be someone who would want to continue using it, so I won't immediately abandon it.
+I don't plan on adding new features for the package, but I may react if there is a feature request.
+
+Even though Org Dog does not aim to provide the same set of features as org-starter, hopefully it will become a substitution.
+Nonetheless, Org Dog can be quite opinionated and complex to fulfill my needs, so org-starter may remain for normal Org usage.
+(I also have to note that the package should have come with a better, more comprehensive documentation.)
 ** About the name
 At first, I considered naming this package =org-cat(s)= because each Org file correspond to one category by default so having a bunch of Org files means having many categories (cats).
 
