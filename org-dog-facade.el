@@ -65,14 +65,19 @@
     (`nil nil)
     ((and `(,key . ,_) (guard (equal key org-dog-facade-datetree-key)))
      (org-reverse-datetree-refile-to-file (oref file absolute)))
-    (`(,_ ,_ ,marker)
+    (`(,_ ,olp ,marker)
      ;; TODO: Allow customization
-     (let ((parent))
+     (let ((rfloc (list (cl-etypecase olp
+                          (string olp)
+                          (list (org-format-outline-path olp)))
+                        (oref file absolute)
+                        nil
+                        marker)))
        (cond
         ((derived-mode-p 'org-agenda-mode)
-         (error "Not implemented"))
+         (org-agenda-refile nil rfloc))
         ((derived-mode-p 'org-mode)
-         (org-refile nil nil (error "Not implemented: rfloc"))))))))
+         (org-refile nil nil rfloc)))))))
 
 (cl-defmethod org-dog-file-capture ((file org-dog-facade-datetree-file)))
 
