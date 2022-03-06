@@ -384,9 +384,10 @@ Only interesting items are returned."
                             (function
                              (funcall subdirs root))
                             (list
-                             (thread-last subdirs
-                                          (mapcar (lambda (str) (expand-file-name str root)))
-                                          (cl-remove-if-not #'file-directory-p))))
+                             (thread-last
+                               subdirs
+                               (mapcar (lambda (str) (expand-file-name str root)))
+                               (cl-remove-if-not #'file-directory-p))))
                           (mapcar #'normalize-dir))))
       (make-instance 'org-dog-repository
                      :root abbr-root
@@ -493,25 +494,26 @@ explicitly given. Maybe unnecessary."
     (delq nil)))
 
 (defun org-dog-context-make-file-filter ()
-  (apply-partially (lambda (predicates operand)
-                     (seq-reduce (lambda (cur p)
-                                   (when cur
-                                     (not (funcall p operand))))
-                                 predicates
-                                 t))
-                   (thread-last
-                     (org-dog-context)
-                     (mapcar (pcase-lambda (`(,_ . ,context))
-                               (apply-partially
-                                (lambda (context x)
-                                  (when context
-                                    (and (funcall (org-dog-context-file-masked-p context)
-                                                  x)
-                                         (not
-                                          (funcall (org-dog-context-file-whitelisted-p context)
-                                                   x)))))
-                                context)))
-                     (delq nil))))
+  (apply-partially
+   (lambda (predicates operand)
+     (seq-reduce (lambda (cur p)
+                   (when cur
+                     (not (funcall p operand))))
+                 predicates
+                 t))
+   (thread-last
+     (org-dog-context)
+     (mapcar (pcase-lambda (`(,_ . ,context))
+               (apply-partially
+                (lambda (context x)
+                  (when context
+                    (and (funcall (org-dog-context-file-masked-p context)
+                                  x)
+                         (not
+                          (funcall (org-dog-context-file-whitelisted-p context)
+                                   x)))))
+                context)))
+     (delq nil))))
 
 (defun org-dog-context-edge (type &optional force arg)
   (let* ((plist (cdr (or (assq type org-dog-context-alist)
