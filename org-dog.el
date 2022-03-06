@@ -132,6 +132,7 @@ The user should not manually set this variable.")
   ((absolute :initarg :absolute)
    (relative :initarg :relative)
    (root :initarg :root)
+   (agenda :initarg :agenda :initform nil)
    (title :initform nil)))
 
 ;;;;; Instances
@@ -233,6 +234,15 @@ accessed."
                                   'face 'org-dog-file-class-face)))
             " "
             (propertize (oref x root) 'face 'org-dog-repository-face))))
+
+(cl-defgeneric org-dog-file-in-agenda-p (x)
+  "Return non-nil if X should be added to `org-agenda-files'.")
+(cl-defmethod org-dog-file-in-agenda-p ((x org-dog-file))
+  (pcase (oref x agenda)
+    (`nil nil)
+    (`t t)
+    ((and pattern (guard (stringp pattern)))
+     (string-match-p pattern (oref x relative)))))
 
 (cl-defgeneric org-dog-file-refile (file)
   "Refile the current Org entry to FILE.")
@@ -434,6 +444,9 @@ explicitly given. Maybe unnecessary."
                           :root root
                           (cdr route))))
     (puthash absolute instance org-dog-file-table)
+    (if (org-dog-file-in-agenda-p instance)
+        (add-to-list 'org-agenda-files absolute)
+      (delq absolute org-agenda-files))
     instance))
 
 (defun org-dog--file-route (root relative)
