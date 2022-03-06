@@ -49,7 +49,7 @@ Here are some descriptions of the configuration:
 - You once learned Korean, but you are currently focusing on Chinese, so the file for Chinese is added to the agenda. However, you can still recall information on Korean whenever you want.
 - =archive= directory is ignored, because it only contains files that are no longer relevant. You won't see files in the directory.
 
-For more details, see the info manual (which is work in progress).
+For details, see [[file:doc/org-dog.org][the info manual]] (which is work in progress).
 ** What's wrong with org-starter?
 [[https://github.com/akirak/org-starter][org-starter]] is a project I started in 2018, several months after I switched from Spacemacs to vanilla Emacs.
 It is the repository that has received the most stars among mine, but I have to admit that my Emacs Lisp skills were inferior at that time.
