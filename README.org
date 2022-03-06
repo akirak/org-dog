@@ -12,4 +12,4 @@ However, cats are independent-minded.
 This is not an offence to cat lovers, but cats can be troublesome, and I don't want to allow them to live inside my computer.
 
 I think dogs are more programmable, if you get it right.
-This is why this package should be named org-dog.
+This is why I named this package org-dog.
