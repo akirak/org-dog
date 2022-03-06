@@ -4,7 +4,7 @@
 
 ;; Author: Akira Komamura <akira.komamura@gmail.com>
 ;; Version: 0.1
-;; Package-Requires: ((emacs "27.1") (org "9.5"))
+;; Package-Requires: ((emacs "27.1") (org "9.5") (project "0.6"))
 ;; Keywords: org convenience
 ;; URL: https://github.com/akirak/org-dog
 
@@ -34,14 +34,58 @@
 (require 'eieio)
 (require 'seq)
 (require 'org)
+(require 'cl-lib)
 
 (declare-function org-link-set-parameters "ext:ol")
+(declare-function project-root "ext:project")
 
 (defgroup org-dog nil
   "A programmable workflow layer for Org mode."
   :prefix "org-dog-"
   :group 'convenience
   :group 'org)
+
+;;;; Custom variables
+
+(defcustom org-dog-default-file-class 'org-dog-file
+  ""
+  :type 'symbol)
+
+(defcustom org-dog-exclude-file-pattern
+  (regexp-quote ".sync-conflict")
+  "Pattern of Org files that should not be ignored."
+  :type 'regexp)
+
+(defcustom org-dog-repository-alist nil
+  "Alist of Org repositories.
+
+This is an alist of entries where the key is a directory and the
+value is a plist which specifies how to treat Org files in the directory."
+  :type '(alist :key-type directory
+                :value-type plist))
+
+(defcustom org-dog-context-alist
+  '((project
+     :value-fn project-current
+     :test equal
+     :callback org-dog-project-context-1)
+    (major-mode
+     :callback org-dog-major-mode-context-1))
+  ""
+  :type '(alist :key-type symbol
+                :value-type '(plist
+                              :options ((list (const :value-fn)
+                                              function)
+                                        (list (const :test)
+                                              function)
+                                        (list (const :callback)
+                                              function)))))
+
+(defcustom org-dog-complete-contextually 'clocking
+  ""
+  :type '(choice (const t)
+                 (const clocking)
+                 (const nil)))
 
 ;;;; Faces
 
@@ -57,6 +101,24 @@
   '((t :inherit font-lock-comment-face))
   "Face for repository directories in completion of `org-dog-file' category.")
 
+;;;; Variables
+
+(defvar org-dog-repository-instances nil
+  "A list of `org-dog-repository' instances.
+
+The user should not manually set this variable.")
+
+(defvar org-dog-file-table nil
+  "A hash table.")
+
+(defvar org-dog-context-cache nil
+  "A hash table.")
+
+(defvar org-dog-file-completion-history nil)
+
+(defvar org-dog-file-mode-map (make-sparse-keymap)
+  "Keymap for `org-dog-file-mode'.")
+
 ;;;; Files
 
 ;;;;; Class
@@ -67,12 +129,7 @@
    (root :initarg :root)
    (title :initform nil)))
 
-(defcustom org-dog-default-file-class 'org-dog-file
-  "")
-
 ;;;;; Instances
-
-(defvar org-dog-file-table nil)
 
 (defun org-dog--ensure-file-table ()
   "Ensure the file table is initialized.
@@ -147,8 +204,8 @@ accessed."
 (defun org-dog-file-equal (x y)
   "Return non-nil if X and Y are the same object of `org-dog-file'."
   (and (object-of-class-p x 'org-dog-file)
-       (eq (object-class x)
-           (object-class y))
+       (eq (eieio-object-class x)
+           (eieio-object-class y))
        (equal (oref x absolute)
               (oref y absolute))))
 
@@ -191,7 +248,9 @@ accessed."
 (defun org-dog-file-title (file-obj &optional force)
   "Return the title of a file in its header."
   (or (oref file-obj title)
-      (when-let (buffer (org-dog-maybe-file-buffer file-obj))
+      (when-let (buffer (if force
+                            (org-dog-file-buffer file-obj)
+                          (org-dog-maybe-file-buffer file-obj)))
         (with-current-buffer buffer
           (org-with-wide-buffer
            (when-let (title (org-dog-file-header "title"))
@@ -263,11 +322,6 @@ Only interesting items are returned."
   ((root :initarg :root)
    (directories :initarg :directories)))
 
-(defcustom org-dog-exclude-file-pattern
-  (regexp-quote ".sync-conflict")
-  "Pattern of Org files that should not be ignored."
-  :type 'regexp)
-
 (defun org-dog--repo-file-alist (repo)
   "Return an alist of repositories in REPO."
   (let ((root (oref repo root)))
@@ -289,19 +343,6 @@ Only interesting items are returned."
         (apply #'append)))))
 
 ;;;;; Instance management
-
-(defcustom org-dog-repository-alist nil
-  "Alist of Org repositories.
-
-This is an alist of entries where the key is a directory and the
-value is a plist which specifies how to treat Org files in the directory."
-  :type '(alist :key-type directory
-                :value-type plist))
-
-(defvar org-dog-repository-instances nil
-  "A list of `org-dog-repository' instances.
-
-The user should not manually set this variable.")
 
 (defun org-dog--init-repositories ()
   "Inititialize the list of directories."
@@ -352,12 +393,11 @@ as well."
       (unless (gethash absolute org-dog-file-table)
         (let ((relative (plist-get plist :relative))
               (root (plist-get plist :root)))
-          (or (with-demoted-errors (concat "Error while instantiating an object for "
-                                           absolute ": %s")
-                (org-dog--make-file-instance :root root
-                                             :absolute absolute
-                                             :relative relative))
-              (cl-incf error-count)))))
+          (unless (with-demoted-errors "Error while instantiating an object: %s"
+                    (org-dog--make-file-instance :root root
+                                                 :absolute absolute
+                                                 :relative relative))
+            (cl-incf error-count)))))
     (message "Found %d Org files%s" (map-length org-dog-file-table)
              (if (> error-count 0)
                  (format " (%d errors)" error-count)
@@ -372,7 +412,7 @@ inside the caller function.
 
 RELATIVE is optional, and it can save little computation if
 explicitly given. Maybe unnecessary."
-  (assert (and root absolute))
+  (cl-assert (and root absolute))
   (let* ((relative (or relative
                        (string-remove-prefix root absolute)))
          (route (org-dog--file-route root relative))
@@ -420,17 +460,6 @@ explicitly given. Maybe unnecessary."
 ;;;; Contexts
 
 (cl-defstruct org-dog-context file-selected-p file-hidden-p)
-
-(defcustom org-dog-context-alist
-  '((project
-     :value-fn project-current
-     :test equal
-     :callback org-dog-project-context-1)
-    (major-mode
-     :callback org-dog-major-mode-context-1))
-  "")
-
-(defvar org-dog-context-cache nil)
 
 (defun org-dog-context (&optional force)
   (thread-last
@@ -503,6 +532,7 @@ explicitly given. Maybe unnecessary."
 ;;;;; Example context functions
 
 (defun org-dog-project-context-1 (project)
+  (require 'project)
   (pcase (file-name-split (abbreviate-file-name (project-root project)))
     (`("~" "work" ,_ ,group ,name "")
      (let ((regexp (rx-to-string `(and (or ,name ,group) (?  "-devel")))))
@@ -533,12 +563,6 @@ explicitly given. Maybe unnecessary."
                                :negate-basename-regexp regexp)))))
 
 ;;;; Completion
-
-(defcustom org-dog-complete-contextually 'clocking
-  ""
-  :type '(choice (const t)
-                 (const clocking)
-                 (const nil)))
 
 (cl-defun org-dog-file-completion (&key class pred)
   "A completion function for `org-dog-file' matching a criteria.
@@ -577,8 +601,6 @@ For a usage example, see the implementation of
   (when-let (entry (gethash file org-dog-file-table))
     (org-dog-annotate-file entry)))
 
-(defvar org-dog-file-completion-history nil)
-
 (cl-defun org-dog-complete-file (no-context &optional prompt initial-input _history)
   "Complete an Org file."
   (completing-read (or prompt "Org file: ")
@@ -608,8 +630,6 @@ For a usage example, see the implementation of
                          :complete #'org-dog-complete-link)
 
 ;;;; Minor mode
-
-(defvar org-dog-file-mode-map (make-sparse-keymap))
 
 ;;;###autoload
 (define-minor-mode org-dog-file-mode
