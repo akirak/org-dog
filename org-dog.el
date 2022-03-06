@@ -491,11 +491,12 @@ explicitly given. Maybe unnecessary."
                      (mapcar (pcase-lambda (`(,_ . ,context))
                                (apply-partially
                                 (lambda (context x)
-                                  (and (funcall (org-dog-context-file-masked-p context)
-                                                x)
-                                       (not
-                                        (funcall (org-dog-context-file-whitelisted-p context)
-                                                 x))))
+                                  (when context
+                                    (and (funcall (org-dog-context-file-masked-p context)
+                                                  x)
+                                         (not
+                                          (funcall (org-dog-context-file-whitelisted-p context)
+                                                   x)))))
                                 context)))
                      (delq nil))))
 
