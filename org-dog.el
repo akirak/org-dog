@@ -186,7 +186,7 @@ accessed."
                                              (string-prefix-p (oref x root)
                                                               ,abbr))
                                           org-dog-repository-instances))
-                        (root (oref file root))
+                        (root (oref repo root))
                         (instance (org-dog--make-file-instance
                                    :root root :absolute abbr)))
               (when (bound-and-true-p org-dog-id-mode)
