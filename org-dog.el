@@ -351,25 +351,40 @@ as well."
                                            (mapcar #'org-dog--repo-file-alist)
                                            (apply #'append)))
       (unless (gethash absolute org-dog-file-table)
-        (let* ((relative (plist-get plist :relative))
-               (root (plist-get plist :root))
-               (route (org-dog--file-route root relative))
-               (instance (with-demoted-errors (concat "Error while instantiating an object for "
-                                                      absolute ": %s")
-                           (apply #'make-instance (or (car route)
-                                                      org-dog-default-file-class)
-                                  :absolute absolute
-                                  :relative relative
-                                  :root root
-                                  (cdr route)))))
-          (if instance
-              (puthash absolute instance org-dog-file-table)
-            (cl-incf error-count)))))
+        (let ((relative (plist-get plist :relative))
+              (root (plist-get plist :root)))
+          (or (with-demoted-errors (concat "Error while instantiating an object for "
+                                           absolute ": %s")
+                (org-dog--make-file-instance :root root
+                                             :absolute absolute
+                                             :relative relative))
+              (cl-incf error-count)))))
     (message "Found %d Org files%s" (map-length org-dog-file-table)
              (if (> error-count 0)
                  (format " (%d errors)" error-count)
                ""))
     org-dog-file-table))
+
+(cl-defun org-dog--make-file-instance (&key root absolute relative)
+  "Create an instance of `org-dog-file' or its subclass from a path.
+
+Both ROOT and ABSOLUTE are required and should be passed from
+inside the caller function.
+
+RELATIVE is optional, and it can save little computation if
+explicitly given. Maybe unnecessary."
+  (assert (and root absolute))
+  (let* ((relative (or relative
+                       (string-remove-prefix root absolute)))
+         (route (org-dog--file-route root relative))
+         (instance (apply #'make-instance (or (car route)
+                                              org-dog-default-file-class)
+                          :absolute absolute
+                          :relative relative
+                          :root root
+                          (cdr route))))
+    (puthash absolute instance org-dog-file-table)
+    instance))
 
 (defun org-dog--file-route (root relative)
   "Return a route for a file in a repository, if any."
