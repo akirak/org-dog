@@ -1,0 +1,31 @@
+#+title: Org Dog
+#+TEXINFO_DIR_CATEGORY: Emacs
+#+TEXINFO_DIR_TITLE: Twist: (emacs-twist)
+#+TEXINFO_DIR_DESC: Build an Emacs configuration with Nix.
+* Introduction
+** Each Org file will have one corresponding eieio object
+In Org Dog, each Org file is associated with one [[info:eieio][EIEIO]] object.
+
+EIEIO is a library for object-oriented programming (OOP) in Emacs Lisp.
+It supports inheritance, polymorphism, etc.
+Even though OOPs are not so popular nowadays, it is a mature and powerful tool for doing complex things in Emacs.
+
+By defining a subclass of =org-dog-file= basic class, you can define a set of Org files with specific behaviors.
+* Getting started
+** Repository configuration
+First you have to configure your repository for Org files.
+It is done by customizing =org-dog-repository-alist=.
+
+It is an alist where each entry is a cons cell of a directory and a plist.
+The directory is the root of a repository, and the plist specifies contents in the repository.
+*** :subdirs
+*** :routes
+*** Other options related to file scanning
+** Mode configuration
+* Setting org-agenda-files
+* Integrating with org-id.el
+* Minibuffer completion
+** Embark intergation
+** Consult integration
+* Defining contexts
+* Defining your own file types
