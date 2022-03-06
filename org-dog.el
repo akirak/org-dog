@@ -345,24 +345,31 @@ as well."
   (if (and org-dog-file-table (hash-table-p org-dog-file-table))
       (clrhash org-dog-file-table)
     (setq org-dog-file-table (make-hash-table :test #'equal)))
-  (pcase-dolist (`(,absolute . ,plist) (thread-last
-                                         org-dog-repository-instances
-                                         (mapcar #'org-dog--repo-file-alist)
-                                         (apply #'append)))
-    (unless (gethash absolute org-dog-file-table)
-      (let* ((relative (plist-get plist :relative))
-             (root (plist-get plist :root))
-             (route (org-dog--file-route root relative)))
-        (puthash absolute
-                 (apply #'make-instance (or (car route)
-                                            org-dog-default-file-class)
-                        :absolute absolute
-                        :relative relative
-                        :root root
-                        (cdr route))
-                 org-dog-file-table))))
-  (message "Found %d Org files" (map-length org-dog-file-table))
-  org-dog-file-table)
+  (let ((error-count 0))
+    (pcase-dolist (`(,absolute . ,plist) (thread-last
+                                           org-dog-repository-instances
+                                           (mapcar #'org-dog--repo-file-alist)
+                                           (apply #'append)))
+      (unless (gethash absolute org-dog-file-table)
+        (let* ((relative (plist-get plist :relative))
+               (root (plist-get plist :root))
+               (route (org-dog--file-route root relative))
+               (instance (with-demoted-errors (concat "Error while instantiating an object for "
+                                                      absolute ": %s")
+                           (apply #'make-instance (or (car route)
+                                                      org-dog-default-file-class)
+                                  :absolute absolute
+                                  :relative relative
+                                  :root root
+                                  (cdr route)))))
+          (if instance
+              (puthash absolute instance org-dog-file-table)
+            (cl-incf error-count)))))
+    (message "Found %d Org files%s" (map-length org-dog-file-table)
+             (if (> error-count 0)
+                 (format " (%d errors)" error-count)
+               ""))
+    org-dog-file-table))
 
 (defun org-dog--file-route (root relative)
   "Return a route for a file in a repository, if any."
