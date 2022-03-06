@@ -70,7 +70,9 @@ value is a plist which specifies how to treat Org files in the directory."
      :test equal
      :callback org-dog-project-context-1)
     (major-mode
-     :callback org-dog-major-mode-context-1))
+     :callback org-dog-major-mode-context-1)
+    (current-language-environment
+     :callback org-dog-language-context-1))
   ""
   :type '(alist :key-type symbol
                 :value-type '(plist
@@ -570,6 +572,22 @@ explicitly given. Maybe unnecessary."
        :file-hidden-p
        (org-dog-make-file-pred :relative-prefix "programming/"
                                :negate-basename-regexp regexp)))))
+
+(defun org-dog-language-context-1 (language)
+  (let ((language (save-match-data
+                    (pcase language
+                      ((rx bol "UTF-")
+                       "English")
+                      ("ASCII"
+                       "English")
+                      ((rx bol (group (+ (not (any "-")))))
+                       (match-string 1 language))))))
+    (make-org-dog-context
+     :file-selected-p
+     (org-dog-make-file-pred :relative-prefix "languages/"
+                             :basename-regexp (regexp-quote language))
+     :file-hidden-p
+     (org-dog-make-file-pred :relative-prefix "languages/"))))
 
 ;;;; Completion
 
