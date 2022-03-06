@@ -31,7 +31,8 @@
 
 ;;; Code:
 
-(require 'consult)
+(require 'consult-org)
+(require 'org-dog)
 
 (cl-defmethod org-dog-file-search ((file org-dog-file))
   (consult-org-heading nil (list (oref file absolute))))

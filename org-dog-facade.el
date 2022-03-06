@@ -5,7 +5,7 @@
 ;; Author: Akira Komamura <akira.komamura@gmail.com>
 ;; Version: 0.1
 ;; Package-Requires: ((emacs "27.1") (org "9.5") (org-dog "0.1") (doct "3.1"))
-;; Keywords: org outlines
+;; Keywords: org convenience
 ;; URL: https://github.com/akirak/org-dog
 
 ;; This file is not part of GNU Emacs.
@@ -33,17 +33,26 @@
 
 (require 'org-dog-datetree)
 
+(defgroup org-dog-facade nil
+  "Support for facade Org files."
+  :prefix "org-dog-facade-"
+  :group 'org-dog-facade)
+
 (defcustom org-dog-facade-default-sections
   '(("b" "Backlog")
     ("k" "Keywords")
     ("p" "Projects")
     ("a" "Activities")
     ("r" "Resources"))
-  "")
+  "The default set of sections for facade files."
+  :type '(repeat (list (string :tag "Key")
+                       (choice :tag "Heading or olp"
+                               string (repeat string)))))
 
 (defcustom org-dog-facade-datetree-key
   "d"
-  "")
+  "Key used to select the datetree of a facade file."
+  :type 'string)
 
 (defclass org-dog-facade-datetree-file (org-dog-datetree-file)
   ((sections :initarg :sections
@@ -57,7 +66,7 @@
     ((and `(,key . ,_) (guard (equal key org-dog-facade-datetree-key)))
      (org-reverse-datetree-refile-to-file (oref file absolute)))
     (`(,_ ,_ ,marker)
-     TODO: Allow customization
+     ;; TODO: Allow customization
      (let ((parent))
        (cond
         ((derived-mode-p 'org-agenda-mode)

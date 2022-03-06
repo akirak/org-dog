@@ -32,6 +32,11 @@
 ;;; Code:
 
 (require 'embark)
+(require 'org-dog)
+
+(defvar aw-dispatch-always)
+(declare-function aw-select "ext:avy")
+(declare-function aw-switch-to-window "ext:avy")
 
 ;; Based on https://karthinks.com/software/fifteen-ways-to-use-embark/
 (eval-when-compile
@@ -39,8 +44,8 @@
     (declare (indent 1))
     `(defun ,(intern (format "org-dog-%s-ace-window" (or name fn))) ()
        (interactive)
+       (require 'ace-window)
        (with-demoted-errors "%s"
-         (require 'ace-window)
          (let ((aw-dispatch-always t))
            (aw-switch-to-window (aw-select nil))
            (call-interactively (symbol-function ',fn)))))))

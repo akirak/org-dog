@@ -5,7 +5,13 @@
 
 (defcustom org-dog-datetree-default-template
   '("* %?")
-  "Default template to be used in `org-capture-templates'.")
+  "Default template to be used in `org-capture-templates'.
+
+This accepts the same type as :template argument of `doct'
+function, which see."
+  :type '(choice string
+                 (repeat string)
+                 function))
 
 (defclass org-dog-datetree-file (org-dog-file)
   ((capture-templates :initform nil
