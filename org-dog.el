@@ -588,7 +588,7 @@ For a usage example, see the implementation of
   (let* ((objs (org-dog-select-files (or pred
                                          (org-dog-make-file-pred :class class))))
          (files (mapcar (lambda (obj)
-                          (let ((absolute (oref obj absolute)))
+                          (let ((absolute (substring (oref obj absolute))))
                             (when-let (dir (file-name-directory absolute))
                               (put-text-property 0 (length dir)
                                                  'face 'org-dog-file-directory-face
