@@ -417,7 +417,7 @@ as well."
                                                  :absolute absolute
                                                  :relative relative))
             (cl-incf error-count)))))
-    (message "Found %d Org files%s" (map-length org-dog-file-table)
+    (message "Registered %d Org files%s" (map-length org-dog-file-table)
              (if (> error-count 0)
                  (format " (%d errors)" error-count)
                ""))
