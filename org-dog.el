@@ -547,6 +547,10 @@ explicitly given. Maybe unnecessary."
                      files)))
               (funcall callback arg))))))
 
+(defun org-dog-context-whitelisted-files (type)
+  "Return file objects whitelisted by context TYPE."
+  (cdr (org-dog-context-edge type t)))
+
 (defun org-dog-context--make-table (type &optional test)
   (let ((tbl (make-hash-table :test (or test #'eq))))
     (push (cons type tbl) org-dog-context-cache)
