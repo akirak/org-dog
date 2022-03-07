@@ -302,7 +302,13 @@ Only interesting items are returned."
 (defun org-dog-find-file (file)
   "Open an Org FILE."
   (interactive (list (org-dog-complete-file current-prefix-arg)))
-  (find-file file))
+  (if (file-name-absolute-p file)
+      (find-file file)
+    (let ((repo-root (completing-read (format "Choose a repository for %s: " file)
+                                      (mapcar (lambda (x) (oref x root))
+                                              org-dog-repository-instances)
+                                      nil t)))
+      (find-file (expand-file-name file repo-root)))))
 
 ;;;###autoload
 (defun org-dog-search-in-file (file)
