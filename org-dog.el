@@ -590,19 +590,23 @@ explicitly given. Maybe unnecessary."
         (org-dog-make-file-pred :relative-prefix "projects/"))))))
 
 (defun org-dog-major-mode-context-1 (mode)
-  (let ((mode mode)
-        filenames)
-    (while mode
-      (push (string-remove-suffix "-mode" (symbol-name mode))
-            filenames)
-      (setq mode (get mode 'derived-mode-parent)))
-    (let ((regexp (rx-to-string `(or ,@filenames))))
-      (make-org-dog-context
-       :file-whitelisted-p
-       (org-dog-make-file-pred :relative-prefix "programming/"
-                               :basename-regexp regexp)
-       :file-masked-p
-       (org-dog-make-file-pred :relative-prefix "programming/")))))
+  (catch 'mode-context
+    (let ((mode mode)
+          filenames)
+      (while mode
+        ;; The mode context is unapplicable
+        (when (memq mode '(fundamental-mode special-mode))
+          (throw 'mode-context nil))
+        (push (string-remove-suffix "-mode" (symbol-name mode))
+              filenames)
+        (setq mode (get mode 'derived-mode-parent)))
+      (let ((regexp (rx-to-string `(or ,@filenames))))
+        (make-org-dog-context
+         :file-whitelisted-p
+         (org-dog-make-file-pred :relative-prefix "programming/"
+                                 :basename-regexp regexp)
+         :file-masked-p
+         (org-dog-make-file-pred :relative-prefix "programming/"))))))
 
 (defun org-dog-language-context-1 (language)
   (let ((language (save-match-data
