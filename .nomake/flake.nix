@@ -8,6 +8,12 @@
       repo = "consult";
       type = "github";
     };
+    dash = {
+      flake = false;
+      owner = "magnars";
+      repo = "dash.el";
+      type = "github";
+    };
     doct = {
       flake = false;
       owner = "progfolio";
@@ -42,6 +48,12 @@
       flake = false;
       owner = "akirak";
       repo = "org-dog";
+      type = "github";
+    };
+    org-reverse-datetree = {
+      flake = false;
+      owner = "akirak";
+      repo = "org-reverse-datetree";
       type = "github";
     };
   };

@@ -16,6 +16,22 @@
         "type": "github"
       }
     },
+    "dash": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1632096711,
+        "narHash": "sha256-oeIUEe5OGgij6IessN6bmS7re5r+D5BlrU4MOsaK3JE=",
+        "owner": "magnars",
+        "repo": "dash.el",
+        "rev": "da167c51e9fd167a48d06c7c0ee8e3ac7abd9718",
+        "type": "github"
+      },
+      "original": {
+        "owner": "magnars",
+        "repo": "dash.el",
+        "type": "github"
+      }
+    },
     "doct": {
       "flake": false,
       "locked": {
@@ -112,15 +128,33 @@
         "type": "github"
       }
     },
+    "org-reverse-datetree": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1646394196,
+        "narHash": "sha256-FLxRPsGFci1tDWqQGD86Yr0FtT9nFK0NJbZkBliVGI4=",
+        "owner": "akirak",
+        "repo": "org-reverse-datetree",
+        "rev": "274c775692e34c4580ff7c7d7019d73863ea7770",
+        "type": "github"
+      },
+      "original": {
+        "owner": "akirak",
+        "repo": "org-reverse-datetree",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "consult": "consult",
+        "dash": "dash",
         "doct": "doct",
         "embark": "embark",
         "org-dog": "org-dog",
         "org-dog-consult": "org-dog-consult",
         "org-dog-embark": "org-dog-embark",
-        "org-dog-facade": "org-dog-facade"
+        "org-dog-facade": "org-dog-facade",
+        "org-reverse-datetree": "org-reverse-datetree"
       }
     }
   },
