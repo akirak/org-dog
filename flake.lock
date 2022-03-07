@@ -19,11 +19,11 @@
     "elsa": {
       "flake": false,
       "locked": {
-        "lastModified": 1644279463,
-        "narHash": "sha256-uYx5LBvxv3F7OKWdBGiXrrWHSRt6/54hnE/tuxUTyqs=",
+        "lastModified": 1645647680,
+        "narHash": "sha256-uEX4T4VAIBiiSUfLXko/mxOghlz794GgVfD21jqJ3F0=",
         "owner": "emacs-elsa",
         "repo": "Elsa",
-        "rev": "82ffb6eecefde7e99383e4a657f17fe414287846",
+        "rev": "21ed4f46e2d02ffb48b3ae377b0c93732ccf3f4f",
         "type": "github"
       },
       "original": {
@@ -87,11 +87,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1635165013,
-        "narHash": "sha256-o/BdVjNwcB6jOmzZjOH703BesSkkS5O7ej3xhyO8hAY=",
+        "lastModified": 1646480205,
+        "narHash": "sha256-kekOlTlu45vuK2L9nq8iVN17V3sB0WWPqTTW3a2SQG0=",
         "owner": "hercules-ci",
         "repo": "gitignore.nix",
-        "rev": "5b9e0ff9d3b551234b4f3eb3983744fa354b17f1",
+        "rev": "bff2832ec341cf30acb3a4d3e2e7f1f7b590116a",
         "type": "github"
       },
       "original": {
@@ -164,11 +164,11 @@
         "twist": "twist"
       },
       "locked": {
-        "lastModified": 1645458537,
-        "narHash": "sha256-E/1cc1AjVZZQb6fzr4q9GCIINcOJOkQ+vNVR4oF/2U4=",
+        "lastModified": 1646637998,
+        "narHash": "sha256-EgapgEdG3C+RBArsfNLBlOjEF4ZsqCiB9GmwALT5+N0=",
         "owner": "emacs-twist",
         "repo": "nomake",
-        "rev": "9a80434cb0c8e9b766dfa16bbb079c0e1d539a8e",
+        "rev": "f65641b6cf5d9475108093c40d155e5ac1b4ee73",
         "type": "github"
       },
       "original": {
@@ -180,11 +180,11 @@
     "package-lint": {
       "flake": false,
       "locked": {
-        "lastModified": 1644654625,
-        "narHash": "sha256-YprQ7XwzqHsBVEroNC4OXBzkjwX/y1T37Pw2M8kNVRQ=",
+        "lastModified": 1644764238,
+        "narHash": "sha256-3jyAylJJTd0N5r3v7Ov22Xturdk7qR1W2z2Qae+3UYM=",
         "owner": "purcell",
         "repo": "package-lint",
-        "rev": "fc30a795000a1ae98bb3d09e5b2929bedfc402fe",
+        "rev": "873025ffc85b5e40ec361e953218fa09c6ebd621",
         "type": "github"
       },
       "original": {
@@ -206,11 +206,11 @@
         "fromElisp": "fromElisp"
       },
       "locked": {
-        "lastModified": 1645450223,
-        "narHash": "sha256-0vljQzDUbePxyw6c8yoPdFE/ZcD8vfZhh8bkxveXiy0=",
+        "lastModified": 1646296035,
+        "narHash": "sha256-JanFA9eCAOUc3Y5H8ssdRIpQgIAumLdyk/Uo6Xt2MAM=",
         "owner": "emacs-twist",
         "repo": "twist.nix",
-        "rev": "eadb7f07d05ec065bba31aaef5966aa1543f3aa1",
+        "rev": "dc37f7a1dcc1dd33478b177b9596ba8315627a03",
         "type": "github"
       },
       "original": {
