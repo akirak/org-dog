@@ -661,10 +661,15 @@ For a usage example, see the implementation of
 
 ;;;; Links
 
-(defun org-dog-follow-link (relative _arg)
+(defun org-dog-follow-link (ref _arg)
   "Follow a link to an Org Dog file."
-  (when-let (obj (org-dog-find-file-object (org-dog-make-file-pred :relative relative)))
-    (find-file (oref obj absolute))))
+  (when-let (obj (org-dog--linked-object ref))
+    (cl-etypecase obj
+      (org-dog-file (find-file (oref obj absolute))))))
+
+(defun org-dog--linked-object (ref)
+  "Return an object referred to by REF."
+  (org-dog-find-file-object (org-dog-make-file-pred :relative ref)))
 
 (defun org-dog-complete-link (&optional _arg)
   "Complete a link to an Org Dog file."
