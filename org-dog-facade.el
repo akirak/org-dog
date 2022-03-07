@@ -4,7 +4,7 @@
 
 ;; Author: Akira Komamura <akira.komamura@gmail.com>
 ;; Version: 0.1
-;; Package-Requires: ((emacs "27.1") (org "9.5") (org-dog "0.1") (doct "3.1"))
+;; Package-Requires: ((emacs "27.1") (org "9.5") (org-dog "0.1") (doct "3.1") (org-reverse-datetree "0.3"))
 ;; Keywords: org convenience
 ;; URL: https://github.com/akirak/org-dog
 
@@ -32,6 +32,8 @@
 ;;; Code:
 
 (require 'org-dog-datetree)
+(declare-function org-refile "ext:org-refile")
+(declare-function org-agenda-refile "ext:org-agenda")
 
 (defgroup org-dog-facade nil
   "Support for facade Org files."
@@ -75,11 +77,13 @@
                         marker)))
        (cond
         ((derived-mode-p 'org-agenda-mode)
+         (require 'org-agenda)
          (org-agenda-refile nil rfloc))
         ((derived-mode-p 'org-mode)
          (org-refile nil nil rfloc)))))))
 
-(cl-defmethod org-dog-file-capture ((file org-dog-facade-datetree-file)))
+(cl-defmethod org-dog-file-capture ((_file org-dog-facade-datetree-file))
+  (error "Not implemented"))
 
 ;; (cl-defmethod org-dog-file-search ((file org-dog-facade-datetree-file)))
 

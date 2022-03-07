@@ -1,7 +1,18 @@
 ;;; org-dog-datetree.el --- Org dog files with a reverse date tree -*- lexical-binding: t -*-
 
 (require 'org-dog)
+(require 'org)
 (require 'doct)
+(require 'org-reverse-datetree)
+
+(defvar org-capture-entry)
+(defvar org-capture-templates)
+
+(defgroup org-dog-datetree nil
+  "Date tree file type for org-dog."
+  :prefix "org-dog-datetree-"
+  :group 'org-reverse-datetree
+  :group 'org)
 
 (defcustom org-dog-datetree-default-template
   '("* %?")

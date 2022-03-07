@@ -38,6 +38,8 @@
 
 (declare-function org-link-set-parameters "ext:ol")
 (declare-function project-root "ext:project")
+(defvar org-id-extra-files)
+(defvar org-id-track-globally)
 
 (defgroup org-dog nil
   "A programmable workflow layer for Org mode."
@@ -536,7 +538,7 @@ explicitly given. Maybe unnecessary."
                     (:dflt
                      (when-let (context (funcall callback arg))
                        (let ((files (org-dog-select-files
-                                     (org-dog-context-file-selected-p context))))
+                                     (org-dog-context-file-masked-p context))))
                          (puthash arg files tbl)
                          files)))
                     (`nil
