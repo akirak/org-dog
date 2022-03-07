@@ -693,13 +693,16 @@ For now, this is only used for enabling `org-dog-file-mode-map'."
      ((org-dog-current-buffer-object)
       t)
      ((derived-mode-p 'org-mode)
-      (let ((filename (buffer-file-name (org-base-buffer (current-buffer))))
-            (obj (org-dog-file-object))
-            (message-log-max nil))
+      (let* ((filename (buffer-file-name (org-base-buffer (current-buffer))))
+             (obj (org-dog-file-object filename))
+             (message-log-max nil))
         (if obj
-            (message "Generated a new object with type %s" (eieio-object-class-name obj))
+            (message "Generated a new object typed %s for %s"
+                     (eieio-object-class-name obj)
+                     filename)
           (org-dog-file-mode -1)
-          (error "There is no route for this file, or the file is not in an repository."))))
+          (error "There is no route for %s, or the file is not in an repository."
+                 filename))))
      (t
       (error "This mode must be turned on in an `org-mode' buffer.")))))
 
