@@ -538,7 +538,7 @@ explicitly given. Maybe unnecessary."
                     (:dflt
                      (when-let (context (funcall callback arg))
                        (let ((files (org-dog-select-files
-                                     (org-dog-context-file-masked-p context))))
+                                     (org-dog-context-file-whitelisted-p context))))
                          (puthash arg files tbl)
                          files)))
                     (`nil
