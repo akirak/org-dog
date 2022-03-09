@@ -82,13 +82,9 @@ value is a plist which specifies how to treat Org files in the directory."
 
 ;;;; Variables
 
-(defvar org-dog-repository-instances nil
-  "A list of `org-dog-repository' instances.
+(defvar org-dog--repository-table nil)
 
-The user should not manually set this variable.")
-
-(defvar org-dog-file-table nil
-  "A hash table.")
+(defvar org-dog--file-table nil)
 
 (defvar org-dog-file-completion-history nil)
 
@@ -113,9 +109,9 @@ The user should not manually set this variable.")
 (defun org-dog--ensure-file-table ()
   "Ensure the file table is initialized.
 
-This function should be called before `org-dog-file-table' is
+This function should be called before `org-dog--file-table' is
 accessed."
-  (unless org-dog-file-table
+  (unless org-dog--file-table
     (org-dog-reload-files)))
 
 (cl-defun org-dog-make-file-pred (&key class
@@ -145,24 +141,25 @@ accessed."
   "Return a list of `org-dog-file' objects optionally matching PRED."
   (org-dog--ensure-file-table)
   (if pred
-      (thread-last (map-values org-dog-file-table)
+      (thread-last (map-values org-dog--file-table)
                    (seq-filter pred))
-    (map-values org-dog-file-table)))
+    (map-values org-dog--file-table)))
 
 (defun org-dog-file-object (file)
   "Find a `org-dog-file' object associated with a FILE."
   (org-dog--ensure-file-table)
-  (or (gethash file org-dog-file-table)
+  (or (gethash file org-dog--file-table)
       (let ((abbr (abbreviate-file-name file)))
         (or (unless (equal abbr file)
-              (gethash abbr org-dog-file-table))
-            (when-let* ((repo (cl-find-if `(lambda (x)
-                                             (string-prefix-p (oref x root)
-                                                              ,abbr))
-                                          org-dog-repository-instances))
-                        (root (oref repo root))
+              (gethash abbr org-dog--file-table))
+            (when-let* ((repo (seq-some `(lambda (repo)
+                                           (when (string-prefix-p (oref repo root)
+                                                                  ,abbr)
+                                             repo))
+                                        org-dog--repository-table))
                         (instance (org-dog--make-file-instance
-                                   :root root :absolute abbr)))
+                                   :root (oref repo root)
+                                   :absolute abbr)))
               (when (bound-and-true-p org-dog-id-mode)
                 (add-to-list 'org-dog-id-files abbr))
               instance)))
@@ -175,7 +172,7 @@ accessed."
                                (when (funcall pred obj)
                                  obj))
                              pred)
-            org-dog-file-table))
+            org-dog--file-table))
 
 (defun org-dog-current-buffer-object ()
   "Return the `org-dog-file' object for the current buffer, if any."
@@ -267,8 +264,7 @@ Only interesting items are returned."
   (if (file-name-absolute-p file)
       (find-file file)
     (let ((repo-root (completing-read (format "Choose a repository for %s: " file)
-                                      (mapcar (lambda (x) (oref x root))
-                                              org-dog-repository-instances)
+                                      (map-keys org-dog--repository-table)
                                       nil t)))
       (find-file (expand-file-name file repo-root)))))
 
@@ -303,7 +299,7 @@ Only interesting items are returned."
   (when-let (obj (org-dog-current-buffer-object))
     (org-dog-capture-to-file obj)))
 
-;;;; Directories
+;;;; Repositories
 
 ;;;;; Class
 
@@ -312,7 +308,7 @@ Only interesting items are returned."
    (directories :initarg :directories)))
 
 (defun org-dog--repo-file-alist (repo)
-  "Return an alist of repositories in REPO."
+  "Return an alist of files in REPO."
   (let ((root (oref repo root)))
     (cl-flet
         ((scan-subdir (dir)
@@ -335,13 +331,13 @@ Only interesting items are returned."
 
 (defun org-dog--init-repositories ()
   "Inititialize the list of directories."
-  (thread-last org-dog-repository-alist
-               (mapcar (pcase-lambda (`(,root . ,plist))
-                         (when (file-directory-p root)
-                           (apply #'org-dog--make-repository
-                                  root plist))))
-               (delq nil)
-               (setq org-dog-repository-instances)))
+  (if org-dog--repository-table
+      (clrhash org-dog--repository-table)
+    (setq org-dog--repository-table (make-hash-table :test #'equal :size 10)))
+  (pcase-dolist (`(,root . ,plist) org-dog-repository-alist)
+    (when (file-directory-p root)
+      (puthash root (apply #'org-dog--make-repository root plist)
+               org-dog--repository-table))))
 
 (cl-defun org-dog--make-repository (root &key subdirs &allow-other-keys)
   "Make an instance of `org-dog-repository'."
@@ -369,18 +365,19 @@ Only interesting items are returned."
 When a universal prefix is given, the repositories are reloaded
 as well."
   (interactive "P")
-  (when (or (not org-dog-repository-instances)
+  (when (or (not org-dog--repository-table)
             arg)
     (org-dog--init-repositories))
-  (if (and org-dog-file-table (hash-table-p org-dog-file-table))
-      (clrhash org-dog-file-table)
-    (setq org-dog-file-table (make-hash-table :test #'equal)))
+  (if (and org-dog--file-table (hash-table-p org-dog--file-table))
+      (clrhash org-dog--file-table)
+    (setq org-dog--file-table (make-hash-table :test #'equal)))
   (let ((error-count 0))
-    (pcase-dolist (`(,absolute . ,plist) (thread-last
-                                           org-dog-repository-instances
-                                           (mapcar #'org-dog--repo-file-alist)
-                                           (apply #'append)))
-      (unless (gethash absolute org-dog-file-table)
+    (pcase-dolist (`(,absolute . ,plist)
+                   (thread-last
+                     (map-values org-dog--repository-table)
+                     (mapcar #'org-dog--repo-file-alist)
+                     (apply #'append)))
+      (unless (gethash absolute org-dog--file-table)
         (let ((relative (plist-get plist :relative))
               (root (plist-get plist :root)))
           (unless (with-demoted-errors "Error while instantiating an object: %s"
@@ -388,13 +385,13 @@ as well."
                                                  :absolute absolute
                                                  :relative relative))
             (cl-incf error-count)))))
-    (message "Registered %d Org files%s" (map-length org-dog-file-table)
+    (message "Registered %d Org files%s" (map-length org-dog--file-table)
              (if (> error-count 0)
                  (format " (%d errors)" error-count)
                ""))
     (when (bound-and-true-p org-dog-id-mode)
-      (setq org-dog-id-files (map-keys org-dog-file-table)))
-    org-dog-file-table))
+      (setq org-dog-id-files (map-keys org-dog--file-table)))
+    org-dog--file-table))
 
 (cl-defun org-dog--make-file-instance (&key root absolute relative)
   "Create an instance of `org-dog-file' or its subclass from a path.
@@ -414,7 +411,7 @@ explicitly given. Maybe unnecessary."
                           :relative relative
                           :root root
                           (cdr route))))
-    (puthash absolute instance org-dog-file-table)
+    (puthash absolute instance org-dog--file-table)
     ;; (if (org-dog-file-in-agenda-p instance)
     ;;     (add-to-list 'org-agenda-files absolute)
     ;;   (delq absolute org-agenda-files))
@@ -488,7 +485,7 @@ For a usage example, see the implementation of
 
 (defun org-dog--annotate-file (file)
   "Annotation function for `org-dog-file'."
-  (when-let (entry (gethash file org-dog-file-table))
+  (when-let (entry (gethash file org-dog--file-table))
     (org-dog-annotate-file entry)))
 
 (cl-defun org-dog-complete-file (&optional prompt initial-input _history)
@@ -577,8 +574,8 @@ scanning dog files for IDs without modifying
         (unless org-id-track-globally
           (setq org-id-track-globally t))
         (when (and (not org-dog-id-files)
-                   org-dog-file-table)
-          (setq org-dog-id-files (map-keys org-dog-file-table))))
+                   org-dog--file-table)
+          (setq org-dog-id-files (map-keys org-dog--file-table))))
     (setq org-id-extra-files
           (eval (car (get 'org-id-extra-files 'standard-value))))))
 
@@ -591,9 +588,9 @@ as well, so you should call this when `org-dog-id-mode' is off.
 If `org-dog-id-mode' is on, you should use
 `org-id-update-id-locations' instead."
   (interactive)
-  (unless org-dog-file-table
+  (unless org-dog--file-table
     (user-error "The files are not loaded yet"))
-  (org-id-update-id-locations (map-keys org-dog-file-table)))
+  (org-id-update-id-locations (map-keys org-dog--file-table)))
 
 (provide 'org-dog)
 ;;; org-dog.el ends here
