@@ -1,6 +1,9 @@
 ;;; org-dog-context.el --- Context support -*- lexical-binding: t -*-
 
 (require 'org-dog)
+
+(declare-function project-root "ext:project")
+
 (defgroup org-dog-context nil
   ""
   :prefix "org-dog-context-"
