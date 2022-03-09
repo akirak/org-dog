@@ -301,7 +301,7 @@ Only interesting items are returned."
 ;;;###autoload
 (defun org-dog-find-file (file)
   "Open an Org FILE."
-  (interactive (list (org-dog-complete-file current-prefix-arg)))
+  (interactive (list (org-dog-complete-file)))
   (if (file-name-absolute-p file)
       (find-file file)
     (let ((repo-root (completing-read (format "Choose a repository for %s: " file)
@@ -313,7 +313,7 @@ Only interesting items are returned."
 ;;;###autoload
 (defun org-dog-search-in-file (file)
   "Open an Org FILE."
-  (interactive (list (org-dog-complete-file current-prefix-arg)))
+  (interactive (list (org-dog-complete-file)))
   (cl-etypecase file
     (string (org-dog-file-search (org-dog-file-object file)))
     (org-dog-file (org-dog-file-search file))))
@@ -321,7 +321,7 @@ Only interesting items are returned."
 ;;;###autoload
 (defun org-dog-refile-to-file (file)
   "Refile the current entry to FILE."
-  (interactive (list (org-dog-complete-file current-prefix-arg)))
+  (interactive (list (org-dog-complete-file)))
   (cl-etypecase file
     (string (org-dog-file-refile (org-dog-file-object file)))
     (org-dog-file (org-dog-file-refile file))))
@@ -329,7 +329,7 @@ Only interesting items are returned."
 ;;;###autoload
 (defun org-dog-capture-to-file (file)
   "Capture an entry to FILE."
-  (interactive (list (org-dog-complete-file current-prefix-arg)))
+  (interactive (list (org-dog-complete-file)))
   (cl-etypecase file
     (string (org-dog-file-capture (org-dog-file-object file)))
     (org-dog-file (org-dog-file-capture file))))
@@ -663,15 +663,10 @@ For a usage example, see the implementation of
   (when-let (entry (gethash file org-dog-file-table))
     (org-dog-annotate-file entry)))
 
-(cl-defun org-dog-complete-file (no-context &optional prompt initial-input _history)
+(cl-defun org-dog-complete-file (&optional prompt initial-input _history)
   "Complete an Org file."
   (completing-read (or prompt "Org file: ")
-                   (org-dog-file-completion
-                    :pred (when (and (not no-context)
-                                     (cl-case org-dog-complete-contextually
-                                       (t t)
-                                       (clocking (org-clocking-p))))
-                            (org-dog-context-make-file-filter)))
+                   (org-dog-file-completion)
                    nil nil
                    initial-input org-dog-file-completion-history))
 
@@ -689,7 +684,7 @@ For a usage example, see the implementation of
 
 (defun org-dog-complete-link (&optional _arg)
   "Complete a link to an Org Dog file."
-  (let ((absolute (org-dog-complete-file t)))
+  (let ((absolute (org-dog-complete-file)))
     (concat "org-dog:" (oref (org-dog-file-object absolute) relative))))
 
 (org-link-set-parameters "org-dog"

@@ -90,9 +90,7 @@
 (defun org-dog-facade-goto-section (file)
   (interactive (list (or (and (not current-prefix-arg)
                               (org-dog-current-buffer-object))
-                         ;; With a prefix argument, contextual completion is
-                         ;; disabled.
-                         (org-dog-complete-file current-prefix-arg))))
+                         (org-dog-complete-file))))
   (let ((file (cl-etypecase file
                 (string (org-dog-file-object file))
                 (org-dog-facade-datetree-file file))))
