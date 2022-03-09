@@ -152,14 +152,12 @@ accessed."
       (let ((abbr (abbreviate-file-name file)))
         (or (unless (equal abbr file)
               (gethash abbr org-dog--file-table))
-            (when-let* ((repo (seq-some `(lambda (repo)
-                                           (when (string-prefix-p (oref repo root)
-                                                                  ,abbr)
-                                             repo))
-                                        org-dog--repository-table))
-                        (instance (org-dog--make-file-instance
-                                   :root (oref repo root)
-                                   :absolute abbr)))
+            (when-let (instance (thread-last
+                                  org-dog--repository-table
+                                  (seq-some `(lambda (repo)
+                                               (when (string-prefix-p (oref repo root)
+                                                                      ,abbr)
+                                                 (org-dog--make-file-instance repo abbr))))))
               (when (bound-and-true-p org-dog-id-mode)
                 (add-to-list 'org-dog-id-files abbr))
               instance)))
@@ -213,6 +211,15 @@ accessed."
   "Search in FILE.")
 
 ;;;;; Utilities
+
+(defun org-dog--remprop (plist prop)
+  (let (result key)
+    (while (setq key (pop plist))
+      (if (eq key prop)
+          (pop plist)
+        (push key result)
+        (push (pop plist) result)))
+    (nreverse result)))
 
 (defun org-dog-maybe-file-buffer (file-obj)
   "Return a file buffer visiting X if any."
@@ -305,27 +312,22 @@ Only interesting items are returned."
 
 (defclass org-dog-repository ()
   ((root :initarg :root)
+   (sxhash :initarg :sxhash)
+   (routes :initarg :routes)
    (directories :initarg :directories)))
 
-(defun org-dog--repo-file-alist (repo)
+(defun org-dog--repo-files (repo)
   "Return an alist of files in REPO."
-  (let ((root (oref repo root)))
-    (cl-flet
-        ((scan-subdir (dir)
-           (let ((rel-dir (string-remove-prefix root dir)))
-             (thread-last
-               (directory-files dir nil "^[a-zA-Z].*\\.org\\(?:\\.gpg\\)?\\'" 'nosort)
-               (cl-remove-if (lambda (name)
-                               (when org-dog-exclude-file-pattern
-                                 (string-match-p org-dog-exclude-file-pattern name))))
-               (mapcar (lambda (file)
-                         (list (concat dir file)
-                               :root root
-                               :relative (concat rel-dir file))))))))
+  (let (result)
+    (dolist (dir (oref repo directories))
       (thread-last
-        (oref repo directories)
-        (mapcar #'scan-subdir)
-        (apply #'append)))))
+        (directory-files dir nil "^[a-zA-Z].*\\.org\\(?:\\.gpg\\)?\\'" 'nosort)
+        (cl-remove-if (lambda (name)
+                        (when org-dog-exclude-file-pattern
+                          (string-match-p org-dog-exclude-file-pattern name))))
+        (append result)
+        (setq result)))
+    result))
 
 ;;;;; Instance management
 
@@ -336,10 +338,12 @@ Only interesting items are returned."
     (setq org-dog--repository-table (make-hash-table :test #'equal :size 10)))
   (pcase-dolist (`(,root . ,plist) org-dog-repository-alist)
     (when (file-directory-p root)
-      (puthash root (apply #'org-dog--make-repository root plist)
+      (puthash root (apply #'org-dog--make-repository root
+                           :sxhash (sxhash plist) plist)
                org-dog--repository-table))))
 
-(cl-defun org-dog--make-repository (root &key subdirs &allow-other-keys)
+(cl-defun org-dog--make-repository (root &rest plist &key subdirs
+                                         &allow-other-keys)
   "Make an instance of `org-dog-repository'."
   (cl-flet
       ((normalize-dir (dir)
@@ -355,9 +359,18 @@ Only interesting items are returned."
                                (mapcar (lambda (str) (expand-file-name str root)))
                                (cl-remove-if-not #'file-directory-p))))
                           (mapcar #'normalize-dir))))
-      (make-instance 'org-dog-repository
-                     :root abbr-root
-                     :directories (cons abbr-root real-subdirs)))))
+      (apply #'make-instance 'org-dog-repository
+             :root abbr-root
+             :directories (cons abbr-root real-subdirs)
+             (org-dog--remprop plist :subdirs)))))
+
+(defun org-dog-maybe-update-repository (root)
+  (let* ((repo (gethash root org-dog--repository-table))
+         (plist (cdr (assoc root org-dog-repository-alist)))
+         (sxhash (sxhash plist)))
+    (unless (and repo (equal sxhash (oref repo sxhash)))
+      (puthash root (apply #'org-dog--make-repository root :sxhash sxhash plist)
+               org-dog--repository-table))))
 
 (defun org-dog-reload-files (&optional arg)
   "Reload the file table.
@@ -365,26 +378,26 @@ Only interesting items are returned."
 When a universal prefix is given, the repositories are reloaded
 as well."
   (interactive "P")
-  (when (or (not org-dog--repository-table)
-            arg)
-    (org-dog--init-repositories))
+  (if (or (not org-dog--repository-table)
+          arg)
+      (org-dog--init-repositories)
+    (thread-last
+      org-dog-repository-alist
+      (mapcar #'car)
+      (mapc #'org-dog-maybe-update-repository)))
   (if (and org-dog--file-table (hash-table-p org-dog--file-table))
       (clrhash org-dog--file-table)
     (setq org-dog--file-table (make-hash-table :test #'equal)))
   (let ((error-count 0))
-    (pcase-dolist (`(,absolute . ,plist)
-                   (thread-last
-                     (map-values org-dog--repository-table)
-                     (mapcar #'org-dog--repo-file-alist)
-                     (apply #'append)))
-      (unless (gethash absolute org-dog--file-table)
-        (let ((relative (plist-get plist :relative))
-              (root (plist-get plist :root)))
-          (unless (with-demoted-errors "Error while instantiating an object: %s"
-                    (org-dog--make-file-instance :root root
-                                                 :absolute absolute
-                                                 :relative relative))
-            (cl-incf error-count)))))
+    (thread-last
+      org-dog--repository-table
+      (map-do (lambda (_root repo)
+                (dolist (absolute (org-dog--repo-files repo))
+                  (unless (gethash absolute org-dog--file-table)
+                    (unless (with-demoted-errors
+                                "Error while instantiating an object: %s"
+                              (org-dog--make-file-instance repo absolute))
+                      (cl-incf error-count)))))))
     (message "Registered %d Org files%s" (map-length org-dog--file-table)
              (if (> error-count 0)
                  (format " (%d errors)" error-count)
@@ -393,7 +406,7 @@ as well."
       (setq org-dog-id-files (map-keys org-dog--file-table)))
     org-dog--file-table))
 
-(cl-defun org-dog--make-file-instance (&key root absolute relative)
+(defun org-dog--make-file-instance (repo absolute)
   "Create an instance of `org-dog-file' or its subclass from a path.
 
 Both ROOT and ABSOLUTE are required and should be passed from
@@ -401,36 +414,24 @@ inside the caller function.
 
 RELATIVE is optional, and it can save little computation if
 explicitly given. Maybe unnecessary."
-  (cl-assert (and root absolute))
-  (let* ((relative (or relative
-                       (string-remove-prefix root absolute)))
-         (route (org-dog--file-route root relative))
-         (instance (apply #'make-instance (or (car route)
-                                              org-dog-default-file-class)
-                          :absolute absolute
-                          :relative relative
-                          :root root
-                          (cdr route))))
-    (puthash absolute instance org-dog--file-table)
-    ;; (if (org-dog-file-in-agenda-p instance)
-    ;;     (add-to-list 'org-agenda-files absolute)
-    ;;   (delq absolute org-agenda-files))
-    instance))
-
-(defun org-dog--file-route (root relative)
-  "Return a route for a file in a repository, if any."
-  (if-let (repo-entry (assoc root org-dog-repository-alist))
-      (catch 'result
-        (let ((rules (plist-get (cdr repo-entry) :routes)))
-          (while rules
-            (pcase-let ((`(,pattern . ,ent) (pop rules)))
-              (when (or (and (stringp pattern)
-                             (string-prefix-p pattern relative))
-                        (and (not pattern)
-                             (not (string-match-p "/" relative)))
-                        (eq pattern t))
-                (throw 'result ent))))))
-    (error "Did not match root %s" root)))
+  (let* ((relative (string-remove-prefix (oref repo root) absolute))
+         (route (catch 'route
+                  (pcase-dolist (`(,pattern . ,ent) (oref repo routes))
+                    (when (or (and (stringp pattern)
+                                   (string-prefix-p pattern relative))
+                              (and (not pattern)
+                                   (not (string-match-p "/" relative)))
+                              (eq pattern t))
+                      (throw 'route ent))))))
+    (when-let (instance
+               (apply #'make-instance (or (car route)
+                                          org-dog-default-file-class)
+                      :absolute absolute
+                      :relative relative
+                      :root (oref repo root)
+                      (cdr route)))
+      (puthash absolute instance org-dog--file-table)
+      instance)))
 
 ;;;;; Utilities
 
