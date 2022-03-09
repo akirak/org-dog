@@ -18,7 +18,7 @@
   :type 'symbol)
 
 (defcustom org-dog-exclude-file-pattern
-  (regexp-quote ".sync-conflict")
+  (rx (or ".sync-conflict" "README"))
   "Pattern of Org files that should not be ignored."
   :type 'regexp)
 
