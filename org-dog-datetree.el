@@ -24,6 +24,8 @@ function, which see."
                  (repeat string)
                  function))
 
+(defvar org-dog-datetree-refile-history nil)
+
 (defclass org-dog-datetree-file (org-dog-file)
   ((capture-templates :initform nil
                       :initarg :capture-templates)))
@@ -51,6 +53,24 @@ function, which see."
                                   :function #'org-reverse-datetree-goto-date-in-file
                                   :template template)
                             options))))))
+
+;;;###autoload
+(defun org-dog-datetree-refile (file)
+  "Refile to the datetree in FILE."
+  (interactive (list (completing-read
+                      "Refile to datetree: "
+                      (org-dog-file-completion :class 'org-dog-datetree-file)
+                      nil nil nil org-dog-datetree-refile-history)))
+  (org-reverse-datetree-refile-to-file file))
+
+(defun org-dog-datetree-refile-to-this-file ()
+  "Refile to the datetree in the current file."
+  (interactive)
+  (let ((file (buffer-file-name)))
+    (if (object-of-class-p (org-dog-file-object (abbreviate-file-name file))
+                           'org-dog-datetree-file)
+        (org-reverse-datetree-refile-to-file file)
+      (user-error "Not in `org-dog-datetree-file'"))))
 
 ;; TODO: Use org-ql but without helm
 ;; (cl-defmethod org-dog-file-search ((file org-dog-datetree-file)))
