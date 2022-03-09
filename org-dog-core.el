@@ -50,8 +50,7 @@ value is a plist which specifies how to treat Org files in the directory."
 (defclass org-dog-file ()
   ((absolute :initarg :absolute)
    (relative :initarg :relative)
-   (root :initarg :root)
-   (title :initform nil)))
+   (root :initarg :root)))
 
 ;;;; File table
 
