@@ -72,7 +72,7 @@ accessed."
               (gethash abbr org-dog--file-table))
             (when-let (instance (thread-last
                                   org-dog--repository-table
-                                  (seq-some `(lambda (repo)
+                                  (map-some `(lambda (repo)
                                                (when (string-prefix-p (oref repo root)
                                                                       ,abbr)
                                                  (org-dog--make-file-instance repo abbr))))))
@@ -180,10 +180,11 @@ as well."
   (let (result)
     (dolist (dir (oref repo directories))
       (thread-last
-        (directory-files dir nil "^[a-zA-Z].*\\.org\\(?:\\.gpg\\)?\\'" 'nosort)
+        (directory-files dir t "^[a-zA-Z].*\\.org\\(?:\\.gpg\\)?\\'" 'nosort)
         (cl-remove-if (lambda (name)
                         (when org-dog-exclude-file-pattern
                           (string-match-p org-dog-exclude-file-pattern name))))
+        (mapcar #'abbreviate-file-name)
         (append result)
         (setq result)))
     result))
