@@ -255,5 +255,9 @@ explicitly given. Maybe unnecessary."
        (equal (oref x absolute)
               (oref y absolute))))
 
+(defun org-dog-repositories ()
+  "Return a list of the current repository objects."
+  (map-values org-dog--repository-table))
+
 (provide 'org-dog-core)
 ;;; org-dog-core.el ends here
