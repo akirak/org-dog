@@ -275,14 +275,14 @@ For a usage example, see the implementation of
 
 (defun org-dog-file-title (file-obj &optional force)
   "Return the title of a file in its header."
-  (or (oref file-obj title)
-      (when-let (buffer (if force
-                            (org-dog-file-buffer file-obj)
-                          (org-dog-maybe-file-buffer file-obj)))
-        (with-current-buffer buffer
-          (org-with-wide-buffer
-           (when-let (title (org-dog-file-header "title"))
-             (oset file-obj title title)))))))
+  (when-let (buffer (if force
+                        (org-dog-file-buffer file-obj)
+                      (org-dog-maybe-file-buffer file-obj)))
+    (with-current-buffer buffer
+      (org-with-wide-buffer
+       (when-let (title (org-dog-file-header "title"))
+         (oset file-obj title title)
+         title)))))
 
 (defun org-dog-file-header (keyword &optional noprops)
   "Return the file headers of the Org current buffer.
