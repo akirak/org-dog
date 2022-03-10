@@ -14,7 +14,9 @@
 ;;;; Custom variables
 
 (defcustom org-dog-default-file-class 'org-dog-file
-  ""
+  "Default class of instance used to track Org files.
+
+This must be a symbol referring to a subclass of `org-dog-file'."
   :type 'symbol)
 
 (defcustom org-dog-exclude-file-pattern
@@ -29,6 +31,19 @@ This is an alist of entries where the key is a directory and the
 value is a plist which specifies how to treat Org files in the directory."
   :type '(alist :key-type directory
                 :value-type plist))
+
+(defcustom org-dog-file-registration-hook nil
+  "Hook run when each file is found in a repository.
+
+This hook is run when repositories are reloaded using
+`org-dog-reload-files' and triggered on each file.
+
+Each function in this hook takes an `org-dog-file' (or its
+subclass/descendant) instance.
+
+You can use this, for example, to add files to
+`org-agenda-files'."
+  :type 'hook)
 
 ;;;; Variables
 
@@ -213,6 +228,7 @@ explicitly given. Maybe unnecessary."
                       :root (oref repo root)
                       (cdr route)))
       (puthash absolute instance org-dog--file-table)
+      (run-hook-with-args 'org-dog-file-registration-hook instance)
       instance)))
 
 ;;;; Utilities
