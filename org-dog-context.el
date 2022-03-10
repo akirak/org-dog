@@ -2,6 +2,7 @@
 
 (require 'org-dog)
 
+(declare-function with-electric-help "ehelp")
 (declare-function project-root "ext:project")
 
 (defgroup org-dog-context nil
@@ -114,6 +115,28 @@
                    (go newpath x)))))))
       (go nil (or context (org-dog-context))))
     (nreverse result)))
+
+;;;###autoload
+(defun org-dog-context-describe ()
+  "Describe the context."
+  (interactive)
+  (let ((contexts (org-dog-context t)))
+    (with-electric-help
+     `(lambda ()
+        (read-only-mode t)
+        (let ((inhibit-read-only t))
+          (pcase-dolist (`(,ctx . ,files) ',contexts)
+            (insert (propertize (format "%s: %s" (car ctx) (cdr ctx))
+                                'face 'bold)
+                    "\n")
+            (if files
+                (dolist (file files)
+                  (insert (make-string 2 ?\s)
+                          (oref file absolute)
+                          "\n"))
+              (insert (make-string 2 ?\s) "No file\n"))
+            (insert ?\n))))
+     "*Org-Dog-Context*")))
 
 ;;;;; Example context functions
 
