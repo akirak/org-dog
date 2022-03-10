@@ -62,6 +62,9 @@
 (defvar org-dog-file-mode-map (make-sparse-keymap)
   "Keymap for `org-dog-file-mode'.")
 
+(defvar org-dog-id-files nil
+  "List used to track Org files in `org-dog-id-mode'.")
+
 ;;;; Associating the file object with a buffer
 
 (defun org-dog-current-buffer-object ()
@@ -347,9 +350,17 @@ scanning dog files for IDs without modifying
           (setq org-id-track-globally t))
         (when (and (not org-dog-id-files)
                    org-dog--file-table)
-          (setq org-dog-id-files (map-keys org-dog--file-table))))
+          (setq org-dog-id-files (map-keys org-dog--file-table)))
+        (add-hook 'org-dog-file-registration-hook #'org-dog-id--add-file))
     (setq org-id-extra-files
-          (eval (car (get 'org-id-extra-files 'standard-value))))))
+          (eval (car (get 'org-id-extra-files 'standard-value))))
+    (remove-hook 'org-dog-file-registration-hook #'org-dog-id--add-file)))
+
+(defun org-dog-id--add-file (file-obj)
+  "Add the path to FILE-OBJ to `org-dog-id-files'.
+
+This is used in `org-dog-id-mode'."
+  (add-to-list 'org-dog-id-files (oref file-obj absolute)))
 
 (defun org-dog-update-id-locations ()
   "Scan dog files for IDs.

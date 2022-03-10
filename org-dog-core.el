@@ -51,9 +51,6 @@ You can use this, for example, to add files to
 
 (defvar org-dog--file-table nil)
 
-(defvar org-dog-id-files nil
-  "List used to track Org files in `org-dog-id-mode'.")
-
 ;;;;; Classes
 
 (defclass org-dog-repository ()
@@ -84,15 +81,12 @@ accessed."
       (let ((abbr (abbreviate-file-name file)))
         (or (unless (equal abbr file)
               (gethash abbr org-dog--file-table))
-            (when-let (instance (thread-last
-                                  org-dog--repository-table
-                                  (map-some `(lambda (repo)
-                                               (when (string-prefix-p (oref repo root)
-                                                                      ,abbr)
-                                                 (org-dog--make-file-instance repo abbr))))))
-              (when (bound-and-true-p org-dog-id-mode)
-                (add-to-list 'org-dog-id-files abbr))
-              instance)))
+            (thread-last
+              org-dog--repository-table
+              (map-some `(lambda (repo)
+                           (when (string-prefix-p (oref repo root)
+                                                  ,abbr)
+                             (org-dog--make-file-instance repo abbr)))))))
       (unless (file-readable-p file)
         (error "File %s is not readable" file))))
 
@@ -144,8 +138,6 @@ as well."
              (if (> error-count 0)
                  (format " (%d errors)" error-count)
                ""))
-    (when (bound-and-true-p org-dog-id-mode)
-      (setq org-dog-id-files (map-keys org-dog--file-table)))
     org-dog--file-table))
 
 (defun org-dog--init-repositories ()
