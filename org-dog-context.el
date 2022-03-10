@@ -12,17 +12,15 @@
 
 ;;;; Generic methods
 
-(cl-defgeneric org-dog-context-p (x)
-  nil)
-
-(cl-defgeneric org-dog-context-file-objects (context))
+(cl-defgeneric org-dog-context-file-objects (_context))
 
 ;;;; Context types
 
-(cl-defstruct org-dog-context-in-directory directory filenames)
+(cl-defstruct org-dog-context
+  "A skeleton type to provide `org-dog-context-p' predicate.")
 
-(cl-defmethod org-dog-context-p ((x org-dog-context-in-directory))
-  t)
+(cl-defstruct (org-dog-context-in-directory (:include org-dog-context))
+  directory filenames)
 
 (cl-defmethod org-dog-context-file-objects ((context org-dog-context-in-directory))
   (let* ((prefix (org-dog-context-in-directory-directory context))
