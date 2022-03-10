@@ -41,20 +41,20 @@
   :group 'org-dog-facade)
 
 (defcustom org-dog-facade-default-sections
-  '(("b" "Backlog")
-    ("k" "Keywords")
-    ("p" "Projects")
-    ("a" "Activities")
-    ("r" "Resources"))
+  '((?b "Backlog")
+    (?k "Keywords")
+    (?p "Projects")
+    (?a "Activities")
+    (?r "Resources"))
   "The default set of sections for facade files."
-  :type '(repeat (list (string :tag "Key")
+  :type '(repeat (list (character :tag "Key")
                        (choice :tag "Heading or olp"
                                string (repeat string)))))
 
 (defcustom org-dog-facade-datetree-key
-  "d"
+  ?d
   "Key used to select the datetree of a facade file."
-  :type 'string)
+  :type 'character)
 
 (defclass org-dog-facade-datetree-file (org-dog-datetree-file)
   ((sections :initarg :sections
@@ -105,15 +105,15 @@
       (setq available-sections (cons (list org-dog-facade-datetree-key "Datetree")
                                      available-sections)))
     (pcase (read-char-choice (concat (mapconcat (pcase-lambda (`(,key ,name . ,_))
-                                                  (format "[%s] %s" key name))
+                                                  (format "[%s] %s"
+                                                          (char-to-string key)
+                                                          name))
                                                 available-sections
                                                 " ")
                                      ": ")
-                             (mapcar (pcase-lambda (`(,key . ,_))
-                                       (car (string-to-list key)))
-                                     available-sections))
+                             (mapcar #'car available-sections))
       (`nil nil)
-      (char (assoc (char-to-string char) available-sections)))))
+      (char (assq char available-sections)))))
 
 (defun org-dog-facade--sections (file)
   (with-current-buffer (org-dog-file-buffer file)
