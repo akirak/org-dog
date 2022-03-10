@@ -16,7 +16,8 @@
      :callback org-dog-context-project-1)
     (major-mode
      :callback org-dog-context-major-mode-1)
-    (current-language-environment
+    (language
+     :value-fn org-dog-context-language-value
      :callback org-dog-context-language-1))
   ""
   :type '(alist :key-type symbol
@@ -147,15 +148,18 @@
          :file-masked-p
          (org-dog-make-file-pred :relative-prefix "programming/"))))))
 
+(defun org-dog-context-language-value ()
+  (save-match-data
+    (pcase current-language-environment
+      ((rx bol "UTF-")
+       "English")
+      ("ASCII"
+       "English")
+      ((rx bol (group (+ (not (any "-")))))
+       (match-string 1 current-language-environment)))))
+
 (defun org-dog-context-language-1 (language)
-  (let ((language (save-match-data
-                    (pcase language
-                      ((rx bol "UTF-")
-                       "English")
-                      ("ASCII"
-                       "English")
-                      ((rx bol (group (+ (not (any "-")))))
-                       (match-string 1 language))))))
+  (let ((language ))
     (make-org-dog-context
      :file-whitelisted-p
      (org-dog-make-file-pred :relative-prefix "languages/"
