@@ -126,7 +126,7 @@ as well."
     (thread-last
       org-dog-repository-alist
       (mapcar #'car)
-      (mapc #'org-dog-maybe-update-repository)))
+      (mapc #'org-dog--maybe-update-repository)))
   (if (and org-dog--file-table (hash-table-p org-dog--file-table))
       (clrhash org-dog--file-table)
     (setq org-dog--file-table (make-hash-table :test #'equal)))
@@ -181,13 +181,24 @@ as well."
              :directories (cons abbr-root real-subdirs)
              (org-dog--remprop plist :subdirs)))))
 
-(defun org-dog-maybe-update-repository (root)
+(defun org-dog--maybe-update-repository (root)
+  "If the configuration for ROOT has been changed, update the instance.
+
+This function checks a corresponding entry in
+`org-dog-repository-alist' for the repository, and updates its
+instance if any of the properties has been changed.
+"
   (let* ((repo (gethash root org-dog--repository-table))
          (plist (cdr (assoc root org-dog-repository-alist)))
          (sxhash (sxhash plist)))
-    (unless (and repo (equal sxhash (oref repo sxhash)))
+    (cond
+     ;; Remove from the table?
+     ((not plist))
+     ;; The same hash: No update is needed
+     ((and repo (equal sxhash (oref repo sxhash))))
+     (t
       (puthash root (apply #'org-dog--make-repository root :sxhash sxhash plist)
-               org-dog--repository-table))))
+               org-dog--repository-table)))))
 
 (defun org-dog--repo-files (repo)
   "Return an list of files in REPO."
