@@ -46,18 +46,23 @@
 
 (defcustom org-dog-context-alist
   '((project
+     :key ?p
      :value-fn project-current
      :test equal
      :callback org-dog-context-project-1)
     (major-mode
+     :key ?m
      :callback org-dog-context-major-mode-1)
     (language
+     :key ?l
      :value-fn org-dog-context-language-value
      :callback org-dog-context-language-1))
   ""
   :type '(alist :key-type symbol
                 :value-type (plist
-                             :options ((list (const :value-fn)
+                             :options ((list (const :key)
+                                             character)
+                                       (list (const :value-fn)
                                              function)
                                        (list (const :test)
                                              function)
