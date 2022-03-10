@@ -70,14 +70,14 @@
 (defvar org-dog-context-cache nil
   "A hash table.")
 
-(defun org-dog-context (&optional force)
+(defun org-dog-context ()
   (thread-last
     org-dog-context-alist
     (mapcar (pcase-lambda (`(,type . ,_))
-              (org-dog-context-edge type force)))
+              (org-dog-context-edge type)))
     (delq nil)))
 
-(defun org-dog-context-edge (type &optional force arg)
+(defun org-dog-context-edge (type &optional arg)
   (let* ((plist (cdr (or (assq type org-dog-context-alist)
                          (error "No entry for %s in org-dog-context-alist" type))))
          (callback (or (plist-get plist :callback)
@@ -91,20 +91,7 @@
                     (symbol-value type))))))
     (when arg
       (cons (cons type arg)
-            (if force
-                (let ((tbl (or (cdr (assq type org-dog-context-cache))
-                               (org-dog-context--make-table type))))
-                  (pcase (gethash arg tbl :dflt)
-                    (:dflt
-                     (when-let (context (funcall callback arg))
-                       (let ((files (org-dog-context-file-objects context)))
-                         (puthash arg files tbl)
-                         files)))
-                    (`nil
-                     nil)
-                    (files
-                     files)))
-              (funcall callback arg))))))
+            (funcall callback arg)))))
 
 (defun org-dog-context--make-table (type &optional test)
   (let ((tbl (make-hash-table :test (or test #'eq))))
@@ -128,7 +115,12 @@
 (defun org-dog-context-describe ()
   "Describe the context."
   (interactive)
-  (let ((contexts (org-dog-context t)))
+  (let ((contexts (thread-last
+                    (org-dog-context)
+                    (mapcar (pcase-lambda (`(,key . ,ctx))
+                              (cons key
+                                    (when ctx
+                                      (org-dog-context-file-objects ctx))))))))
     (with-electric-help
      `(lambda ()
         (read-only-mode t)
