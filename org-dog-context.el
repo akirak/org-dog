@@ -10,6 +10,40 @@
   :prefix "org-dog-context-"
   :group 'org-dog-context)
 
+;;;; Generic methods
+
+(cl-defgeneric org-dog-context-p (x)
+  nil)
+
+(cl-defgeneric org-dog-context-file-objects (context))
+
+;;;; Context types
+
+(cl-defstruct org-dog-context-in-directory directory filenames)
+
+(cl-defmethod org-dog-context-p ((x org-dog-context-in-directory))
+  t)
+
+(cl-defmethod org-dog-context-file-objects ((context org-dog-context-in-directory))
+  (let* ((prefix (org-dog-context-in-directory-directory context))
+         (files (org-dog-select-files
+                 `(lambda (obj)
+                    (string-prefix-p ,prefix (oref obj relative))))))
+    (thread-last
+      (org-dog-context-in-directory-filenames context)
+      (seq-some (apply-partially
+                 (lambda (files basename)
+                   (seq-some `(lambda (file)
+                                (when (equal (file-name-base (oref file relative))
+                                             ,basename)
+                                  file))
+                             files))
+                 files))
+      (list)
+      (delq nil))))
+
+;;;;
+
 (defcustom org-dog-context-alist
   '((project
      :value-fn project-current
@@ -33,36 +67,12 @@
 (defvar org-dog-context-cache nil
   "A hash table.")
 
-(cl-defstruct org-dog-context file-whitelisted-p file-masked-p)
-
 (defun org-dog-context (&optional force)
   (thread-last
     org-dog-context-alist
     (mapcar (pcase-lambda (`(,type . ,_))
               (org-dog-context-edge type force)))
     (delq nil)))
-
-(defun org-dog-context-make-file-filter ()
-  (apply-partially
-   (lambda (predicates operand)
-     (seq-reduce (lambda (cur p)
-                   (when cur
-                     (not (funcall p operand))))
-                 predicates
-                 t))
-   (thread-last
-     (org-dog-context)
-     (mapcar (pcase-lambda (`(,_ . ,context))
-               (apply-partially
-                (lambda (context x)
-                  (when context
-                    (and (funcall (org-dog-context-file-masked-p context)
-                                  x)
-                         (not
-                          (funcall (org-dog-context-file-whitelisted-p context)
-                                   x)))))
-                context)))
-     (delq nil))))
 
 (defun org-dog-context-edge (type &optional force arg)
   (let* ((plist (cdr (or (assq type org-dog-context-alist)
@@ -84,8 +94,7 @@
                   (pcase (gethash arg tbl :dflt)
                     (:dflt
                      (when-let (context (funcall callback arg))
-                       (let ((files (org-dog-select-files
-                                     (org-dog-context-file-whitelisted-p context))))
+                       (let ((files (org-dog-context-file-objects context)))
                          (puthash arg files tbl)
                          files)))
                     (`nil
@@ -93,10 +102,6 @@
                     (files
                      files)))
               (funcall callback arg))))))
-
-(defun org-dog-context-whitelisted-files (type)
-  "Return file objects whitelisted by context TYPE."
-  (cdr (org-dog-context-edge type t)))
 
 (defun org-dog-context--make-table (type &optional test)
   (let ((tbl (make-hash-table :test (or test #'eq))))
@@ -144,13 +149,12 @@
   (require 'project)
   (pcase (file-name-split (abbreviate-file-name (project-root project)))
     (`("~" "work" ,_ ,group ,name "")
-     (let ((regexp (rx-to-string `(and (or ,name ,group) (?  "-devel")))))
-       (make-org-dog-context
-        :file-whitelisted-p
-        (org-dog-make-file-pred :relative-prefix "projects/"
-                                :basename-regexp regexp)
-        :file-masked-p
-        (org-dog-make-file-pred :relative-prefix "projects/"))))))
+     (make-org-dog-context-in-directory
+      :directory "projects/"
+      :filenames (list (concat name "-devel")
+                       (concat group "-devel")
+                       name
+                       group)))))
 
 (defun org-dog-context-major-mode-1 (mode)
   (catch 'mode-context
@@ -163,13 +167,9 @@
         (push (string-remove-suffix "-mode" (symbol-name mode))
               filenames)
         (setq mode (get mode 'derived-mode-parent)))
-      (let ((regexp (rx-to-string `(or ,@filenames))))
-        (make-org-dog-context
-         :file-whitelisted-p
-         (org-dog-make-file-pred :relative-prefix "programming/"
-                                 :basename-regexp regexp)
-         :file-masked-p
-         (org-dog-make-file-pred :relative-prefix "programming/"))))))
+      (make-org-dog-context-in-directory
+       :directory "programming/"
+       :filenames (nreverse filenames)))))
 
 (defun org-dog-context-language-value ()
   (save-match-data
@@ -182,13 +182,9 @@
        (match-string 1 current-language-environment)))))
 
 (defun org-dog-context-language-1 (language)
-  (let ((language ))
-    (make-org-dog-context
-     :file-whitelisted-p
-     (org-dog-make-file-pred :relative-prefix "languages/"
-                             :basename-regexp (regexp-quote language))
-     :file-masked-p
-     (org-dog-make-file-pred :relative-prefix "languages/"))))
+  (make-org-dog-context-in-directory
+   :directory "languages/"
+   :filenames (list language)))
 
 (provide 'org-dog-context)
 ;;; org-dog-context.el ends here
