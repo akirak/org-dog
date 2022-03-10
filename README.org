@@ -7,6 +7,8 @@ It lets you program Org workflow by user-defined /conventions/.
 
 And this package is for those who don't use [[https://github.com/org-roam/org-roam][org-roam]].
 It should work the best if you have one Org file per subject/project (or at a slightly bigger granularity), but not per topic or keyword (that is considered too many files).
+
+Its primary goal is to help me organize my life in a better way, so it can be highly opinionated.
 ** Features
 The following is a short list of primary intended features, but there are more features to be planned:
 
