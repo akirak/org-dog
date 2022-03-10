@@ -16,7 +16,7 @@ The following is a short list of primary intended features, but there are more f
 - Files have a structure that follow certain conventions. Many files may have the same structure, but different files can have different structures. A file structure is defined by an eieio class.
 - Hide files by context. Focus on relevant information.
 - Integrate with consult and embark.
-** Example use case
+** Example use case (WIP)
 Assume if you have the following directory structure where each directory contains Org files:
 
 - =~/org/= containing =hacking.org=, =learning.org=, etc.
@@ -34,19 +34,32 @@ The following is an example configuration for this repository:
                              (lambda (name)
                                (not (equal name "archive"))))
            :routes
-           (("hacking" org-dog-facade-datetree-file
-             :agenda t)
-            ("learning" org-dog-facade-datetree-file
-             :agenda t)
+           (("hacking" org-dog-facade-datetree-file)
+            ("learning" org-dog-facade-datetree-file)
             (nil org-dog-file)
-            (t org-dog-facade-datetree-file
-               :agenda ,(rx (or (and "languages/" "Chinese")
-                                (and "technology/" (or "devops"
-                                                       "web"
-                                                       "emacs")))))))))
+            (t org-dog-facade-datetree-file)))))
 
+  (defcustom akirak/org-dog-agenda-file-pattern
+    (rx bol (or "hacking"
+                "learning"
+                (and "languages/" "Chinese")
+                (and "technology/" (or "devops"
+                                       "web"
+                                       "emacs"))))
+    ""
+    :type 'regexp)
+
+  (add-hook 'org-dog-file-registration-hook
+            (defun akirak/org-dog-add-agenda-file (file-obj)
+              (if (string-match-p akirak/org-dog-agenda-file-pattern
+                                  (oref file-obj relative))
+                  (add-to-list 'org-agenda-files (oref file-obj absolute))
+                (cl-remove (oref file-obj absolute)
+                           org-agenda-files
+                           :test #'equal))))
 #+end_src
 
+=org-dog-file-registration-hook= is run on every file in the repository.
 Here are some descriptions of the configuration:
 
 - You always care about learning and hacking, so they are added to your agenda. They contain date trees.
