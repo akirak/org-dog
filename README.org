@@ -1,4 +1,6 @@
 * org-dog
+*This package is barely useful right now.* It is only public for technical reasons.
+
 Org-dog is an extra workflow layer for Org mode.
 It aims to be a successor to my [[https://github.com/akirak/org-starter][org-starter]] and (deprecated) [[https://github.com/akirak/org-multi-wiki][org-multi-wiki]] packages but takes a different, unified approach.
 It lets you program Org workflow by user-defined /conventions/.
