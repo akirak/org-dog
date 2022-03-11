@@ -86,7 +86,9 @@
 ;;;###autoload
 (defun org-dog-file-graph-viz (files)
   "Visualize links between FILES using graphviz."
-  (interactive (list org-agenda-files))
+  (interactive (list (if current-prefix-arg
+                         (completing-read-multiple "Files: " org-agenda-files)
+                       org-agenda-files)))
   (when files
     (setq org-dog-file-graph-revs nil)
     (org-dog-file-graph-scan files))
