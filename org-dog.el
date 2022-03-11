@@ -34,6 +34,8 @@
 (require 'org-dog-core)
 
 (declare-function org-link-set-parameters "ext:ol")
+(declare-function org-element-property "ext:org-element")
+(declare-function org-element-type "ext:org-element")
 (declare-function project-root "ext:project")
 (defvar org-id-extra-files)
 (defvar org-id-track-globally)
