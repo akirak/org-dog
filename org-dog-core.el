@@ -92,9 +92,8 @@ accessed."
               (gethash abbr org-dog--file-table))
             (thread-last
               org-dog--repository-table
-              (map-some `(lambda (repo)
-                           (when (string-prefix-p (oref repo root)
-                                                  ,abbr)
+              (map-some `(lambda (root repo)
+                           (when (string-prefix-p root ,abbr)
                              (org-dog--make-file-instance repo abbr)))))))
       (unless (file-readable-p file)
         (error "File %s is not readable" file))))
