@@ -65,6 +65,9 @@
 (defvar org-dog-id-files nil
   "List used to track Org files in `org-dog-id-mode'.")
 
+(defvar org-dog--indirect-buffers nil
+  "Hash table for tracking Org indirect buffers.")
+
 ;;;; Associating the file object with a buffer
 
 (defun org-dog-current-buffer-object ()
@@ -374,6 +377,73 @@ If `org-dog-id-mode' is on, you should use
   (unless org-dog--file-table
     (user-error "The files are not loaded yet"))
   (org-id-update-id-locations (map-keys org-dog--file-table)))
+
+;;;; Manage indirect buffers for Org subtrees
+
+(defun org-dog-indirect-buffer (&optional entry no-reuse)
+  "Return an indirect buffer for the subtree.
+
+This function gets or creates an indirect buffer narrowed to the
+subtree of an entry. If there is an existing indirect buffer, it
+will be reused. It is useful for preventing from creating
+duplicate indirect buffers for the same entry.
+
+ENTRY can be a marker or an org-element with a
+marker (:org-hd-marker or :org-marker). If it is omitted, it will
+be the current Org entry.
+
+If NO-REUSE is non-nil, a new buffer is created unconditionally,
+even if there is an existing one. This prevents motion of the
+point, so it is useful for narrowing to the current Org entry.
+
+The comparison is made by the existing ID property, so it can
+create multiple buffers if the entry has no ID."
+  (unless org-dog--indirect-buffers
+    (setq org-dog--indirect-buffers (make-hash-table :test #'equal)))
+  (pcase-let*
+      ((element-marker (and entry
+                            (sequencep entry)
+                            (eq 'headline (org-element-type entry))
+                            (or (org-element-property :org-hd-marker entry)
+                                (org-element-property :org-marker entry))))
+       (marker (or element-marker
+                   (cond
+                    ((markerp entry)
+                     entry)
+                    ((numberp entry)
+                     (copy-marker entry))
+                    (t
+                     (point-marker)))))
+       (`(,id ,headline) (if element-marker
+                             (list (org-element-property :ID entry)
+                                   (org-element-property :raw-value entry))
+                           (org-with-point-at marker
+                             (list (org-id-get)
+                                   (org-get-heading t t t t)))))
+       (buffer (when (and id (not no-reuse))
+                 (gethash id org-dog--indirect-buffers))))
+    (unless (and buffer
+                 (bufferp buffer)
+                 (buffer-live-p buffer))
+      ;; Create a new indirect buffer
+      (setq buffer (org-with-point-at marker
+                     (with-current-buffer
+                         (org-get-indirect-buffer
+                          nil headline)
+                       (org-narrow-to-subtree)
+                       (current-buffer))))
+      (when id
+        (puthash id buffer org-dog--indirect-buffers)))
+    buffer))
+
+(defun org-dog-indirect-buffers ()
+  "Return a list of live indirect buffers."
+  (when org-dog--indirect-buffers
+    (thread-last
+      (map-filter (lambda (_id buffer)
+                    (buffer-live-p buffer))
+                  org-dog--indirect-buffers)
+      (mapcar #'cdr))))
 
 (provide 'org-dog)
 ;;; org-dog.el ends here
