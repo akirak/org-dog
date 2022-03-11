@@ -45,6 +45,15 @@ You can use this, for example, to add files to
 `org-agenda-files'."
   :type 'hook)
 
+(defcustom org-dog-reload-hook nil
+  "Hook run all files have been reloaded.
+
+This hook is run at the end of `org-dog-reload-files', only once
+per reloading.
+
+The functions in this hook take no argument."
+  :type 'hook)
+
 ;;;; Variables
 
 (defvar org-dog--repository-table nil)
@@ -134,6 +143,7 @@ as well."
                                 "Error while instantiating an object: %s"
                               (org-dog--make-file-instance repo absolute))
                       (cl-incf error-count)))))))
+    (run-hooks 'org-dog-reload-hook)
     (message "Registered %d Org files%s" (map-length org-dog--file-table)
              (if (> error-count 0)
                  (format " (%d errors)" error-count)
