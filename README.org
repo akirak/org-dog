@@ -6,9 +6,9 @@ It aims to be a successor to my [[https://github.com/akirak/org-starter][org-sta
 It lets you program Org workflow by user-defined /conventions/.
 
 And this package is for those who don't use [[https://github.com/org-roam/org-roam][org-roam]].
-It should work the best if you have one Org file per subject/project (or at a slightly bigger granularity), but not per topic or keyword (that is considered too many files).
+It should work the best if you have one Org file per subject/project/program, but not per topic or keyword (which is considered too many files).
 
-Its primary goal is to help me organize my life in a better way, so it can be highly opinionated.
+Its primary goal is to help me organize my work and life in a better way, so it can be highly opinionated.
 ** Features
 The following is a short list of primary intended features, but there are more features to be planned:
 
@@ -62,26 +62,26 @@ The following is an example configuration for this repository:
 =org-dog-file-registration-hook= is run on every file in the repository.
 Here are some descriptions of the configuration:
 
-- You always care about learning and hacking, so they are added to your agenda. They contain date trees.
+- You are supposed to continuously work on learning and hacking, so they are added to your agenda. They contain date trees.
 - You once learned Korean, but you are currently focusing on Chinese, so the file for Chinese is added to the agenda. However, you can still recall information on Korean whenever you want.
 - =archive= directory is ignored, because it only contains files that are no longer relevant. You won't see files in the directory.
 
 For details, see [[file:doc/org-dog.org][the info manual]] (which is work in progress).
 ** What's wrong with org-starter?
 [[https://github.com/akirak/org-starter][org-starter]] is a project I started in 2018, several months after I switched from Spacemacs to vanilla Emacs.
-It is the repository that has received the most stars among mine, but I have to admit that my Emacs Lisp skills were inferior at that time.
+It is the repository that has received the most stars of mine, but I have to admit that my Emacs Lisp skills were inferior at that time.
 With my current Emacs Lisp skills and insights from actual use of Org mode, I think I can take a better approach.
-Org Dog is an attempt to implement it.
+Org Dog is an attempt to implement that.
 
-Nonetheless, I created the package because I tried to get started with Org mode, and I actually used it for years.
-There may be someone who would want to continue using it, so I won't immediately abandon it.
-I don't plan on adding new features for the package, but I may react if there is a feature request.
+Nonetheless, I created the package for my own needs, and I actually used it for years.
+There might be someone who hopes to continue using it, so I won't immediately abandon it.
+I don't plan on adding new features to the package, but I may react if there is a feature request.
 
-Even though Org Dog does not aim to provide the same set of features as org-starter, hopefully it will become a substitution.
-Nonetheless, Org Dog can be quite opinionated and complex to fulfill my needs, so org-starter may remain for normal Org usage.
+Even though Org Dog does not aim to provide the same set of features as Org Starter does, hopefully it will become a substitution.
+Nonetheless, Org Dog can be quite opinionated and complex, so Org Starter may remain for basic Org configuration.
 (I also have to note that the package should have come with a better, more comprehensive documentation.)
 ** About the name
-At first, I considered naming this package =org-cat(s)= because each Org file correspond to one category by default so having a bunch of Org files means having many categories (cats).
+At first, I considered naming this package =org-cat(s)= because each Org file corresponds to one category by default, so having a bunch of Org files would mean having many categories (cats).
 
 However, cats are independent-minded.
 This is not an offence to cat lovers, but cats can be troublesome, and I don't want to allow them to live inside my computer.
