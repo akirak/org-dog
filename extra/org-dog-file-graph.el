@@ -99,12 +99,38 @@
       (dolist (source sources)
         (insert (format "\"%s\" -> \"%s\"\n" source dest))))
     (insert "}")
-    (let ((file (make-temp-file "graphviz" nil ".svg")))
-      (call-process-region (point-min) (point-max)
-                           org-dog-file-graph-program
-                           nil nil nil
-                           "-Tsvg" "-o" file)
-      (pop-to-buffer (find-file-noselect file)))))
+    (let ((err-file (make-temp-file "org-dog-file-graph"))
+          (out-buf (get-buffer-create "*Org-Dog-File-Graph*")))
+      (unwind-protect
+          (progn
+            (with-current-buffer out-buf
+              (read-only-mode -1)
+              (erase-buffer))
+            (unless (zerop (call-process-region (point-min) (point-max)
+                                                org-dog-file-graph-program
+                                                nil (list out-buf err-file) nil
+                                                "-Tsvg"))
+              (error "Program %s failed with non-zero exit code: %s"
+                     org-dog-file-graph-program
+                     (with-temp-buffer
+                       (insert-file-contents err-file)))))
+        (delete-file err-file))
+      (with-current-buffer out-buf
+        (let ((image (create-image
+                      (buffer-string)
+                      'svg
+                      t)))
+          (erase-buffer)
+          (insert-image image))
+        (setq-local org-dog-file-graph-files files)
+        (local-set-key (kbd "g") #'org-dog-file-graph-revert-image)
+        (read-only-mode t)
+        (pop-to-buffer (current-buffer))))))
+
+(defun org-dog-file-graph-revert-image ()
+  "Revert the image."
+  (interactive)
+  (org-dog-file-graph-viz (org-agenda-files)))
 
 (provide 'org-dog-file-graph)
 ;;; org-dog-file-graph.el ends here
