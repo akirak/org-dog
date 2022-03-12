@@ -19,6 +19,10 @@
   "GraphViz program used to render the graph."
   :type 'file)
 
+(defcustom org-dog-overview-sidebar-width 80
+  "Width of the sidebar window."
+  :type 'number)
+
 (defvar org-dog-overview-backlinks nil
   "Alist that stores information from file links.
 
@@ -95,10 +99,13 @@ files. An entry where its cdr is nil has no file linking to it.")
   (let ((viz-buffer (org-dog-overview-viz-buffer))
         (sidebar-buffer (org-dog-overview-sidebar-buffer)))
     (delete-other-windows)
-    (switch-to-buffer sidebar-buffer)
-    (split-window-right (- (/ (frame-inner-width) (frame-char-width)) 80))
     (switch-to-buffer viz-buffer)
-    (select-window (window-in-direction 'right))))
+    (display-buffer-in-side-window sidebar-buffer
+                                   `((side . left)
+                                     (dedicated . side)
+                                     (preserve-size . (t . nil))
+                                     (window-width . ,org-dog-overview-sidebar-width)))
+    (select-window (window-in-direction 'left))))
 
 (defun org-dog-overview-viz-buffer ()
   (with-temp-buffer
