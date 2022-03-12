@@ -314,7 +314,15 @@ Only interesting items are returned."
   "Follow a link to an Org Dog file."
   (when-let (obj (org-dog--linked-object ref))
     (cl-etypecase obj
-      (org-dog-file (find-file (oref obj absolute))))))
+      (org-dog-file
+       (let ((file (oref obj absolute)))
+         (find-file file)
+         (widen)
+         (goto-char (point-min))
+         (while (or (org-at-comment-p)
+                    (org-at-keyword-p)
+                    (looking-at (rx eol)))
+           (forward-line)))))))
 
 (defun org-dog--linked-object (ref)
   "Return an object referred to by REF."
