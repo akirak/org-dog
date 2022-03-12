@@ -153,8 +153,9 @@ files. An entry where its cdr is nil has no file linking to it.")
       (erase-buffer)
       (pcase-dolist (`(,dest . ,links) (reverse org-dog-overview-backlinks))
         (insert "* "
-                (org-link-make-string (concat "file:" dest)
-                                      (file-name-nondirectory dest))
+                (org-link-make-string
+                 (concat "org-dog:" (oref (org-dog-file-object dest) relative))
+                 (file-name-nondirectory dest))
                 "\n")
         (pcase-dolist (`(,src . ,marker) (reverse links))
           (insert (concat (org-with-point-at marker
@@ -165,8 +166,9 @@ files. An entry where its cdr is nil has no file linking to it.")
                              (t
                               (thing-at-point 'paragraph))))
                           " — "
-                          (org-link-make-string (concat "file:" src)
-                                                (file-name-nondirectory src)))
+                          (org-link-make-string
+                           (concat "org-dog:" (oref (org-dog-file-object src) relative))
+                           (file-name-nondirectory src)))
                   "\n"))))
     (goto-char (point-min))
     (org-mode)
