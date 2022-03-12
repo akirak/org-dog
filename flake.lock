@@ -120,11 +120,11 @@
     "melpa": {
       "flake": false,
       "locked": {
-        "lastModified": 1647013217,
-        "narHash": "sha256-gs1Qtt6Bf9NCYo2YxjUuMEQPZabLNZX10YOkiSFQX1c=",
+        "lastModified": 1647071017,
+        "narHash": "sha256-nCQsSRrAAj6E3tMDwzI43UMgB2hAzZbBVUW9UZFiGas=",
         "owner": "akirak",
         "repo": "melpa",
-        "rev": "93aa1aa813617b738fc0c5206182cf206ad08aa9",
+        "rev": "941831fce09a1b8aab846cedcf34a69a4be3dd02",
         "type": "github"
       },
       "original": {

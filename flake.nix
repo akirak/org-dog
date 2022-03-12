@@ -31,7 +31,6 @@
         "org-dog-embark"
         "org-dog-consult"
         "org-dog-facade"
-        "org-dog-file-graph"
       ];
     };
 }
