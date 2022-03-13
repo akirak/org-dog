@@ -112,7 +112,7 @@ files. An entry where its cdr is nil has no file linking to it.")
     (insert "digraph {")
     (dolist (node (mapcar #'car org-dog-overview-backlinks))
       (insert (format "\"%s\" [label=\"%s\"]\n"
-                      node (file-name-nondirectory node))))
+                      node (file-name-base node))))
     (pcase-dolist (`(,dest . ,links) org-dog-overview-backlinks)
       (dolist (link links)
         (insert (format "\"%s\" -> \"%s\"\n"
