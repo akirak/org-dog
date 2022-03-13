@@ -19,6 +19,13 @@
   "GraphViz program used to render the graph."
   :type 'file)
 
+(defcustom org-dog-overview-sort-fn
+  #'org-dog-overview-sort-backlinks-1
+  "Function used to sort contents in the sidebar buffer.
+
+This function takes `org-dog-overview-backlinks' as an argument."
+  :type 'function)
+
 (defcustom org-dog-overview-sidebar-width 80
   "Width of the sidebar window."
   :type 'number)
@@ -150,7 +157,8 @@ files. An entry where its cdr is nil has no file linking to it.")
   (with-current-buffer (get-buffer-create org-dog-overview-sidebar-buffer)
     (let ((inhibit-read-only t))
       (erase-buffer)
-      (pcase-dolist (`(,dest . ,links) (reverse org-dog-overview-backlinks))
+      (pcase-dolist (`(,dest . ,links)
+                     (funcall org-dog-overview-sort-fn org-dog-overview-backlinks))
         (insert "* "
                 (org-link-make-string
                  (concat "org-dog:" (oref (org-dog-file-object dest) relative))
@@ -176,6 +184,12 @@ files. An entry where its cdr is nil has no file linking to it.")
     ;; (read-only-mode t)
     (org-dog-overview-mode t)
     (current-buffer)))
+
+(defun org-dog-overview-sort-backlinks-1 (backlinks)
+  (let ((group1 (seq-filter (lambda (x) (= 1 (length x))) backlinks))
+        (group2 (seq-filter (lambda (x) (< 1 (length x))) backlinks)))
+    (append (seq-sort-by #'car #'string< group1)
+            (seq-sort-by #'car #'string< group2))))
 
 (defun org-dog-overview-revert ()
   "Revert the image."
