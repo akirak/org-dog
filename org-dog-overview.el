@@ -131,7 +131,7 @@ files. An entry where its cdr is nil has no file linking to it.")
       (unwind-protect
           (progn
             (with-current-buffer out-buf
-              (read-only-mode -1)
+              (setq-local buffer-read-only nil)
               (erase-buffer))
             (unless (zerop (call-process-region (point-min) (point-max)
                                                 org-dog-overview-program
@@ -149,13 +149,26 @@ files. An entry where its cdr is nil has no file linking to it.")
                       t)))
           (erase-buffer)
           (insert-image image))
-        ;; (read-only-mode t)
+        (setq-local buffer-read-only t)
         (org-dog-overview-mode t))
       out-buf)))
 
 (defun org-dog-overview-sidebar-buffer ()
   (with-current-buffer (get-buffer-create org-dog-overview-sidebar-buffer)
-    (let ((inhibit-read-only t))
+    (let ((initial-loc (when (> (point) (point-min))
+                         (list (progn
+                                 (beginning-of-line)
+                                 (when (re-search-forward (rx " — " (+ nonl) eol)
+                                                          (save-excursion
+                                                            (org-end-of-subtree))
+                                                          t)
+                                   (match-string 0)))
+                               (progn
+                                 (org-back-to-heading)
+                                 (buffer-substring-no-properties
+                                  (line-beginning-position)
+                                  (line-end-position))))))
+          (inhibit-read-only t))
       (erase-buffer)
       (pcase-dolist (`(,dest . ,links)
                      (funcall org-dog-overview-sort-fn org-dog-overview-backlinks))
@@ -176,14 +189,22 @@ files. An entry where its cdr is nil has no file linking to it.")
                           (org-link-make-string
                            (concat "org-dog:" (oref (org-dog-file-object src) relative))
                            (file-name-nondirectory src)))
-                  "\n"))))
-    (goto-char (point-min))
-    (org-mode)
-    (setq-local org-startup-folded 'showeverything)
-    (org-set-startup-visibility)
-    ;; (read-only-mode t)
-    (org-dog-overview-mode t)
-    (current-buffer)))
+                  "\n")))
+      (goto-char (point-min))
+      (org-mode)
+      (setq-local org-startup-folded 'showeverything)
+      (org-set-startup-visibility)
+      (when (and initial-loc
+                 (search-forward (nth 1 initial-loc) nil t)
+                 (car initial-loc)
+                 (search-forward (car initial-loc) (save-excursion
+                                                     (org-end-of-subtree))
+                                 t)
+                 (looking-back org-link-any-re (line-beginning-position)))
+        (goto-char (car (match-data))))
+      (setq-local buffer-read-only t)
+      (org-dog-overview-mode t)
+      (current-buffer))))
 
 (defun org-dog-overview-sort-backlinks-1 (backlinks)
   (let ((group1 (seq-filter (lambda (x) (= 1 (length x))) backlinks))
