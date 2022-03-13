@@ -84,7 +84,7 @@ Nonetheless, Org Dog can be quite opinionated and complex, so Org Starter may re
 At first, I considered naming this package =org-cat(s)= because each Org file corresponds to one category by default, so having a bunch of Org files would mean having many categories (cats).
 
 However, cats are independent-minded.
-This is not an offence to cat lovers, but cats can be troublesome, and I don't want to allow them to live inside my computer.
+This is not an offence to cat lovers, but cats can be troublesome, so I won't allow them to live inside my computer.
 
 I think dogs are more programmable, if you get it right.
 This is why I named this package org-dog.
