@@ -143,8 +143,7 @@ files. An entry where its cdr is nil has no file linking to it.")
           (erase-buffer)
           (insert-image image))
         ;; (read-only-mode t)
-        (local-set-key (kbd "g") #'org-dog-overview-revert)
-        (local-set-key (kbd "q") #'org-dog-overview-quit))
+        (org-dog-overview-mode t))
       out-buf)))
 
 (defun org-dog-overview-sidebar-buffer ()
@@ -175,8 +174,7 @@ files. An entry where its cdr is nil has no file linking to it.")
     (setq org-startup-folded 'showeverything)
     (org-set-startup-visibility)
     ;; (read-only-mode t)
-    (local-set-key (kbd "g") #'org-dog-overview-revert)
-    (local-set-key (kbd "q") #'org-dog-overview-quit)
+    (org-dog-overview-mode t)
     (current-buffer)))
 
 (defun org-dog-overview-revert ()
@@ -194,6 +192,15 @@ files. An entry where its cdr is nil has no file linking to it.")
   (when org-dog-overview-saved-wconf
     (set-window-configuration org-dog-overview-saved-wconf)
     (setq org-dog-overview-saved-wconf nil)))
+
+(defvar org-dog-overview-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "g") #'org-dog-overview-revert)
+    (define-key map (kbd "q") #'org-dog-overview-quit)
+    map))
+
+(define-minor-mode org-dog-overview-mode
+  "Minor mode which should be activated in overview buffers.")
 
 (provide 'org-dog-overview)
 ;;; org-dog-overview.el ends here
