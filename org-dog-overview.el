@@ -46,6 +46,12 @@ files. An entry where its cdr is nil has no file linking to it.")
 
 (defvar org-dog-overview-saved-wconf nil)
 
+(defvar org-dog-overview-non-default-files nil
+  "List of files that used as the starting point of scanning.
+
+This is non-nil if and only if the initial file list is not
+`org-agenda-files'.")
+
 (defun org-dog-overview-scan (files &optional clear)
   "Scan file links in FILES."
   (when clear
@@ -96,7 +102,9 @@ files. An entry where its cdr is nil has no file linking to it.")
 (defun org-dog-overview (files)
   "Visualize links between FILES using graphviz."
   (interactive (list (if current-prefix-arg
-                         (completing-read-multiple "Files: " org-agenda-files)
+                         (setq org-dog-overview-non-default-files
+                               (completing-read-multiple "Files: " org-agenda-files))
+                       (setq org-dog-overview-non-default-files nil)
                        org-agenda-files)))
   (when files
     (org-dog-overview-scan files t))
@@ -215,7 +223,9 @@ files. An entry where its cdr is nil has no file linking to it.")
 (defun org-dog-overview-revert ()
   "Revert the image."
   (interactive)
-  (org-dog-overview-scan org-agenda-files t)
+  (org-dog-overview-scan (or org-dog-overview-non-default-files
+                             org-agenda-files)
+                         t)
   (org-dog-overview-viz-buffer)
   (org-dog-overview-sidebar-buffer))
 
