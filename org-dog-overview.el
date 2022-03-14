@@ -105,12 +105,42 @@ This is non-nil if and only if the initial file list is not
 
 ;;;###autoload
 (defun org-dog-overview (files)
-  "Visualize links between FILES using graphviz."
+  "Visualize links between FILES using graphviz.
+
+This command collects `org-dog' links from a certain set of
+files.
+
+Not the entire Org buffer is scanned. Only the region before the
+first heading is scanned in each Org file.
+
+By default, the target files are `org-agenda-files'. However,
+when a prefix argument is given, the user is asked to select
+files using `completing-read-multiple' interface.
+
+The initial selection depends on the prefix argument.
+
+If a single universal prefix argument is given and the current
+point is on an `org-mode' entry, it collects links from the
+subtree. This feature allows you to define a context in an Org
+subtree which you can visualize its dependencies later.
+
+If two universal prefixes are given, the last selection is used
+as the initial input."
   (interactive (list (if current-prefix-arg
                          (setq org-dog-overview-non-default-files
                                (completing-read-multiple
                                 "Files: "
-                                (map-keys org-dog--file-table)))
+                                (map-keys org-dog--file-table)
+                                nil nil
+                                (thread-first
+                                  (pcase current-prefix-arg
+                                    ('(4)
+                                     (org-dog-overview--subtree-links))
+                                    ('(16)
+                                     ;; Reuse the last selection
+                                     org-dog-overview-non-default-files))
+                                  ;; Join with one of the crm separators
+                                  (string-join ","))))
                        (setq org-dog-overview-non-default-files nil)
                        org-agenda-files)))
   (when files
@@ -128,6 +158,16 @@ This is non-nil if and only if the initial file list is not
                                      (preserve-size . (t . nil))
                                      (window-width . ,org-dog-overview-sidebar-width)))
     (select-window (window-in-direction 'left))))
+
+(defun org-dog-overview--subtree-links ()
+  "Return a list of linked files in the subtree."
+  (when (and (derived-mode-p 'org-mode)
+             (not (org-before-first-heading-p)))
+    (save-excursion
+      (org-back-to-heading)
+      (mapcar #'car (org-dog-overview--file-links
+                     (save-excursion
+                       (org-end-of-subtree)))))))
 
 (defun org-dog-overview-viz-buffer ()
   (with-temp-buffer
