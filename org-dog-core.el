@@ -56,6 +56,9 @@ The functions in this hook take no argument."
 
 ;;;; Variables
 
+(defvar org-dog-initialized nil
+  "Non-nil if the repositories have been initialized.")
+
 (defvar org-dog--repository-table nil)
 
 (defvar org-dog--file-table nil)
@@ -143,6 +146,7 @@ as well."
                               (org-dog--make-file-instance repo absolute))
                       (cl-incf error-count)))))))
     (run-hooks 'org-dog-reload-hook)
+    (setq org-dog-initialized t)
     (message "Registered %d Org files%s" (map-length org-dog--file-table)
              (if (> error-count 0)
                  (format " (%d errors)" error-count)
