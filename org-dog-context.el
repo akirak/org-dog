@@ -6,9 +6,9 @@
 (declare-function project-root "ext:project")
 
 (defgroup org-dog-context nil
-  ""
+  "Foundation for contextual Org mode."
   :prefix "org-dog-context-"
-  :group 'org-dog-context)
+  :group 'org-dog)
 
 ;;;; Generic methods
 

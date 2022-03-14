@@ -5,7 +5,7 @@
 (require 'subr-x)
 
 (defgroup org-dog-overview nil
-  ""
+  "Visualize links between Org files."
   :prefix "org-dog-overview-"
   :group 'org-dog)
 
