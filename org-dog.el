@@ -312,17 +312,22 @@ Only interesting items are returned."
 
 (defun org-dog-follow-link (ref _arg)
   "Follow a link to an Org Dog file."
-  (when-let (obj (org-dog--linked-object ref))
-    (cl-etypecase obj
-      (org-dog-file
-       (let ((file (oref obj absolute)))
-         (find-file file)
-         (widen)
-         (goto-char (point-min))
-         (while (or (org-at-comment-p)
-                    (org-at-keyword-p)
-                    (looking-at (rx eol)))
-           (forward-line)))))))
+  (let ((obj (org-dog--linked-object ref)))
+    (if obj
+        (cl-etypecase obj
+          (org-dog-file
+           (let ((file (oref obj absolute)))
+             (find-file file)
+             (widen)
+             (goto-char (point-min))
+             (while (or (org-at-comment-p)
+                        (org-at-keyword-p)
+                        (looking-at (rx eol)))
+               (forward-line)))))
+      (when noninteractive
+        (error "Dead link: %s" ref))
+      (when (yes-or-no-p (format-message "%s is a dead link. Create the file? " ref))
+        (org-dog-find-file ref)))))
 
 (defun org-dog--linked-object (ref)
   "Return an object referred to by REF."
