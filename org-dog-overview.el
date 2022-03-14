@@ -103,7 +103,9 @@ This is non-nil if and only if the initial file list is not
   "Visualize links between FILES using graphviz."
   (interactive (list (if current-prefix-arg
                          (setq org-dog-overview-non-default-files
-                               (completing-read-multiple "Files: " org-agenda-files))
+                               (completing-read-multiple
+                                "Files: "
+                                (map-keys org-dog--file-table)))
                        (setq org-dog-overview-non-default-files nil)
                        org-agenda-files)))
   (when files
