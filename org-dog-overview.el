@@ -83,10 +83,11 @@ This is non-nil if and only if the initial file list is not
                                      `(lambda (obj)
                                         (equal (oref obj relative)
                                                ,(match-string 1 href))))))))
-                      (when obj
-                        (push (cons (substring (oref obj absolute))
-                                    (copy-marker pos))
-                              result)))))
+                      (if obj
+                          (push (cons (substring (oref obj absolute))
+                                      (copy-marker pos))
+                                result)
+                        (message "Dead link: %s" href)))))
                 result))))
         (if-let (cell (assoc dest org-dog-overview-backlinks))
             (unless (member file (cdr cell))
