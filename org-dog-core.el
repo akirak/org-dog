@@ -94,7 +94,7 @@ accessed."
               org-dog--repository-table
               (map-some `(lambda (root repo)
                            (when (string-prefix-p root ,abbr)
-                             (org-dog--make-file-instance repo abbr)))))))
+                             (org-dog--make-file-instance repo ,abbr)))))))
       (unless (file-readable-p file)
         (error "File %s is not readable" file))))
 
