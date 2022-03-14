@@ -68,27 +68,9 @@ This is non-nil if and only if the initial file list is not
                                     (find-file-noselect file))
              (org-with-wide-buffer
               (goto-char (point-min))
-              (let (result
-                    (bound (save-excursion
-                             (re-search-forward (rx bol (+ "*") space) nil t))))
-                (save-match-data
-                  (while (re-search-forward org-link-any-re bound t)
-                    (let* ((pos (car (match-data)))
-                           (href (match-string 2))
-                           (obj (save-match-data
-                                  (when (string-match (rx bol "org-dog:"
-                                                          (group (+ anything)))
-                                                      href)
-                                    (org-dog-find-file-object
-                                     `(lambda (obj)
-                                        (equal (oref obj relative)
-                                               ,(match-string 1 href))))))))
-                      (if obj
-                          (push (cons (substring (oref obj absolute))
-                                      (copy-marker pos))
-                                result)
-                        (message "Dead link: %s" href)))))
-                result))))
+              (org-dog-overview--file-links
+               (save-excursion
+                 (re-search-forward (rx bol (+ "*") space) nil t))))))
         (if-let (cell (assoc dest org-dog-overview-backlinks))
             (unless (member file (cdr cell))
               (setcdr cell (cons (cons (substring file) marker)
@@ -98,6 +80,28 @@ This is non-nil if and only if the initial file list is not
                       (cons file marker))
                 org-dog-overview-backlinks))))
     org-dog-overview-backlinks))
+
+(defun org-dog-overview--file-links (bound)
+  "Return an alist of file-link markers till BOUND."
+  (let (result)
+    (save-match-data
+      (while (re-search-forward org-link-any-re bound t)
+        (let* ((pos (car (match-data)))
+               (href (match-string 2))
+               (obj (save-match-data
+                      (when (string-match (rx bol "org-dog:"
+                                              (group (+ anything)))
+                                          href)
+                        (org-dog-find-file-object
+                         `(lambda (obj)
+                            (equal (oref obj relative)
+                                   ,(match-string 1 href))))))))
+          (if obj
+              (push (cons (substring (oref obj absolute))
+                          (copy-marker pos))
+                    result)
+            (message "Dead link: %s" href)))))
+    result))
 
 ;;;###autoload
 (defun org-dog-overview (files)
