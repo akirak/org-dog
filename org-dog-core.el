@@ -86,8 +86,13 @@ accessed."
   (unless org-dog--file-table
     (org-dog-reload-files)))
 
-(defun org-dog-file-object (file)
-  "Find a `org-dog-file' object associated with a FILE."
+(cl-defun org-dog-file-object (file &key allow-missing)
+  "Find a `org-dog-file' object associated with a file.
+
+FILE should be an abbreviated path to an Org file.
+
+Unless ALLOW-MISSING is non-nil, it throws an error if the file
+is not readable."
   (org-dog--ensure-file-table)
   (or (gethash file org-dog--file-table)
       (let ((abbr (abbreviate-file-name file)))
@@ -98,7 +103,8 @@ accessed."
               (map-some `(lambda (root repo)
                            (when (string-prefix-p root ,abbr)
                              (org-dog--make-file-instance repo ,abbr)))))))
-      (unless (file-readable-p file)
+      (unless (or allow-missing
+                  (file-readable-p file))
         (error "File %s is not readable" file))))
 
 (defun org-dog-select-files (&optional pred)

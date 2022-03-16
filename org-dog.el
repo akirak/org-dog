@@ -217,7 +217,12 @@ For a usage example, see the implementation of
          (complete-with-action action ',files string pred)))))
 
 (cl-defun org-dog-complete-file (&optional prompt initial-input _history)
-  "Complete an Org file."
+  "Complete an Org file.
+
+It returns an absolute path if the user selects a candidate. It
+is also possible for the user to enter a relative path that does
+not exist in the candidate, so the caller of this function should
+properly handle it."
   (completing-read (or prompt "Org file: ")
                    (org-dog-file-completion)
                    nil nil
@@ -335,8 +340,12 @@ Only interesting items are returned."
 
 (defun org-dog-complete-link (&optional _arg)
   "Complete a link to an Org Dog file."
-  (let ((absolute (org-dog-complete-file)))
-    (concat "org-dog:" (oref (org-dog-file-object absolute) relative))))
+  (let* ((path (org-dog-complete-file))
+         (object (org-dog-file-object path :allow-missing t))
+         (relative (if object
+                       (oref object relative)
+                     path)))
+    (concat "org-dog:" relative)))
 
 (org-link-set-parameters "org-dog"
                          :follow #'org-dog-follow-link
