@@ -170,6 +170,7 @@ as the initial input."
                        (org-end-of-subtree)))))))
 
 (defun org-dog-overview-viz-buffer ()
+  "Return `org-dog-overview-viz-buffer' after initializing it."
   (with-temp-buffer
     (insert "digraph {")
     (dolist (node (mapcar #'car org-dog-overview-backlinks))
@@ -209,6 +210,7 @@ as the initial input."
       out-buf)))
 
 (defun org-dog-overview-sidebar-buffer ()
+  "Return `org-dog-overview-sidebar-buffer' after initializing it."
   (with-current-buffer (get-buffer-create org-dog-overview-sidebar-buffer)
     (let ((initial-loc (when (> (point) (point-min))
                          (list (progn
@@ -262,6 +264,7 @@ as the initial input."
       (current-buffer))))
 
 (defun org-dog-overview-sort-backlinks-1 (backlinks)
+  "Sort an alist of BACKLINKS according to a certain rule."
   (let ((group1 (seq-filter (lambda (x) (= 1 (length x))) backlinks))
         (group2 (seq-filter (lambda (x) (< 1 (length x))) backlinks)))
     (append (seq-sort-by #'car #'string< group1)
@@ -277,6 +280,7 @@ as the initial input."
   (org-dog-overview-sidebar-buffer))
 
 (defun org-dog-overview-quit ()
+  "Quit the view and restore the window configuration."
   (interactive)
   (dolist (buf (list org-dog-overview-viz-buffer
                      org-dog-overview-sidebar-buffer))
