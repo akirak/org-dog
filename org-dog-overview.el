@@ -30,6 +30,26 @@ This function takes `org-dog-overview-backlinks' as an argument."
   "Width of the sidebar window."
   :type 'number)
 
+(defcustom org-dog-overview-dot-type "digraph"
+  ""
+  :type 'string)
+
+(defcustom org-dog-overview-dot-stmts
+  '("rankdir=LR")
+  "Dot statements inserted into the graph."
+  :type '(choice string
+                 (repeat string)))
+
+(defcustom org-dog-overview-node-format-fn
+  #'org-dog-overview-node-format-1
+  ""
+  :type 'function)
+
+(defcustom org-dog-overview-edge-format-fn
+  #'org-dog-overview-edge-format-1
+  ""
+  :type 'function)
+
 (defvar org-dog-overview-backlinks nil
   "Alist that stores information from file links.
 
@@ -172,16 +192,7 @@ as the initial input."
 (defun org-dog-overview-viz-buffer ()
   "Return `org-dog-overview-viz-buffer' after initializing it."
   (with-temp-buffer
-    (insert "digraph {")
-    (dolist (node (mapcar #'car org-dog-overview-backlinks))
-      (insert (format "\"%s\" [label=\"%s\"]\n"
-                      node (file-name-base node))))
-    (pcase-dolist (`(,dest . ,links) org-dog-overview-backlinks)
-      (dolist (link links)
-        (insert (format "\"%s\" -> \"%s\"\n"
-                        (car link)
-                        dest))))
-    (insert "}")
+    (org-dog-overview-dot-1 org-dog-overview-backlinks)
     (let ((err-file (make-temp-file "org-dog-overview-errors"))
           (out-buf (get-buffer-create org-dog-overview-viz-buffer)))
       (unwind-protect
@@ -208,6 +219,31 @@ as the initial input."
         (setq-local buffer-read-only t)
         (org-dog-overview-mode t))
       out-buf)))
+
+(defun org-dog-overview-dot-1 (graph)
+  "Insert dot format for the GRAPH."
+  (insert org-dog-overview-dot-type " {"
+          (cl-etypecase org-dog-overview-dot-stmts
+            (null "")
+            (string org-dog-overview-dot-stmts)
+            (list (string-join org-dog-overview-dot-stmts "\n")))
+          "\n")
+  (dolist (node (mapcar #'car graph))
+    (insert (format "\"%s\"" node)
+            (funcall org-dog-overview-node-format-fn node)
+            "\n"))
+  (pcase-dolist (`(,dest . ,links) graph)
+    (dolist (link links)
+      (insert (format "\"%s\" -> \"%s\"" (car link) dest)
+              (funcall org-dog-overview-edge-format-fn (car link) dest)
+              "\n")))
+  (insert "}"))
+
+(defun org-dog-overview-node-format-1 (filename)
+  (format "[label=\"%s\"]" (file-name-base filename)))
+
+(defun org-dog-overview-edge-format-1 (_origin _dest)
+  "")
 
 (defun org-dog-overview-sidebar-buffer ()
   "Return `org-dog-overview-sidebar-buffer' after initializing it."
