@@ -258,6 +258,13 @@ properly handle it."
 
 ;;;; Miscellaneous utilities for convenience of users
 
+(defun org-dog-symbol-value (x)
+  "If X is a symbol, return its value."
+  (cl-typecase x
+    (null nil)
+    (symbol (symbol-value x))
+    (otherwise x)))
+
 (defun org-dog-subdirs-with-predicate (predicate root)
   "Return a list of subdirectories matching a predicate."
   (let ((predicate-fn (pcase predicate
