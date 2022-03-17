@@ -31,14 +31,15 @@
 
 ;;; Code:
 
-(require 'org-dog-datetree)
+(require 'org-dog-journal)
 (declare-function org-refile "ext:org-refile")
 (declare-function org-agenda-refile "ext:org-agenda")
 
 (defgroup org-dog-facade nil
   "Support for facade Org files."
   :prefix "org-dog-facade-"
-  :group 'org-dog-facade)
+  :group 'org-dog
+  :group 'org-dog-journal)
 
 (defcustom org-dog-facade-default-sections
   '((?b "Backlog")
@@ -56,11 +57,9 @@
   "Key used to select the datetree of a facade file."
   :type 'character)
 
-(defclass org-dog-facade-datetree-file (org-dog-datetree-file)
+(defclass org-dog-facade-datetree-file (org-dog-journal)
   ((sections :initarg :sections
-             :initform 'org-dog-facade-default-sections)
-   (datetree-capture-templates :initarg :datetree-capture-templates
-                               :initform nil)))
+             :initform 'org-dog-facade-default-sections)))
 
 (cl-defmethod org-dog-file-refile ((file org-dog-facade-datetree-file))
   (pcase (org-dog-facade-read-section file t)
@@ -82,8 +81,12 @@
         ((derived-mode-p 'org-mode)
          (org-refile nil nil rfloc)))))))
 
-(cl-defmethod org-dog-file-capture ((_file org-dog-facade-datetree-file))
-  (error "Not implemented"))
+(cl-defmethod org-dog-file-capture-templates ((file org-dog-facade-datetree-file))
+  ;; TODO: Append templates for the facade sections
+  (mapcar (pcase-lambda (`(,key . ,rest))
+            (cons (concat (char-to-string org-facade-datetree-key) key)
+                  rest))
+          (cl-call-next-method file)))
 
 ;; (cl-defmethod org-dog-file-search ((file org-dog-facade-datetree-file)))
 
