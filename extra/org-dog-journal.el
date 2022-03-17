@@ -9,13 +9,24 @@
   "Date tree file type for org-dog."
   :prefix "org-dog-journal-"
   :group 'org-reverse-datetree
-  :group 'org)
+  :group 'org-dog)
+
+(defcustom org-dog-journal-default-templates
+  nil
+  "List of default capture templates for `org-dog-journal'."
+  :type '(repeat (list (string :tag "Key")
+                       (string :tag "Description")
+                       (choice :tag "Doct template body"
+                               string
+                               (repeat string)
+                               function)
+                       (plist :inlint t))))
 
 (defvar org-dog-journal-refile-history nil)
 
 (defclass org-dog-journal (org-dog-file)
   ((journal-capture-templates
-    :initform nil
+    :initform org-dog-journal-default-templates
     :initarg :datetree-capture-templates)))
 
 (cl-defmethod org-dog-file-refile ((file org-dog-journal))
@@ -23,7 +34,7 @@
 
 (cl-defmethod org-dog-file-capture-templates ((file org-dog-journal))
   (doct (thread-last
-          (oref file journal-capture-templates)
+          (org-dog-symbol-value (oref file journal-capture-templates))
           (mapcar (pcase-lambda
                     (`(,key ,description ,template . ,options))
                     (append (list description
