@@ -31,7 +31,7 @@
 
 ;;; Code:
 
-(require 'org-dog-journal)
+(require 'org-dog-datetree)
 (declare-function org-refile "ext:org-refile")
 (declare-function org-agenda-refile "ext:org-agenda")
 
@@ -39,7 +39,7 @@
   "Support for facade Org files."
   :prefix "org-dog-facade-"
   :group 'org-dog
-  :group 'org-dog-journal)
+  :group 'org-dog-datetree)
 
 (defcustom org-dog-facade-default-sections
   '((?b "Backlog")
@@ -57,7 +57,7 @@
   "Key used to select the datetree of a facade file."
   :type 'character)
 
-(defclass org-dog-facade-datetree-file (org-dog-journal)
+(defclass org-dog-facade-datetree-file (org-dog-datetree-file)
   ((sections :initarg :sections
              :initform 'org-dog-facade-default-sections)))
 
