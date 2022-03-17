@@ -135,6 +135,16 @@ You can add this function "
 (cl-defgeneric org-dog-file-capture-templates (file)
   "Return `org-capture-templates' to the file.")
 
+(cl-defgeneric org-dog-file-capture-template-names (file)
+  "Return an list of keys and names of the capture templates.
+
+This is mostly for optimization."
+  (mapcar (lambda (template) (seq-take templates 2))
+          (org-dog-file-capture-templates)))
+
+(cl-defgeneric org-dog-file-capture-entry (file key)
+  (assoc key (org-dog-file-capture-templates file)))
+
 (cl-defgeneric org-dog-file-search (file)
   "Search in FILE.")
 
