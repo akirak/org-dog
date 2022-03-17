@@ -56,6 +56,9 @@ The functions in this hook take no argument."
 
 ;;;; Variables
 
+(defvar org-dog-initialized nil
+  "Non-nil if the repositories have been initialized.")
+
 (defvar org-dog--repository-table nil)
 
 (defvar org-dog--file-table nil)
@@ -83,8 +86,13 @@ accessed."
   (unless org-dog--file-table
     (org-dog-reload-files)))
 
-(defun org-dog-file-object (file)
-  "Find a `org-dog-file' object associated with a FILE."
+(cl-defun org-dog-file-object (file &key allow-missing)
+  "Find a `org-dog-file' object associated with a file.
+
+FILE should be an abbreviated path to an Org file.
+
+Unless ALLOW-MISSING is non-nil, it throws an error if the file
+is not readable."
   (org-dog--ensure-file-table)
   (or (gethash file org-dog--file-table)
       (let ((abbr (abbreviate-file-name file)))
@@ -94,8 +102,9 @@ accessed."
               org-dog--repository-table
               (map-some `(lambda (root repo)
                            (when (string-prefix-p root ,abbr)
-                             (org-dog--make-file-instance repo abbr)))))))
-      (unless (file-readable-p file)
+                             (org-dog--make-file-instance repo ,abbr)))))))
+      (unless (or allow-missing
+                  (file-readable-p file))
         (error "File %s is not readable" file))))
 
 (defun org-dog-select-files (&optional pred)
@@ -143,6 +152,7 @@ as well."
                               (org-dog--make-file-instance repo absolute))
                       (cl-incf error-count)))))))
     (run-hooks 'org-dog-reload-hook)
+    (setq org-dog-initialized t)
     (message "Registered %d Org files%s" (map-length org-dog--file-table)
              (if (> error-count 0)
                  (format " (%d errors)" error-count)

@@ -5,7 +5,7 @@
 (require 'subr-x)
 
 (defgroup org-dog-overview nil
-  ""
+  "Visualize links between Org files."
   :prefix "org-dog-overview-"
   :group 'org-dog)
 
@@ -30,6 +30,26 @@ This function takes `org-dog-overview-backlinks' as an argument."
   "Width of the sidebar window."
   :type 'number)
 
+(defcustom org-dog-overview-dot-type "digraph"
+  ""
+  :type 'string)
+
+(defcustom org-dog-overview-dot-stmts
+  '("rankdir=LR")
+  "Dot statements inserted into the graph."
+  :type '(choice string
+                 (repeat string)))
+
+(defcustom org-dog-overview-node-format-fn
+  #'org-dog-overview-node-format-1
+  ""
+  :type 'function)
+
+(defcustom org-dog-overview-edge-format-fn
+  #'org-dog-overview-edge-format-1
+  ""
+  :type 'function)
+
 (defvar org-dog-overview-backlinks nil
   "Alist that stores information from file links.
 
@@ -45,6 +65,12 @@ This entire variable represents the reverse dependencies of Org
 files. An entry where its cdr is nil has no file linking to it.")
 
 (defvar org-dog-overview-saved-wconf nil)
+
+(defvar org-dog-overview-non-default-files nil
+  "List of files that used as the starting point of scanning.
+
+This is non-nil if and only if the initial file list is not
+`org-agenda-files'.")
 
 (defun org-dog-overview-scan (files &optional clear)
   "Scan file links in FILES."
@@ -62,26 +88,9 @@ files. An entry where its cdr is nil has no file linking to it.")
                                     (find-file-noselect file))
              (org-with-wide-buffer
               (goto-char (point-min))
-              (let (result
-                    (bound (save-excursion
-                             (re-search-forward (rx bol (+ "*") space) nil t))))
-                (save-match-data
-                  (while (re-search-forward org-link-any-re bound t)
-                    (let* ((pos (car (match-data)))
-                           (href (match-string 2))
-                           (obj (save-match-data
-                                  (when (string-match (rx bol "org-dog:"
-                                                          (group (+ anything)))
-                                                      href)
-                                    (org-dog-find-file-object
-                                     `(lambda (obj)
-                                        (equal (oref obj relative)
-                                               ,(match-string 1 href))))))))
-                      (when obj
-                        (push (cons (substring (oref obj absolute))
-                                    (copy-marker pos))
-                              result)))))
-                result))))
+              (org-dog-overview--file-links
+               (save-excursion
+                 (re-search-forward (rx bol (+ "*") space) nil t))))))
         (if-let (cell (assoc dest org-dog-overview-backlinks))
             (unless (member file (cdr cell))
               (setcdr cell (cons (cons (substring file) marker)
@@ -92,11 +101,67 @@ files. An entry where its cdr is nil has no file linking to it.")
                 org-dog-overview-backlinks))))
     org-dog-overview-backlinks))
 
+(defun org-dog-overview--file-links (bound)
+  "Return an alist of file-link markers till BOUND."
+  (let (result)
+    (save-match-data
+      (while (re-search-forward org-link-any-re bound t)
+        (let* ((pos (car (match-data)))
+               (href (match-string 2))
+               (obj (save-match-data
+                      (when (string-match (rx bol "org-dog:"
+                                              (group (+ anything)))
+                                          href)
+                        (org-dog-find-file-object
+                         `(lambda (obj)
+                            (equal (oref obj relative)
+                                   ,(match-string 1 href))))))))
+          (if obj
+              (push (cons (substring (oref obj absolute))
+                          (copy-marker pos))
+                    result)
+            (message "Dead link: %s" href)))))
+    result))
+
 ;;;###autoload
 (defun org-dog-overview (files)
-  "Visualize links between FILES using graphviz."
+  "Visualize links between FILES using graphviz.
+
+This command collects `org-dog' links from a certain set of
+files.
+
+Not the entire Org buffer is scanned. Only the region before the
+first heading is scanned in each Org file.
+
+By default, the target files are `org-agenda-files'. However,
+when a prefix argument is given, the user is asked to select
+files using `completing-read-multiple' interface.
+
+The initial selection depends on the prefix argument.
+
+If a single universal prefix argument is given and the current
+point is on an `org-mode' entry, it collects links from the
+subtree. This feature allows you to define a context in an Org
+subtree which you can visualize its dependencies later.
+
+If two universal prefixes are given, the last selection is used
+as the initial input."
   (interactive (list (if current-prefix-arg
-                         (completing-read-multiple "Files: " org-agenda-files)
+                         (setq org-dog-overview-non-default-files
+                               (completing-read-multiple
+                                "Files: "
+                                (map-keys org-dog--file-table)
+                                nil nil
+                                (thread-first
+                                  (pcase current-prefix-arg
+                                    ('(4)
+                                     (org-dog-overview--subtree-links))
+                                    ('(16)
+                                     ;; Reuse the last selection
+                                     org-dog-overview-non-default-files))
+                                  ;; Join with one of the crm separators
+                                  (string-join ","))))
+                       (setq org-dog-overview-non-default-files nil)
                        org-agenda-files)))
   (when files
     (org-dog-overview-scan files t))
@@ -114,18 +179,20 @@ files. An entry where its cdr is nil has no file linking to it.")
                                      (window-width . ,org-dog-overview-sidebar-width)))
     (select-window (window-in-direction 'left))))
 
+(defun org-dog-overview--subtree-links ()
+  "Return a list of linked files in the subtree."
+  (when (and (derived-mode-p 'org-mode)
+             (not (org-before-first-heading-p)))
+    (save-excursion
+      (org-back-to-heading)
+      (mapcar #'car (org-dog-overview--file-links
+                     (save-excursion
+                       (org-end-of-subtree)))))))
+
 (defun org-dog-overview-viz-buffer ()
+  "Return `org-dog-overview-viz-buffer' after initializing it."
   (with-temp-buffer
-    (insert "digraph {")
-    (dolist (node (mapcar #'car org-dog-overview-backlinks))
-      (insert (format "\"%s\" [label=\"%s\"]\n"
-                      node (file-name-base node))))
-    (pcase-dolist (`(,dest . ,links) org-dog-overview-backlinks)
-      (dolist (link links)
-        (insert (format "\"%s\" -> \"%s\"\n"
-                        (car link)
-                        dest))))
-    (insert "}")
+    (org-dog-overview-dot-1 org-dog-overview-backlinks)
     (let ((err-file (make-temp-file "org-dog-overview-errors"))
           (out-buf (get-buffer-create org-dog-overview-viz-buffer)))
       (unwind-protect
@@ -153,7 +220,33 @@ files. An entry where its cdr is nil has no file linking to it.")
         (org-dog-overview-mode t))
       out-buf)))
 
+(defun org-dog-overview-dot-1 (graph)
+  "Insert dot format for the GRAPH."
+  (insert org-dog-overview-dot-type " {"
+          (cl-etypecase org-dog-overview-dot-stmts
+            (null "")
+            (string org-dog-overview-dot-stmts)
+            (list (string-join org-dog-overview-dot-stmts "\n")))
+          "\n")
+  (dolist (node (mapcar #'car graph))
+    (insert (format "\"%s\"" node)
+            (funcall org-dog-overview-node-format-fn node)
+            "\n"))
+  (pcase-dolist (`(,dest . ,links) graph)
+    (dolist (link links)
+      (insert (format "\"%s\" -> \"%s\"" (car link) dest)
+              (funcall org-dog-overview-edge-format-fn (car link) dest)
+              "\n")))
+  (insert "}"))
+
+(defun org-dog-overview-node-format-1 (filename)
+  (format "[label=\"%s\"]" (file-name-base filename)))
+
+(defun org-dog-overview-edge-format-1 (_origin _dest)
+  "")
+
 (defun org-dog-overview-sidebar-buffer ()
+  "Return `org-dog-overview-sidebar-buffer' after initializing it."
   (with-current-buffer (get-buffer-create org-dog-overview-sidebar-buffer)
     (let ((initial-loc (when (> (point) (point-min))
                          (list (progn
@@ -207,6 +300,7 @@ files. An entry where its cdr is nil has no file linking to it.")
       (current-buffer))))
 
 (defun org-dog-overview-sort-backlinks-1 (backlinks)
+  "Sort an alist of BACKLINKS according to a certain rule."
   (let ((group1 (seq-filter (lambda (x) (= 1 (length x))) backlinks))
         (group2 (seq-filter (lambda (x) (< 1 (length x))) backlinks)))
     (append (seq-sort-by #'car #'string< group1)
@@ -215,11 +309,14 @@ files. An entry where its cdr is nil has no file linking to it.")
 (defun org-dog-overview-revert ()
   "Revert the image."
   (interactive)
-  (org-dog-overview-scan org-agenda-files t)
+  (org-dog-overview-scan (or org-dog-overview-non-default-files
+                             org-agenda-files)
+                         t)
   (org-dog-overview-viz-buffer)
   (org-dog-overview-sidebar-buffer))
 
 (defun org-dog-overview-quit ()
+  "Quit the view and restore the window configuration."
   (interactive)
   (dolist (buf (list org-dog-overview-viz-buffer
                      org-dog-overview-sidebar-buffer))

@@ -6,9 +6,9 @@
 (declare-function project-root "ext:project")
 
 (defgroup org-dog-context nil
-  ""
+  "Foundation for contextual Org mode."
   :prefix "org-dog-context-"
-  :group 'org-dog-context)
+  :group 'org-dog)
 
 ;;;; Generic methods
 
@@ -146,8 +146,8 @@
     (`("~" "work" ,_ ,group ,name "")
      (make-org-dog-context-in-directory
       :directory "projects/"
-      :filenames (list (concat name "-devel")
-                       (concat group "-devel")
+      :filenames (list (concat name "-dev")
+                       (concat group "-dev")
                        name
                        group)))))
 
