@@ -1,4 +1,4 @@
-;;; org-dog-consult.el ---  -*- lexical-binding: t -*-
+;;; consult-org-dog.el ---  -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2022 Akira Komamura
 
@@ -34,8 +34,13 @@
 (require 'consult-org)
 (require 'org-dog)
 
+(defgroup consult-org-dog nil
+  ""
+  :group 'consult
+  :group 'org-dog)
+
 (cl-defmethod org-dog-file-search ((file org-dog-file))
   (consult-org-heading nil (list (oref file absolute))))
 
-(provide 'org-dog-consult)
-;;; org-dog-consult.el ends here
+(provide 'consult-org-dog)
+;;; consult-org-dog.el ends here
