@@ -42,5 +42,11 @@
 (cl-defmethod org-dog-file-search ((file org-dog-file))
   (consult-org-heading nil (list (oref file absolute))))
 
+;;;###autoload
+(defun consult-org-dog-all-file-headings ()
+  "Run `consult-org-heading' on all Org Dog files."
+  (interactive)
+  (consult-org-heading nil (map-keys org-dog--file-table)))
+
 (provide 'consult-org-dog)
 ;;; consult-org-dog.el ends here
