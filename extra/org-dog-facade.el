@@ -121,10 +121,8 @@
 (defun org-dog-facade--sections (file)
   (with-current-buffer (org-dog-file-buffer file)
     (org-with-wide-buffer
-     (let ((sections (oref file sections))
+     (let ((sections (org-dog-symbol-value (oref file sections)))
            result)
-       (when (symbolp sections)
-         (setq sections (symbol-value sections)))
        (goto-char (point-min))
        (pcase-dolist (`(,key ,olp . ,_) sections)
          ;; An error is shown when no olp is found, so suppress the error
