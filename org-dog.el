@@ -132,8 +132,8 @@ You can add this function "
 (cl-defgeneric org-dog-file-refile (file)
   "Refile the current Org entry to FILE.")
 
-(cl-defgeneric org-dog-file-capture (file)
-  "Capture an entry or text to FILE.")
+(cl-defgeneric org-dog-file-capture-templates (file)
+  "Return `org-capture-templates' to the file.")
 
 (cl-defgeneric org-dog-file-search (file)
   "Search in FILE.")
@@ -172,8 +172,11 @@ You can add this function "
   "Capture an entry to FILE."
   (interactive (list (org-dog-complete-file)))
   (cl-etypecase file
-    (string (org-dog-file-capture (org-dog-file-object file)))
-    (org-dog-file (org-dog-file-capture file))))
+    (string (org-dog-file-capture-templates (org-dog-file-object file)))
+    (org-dog-file
+     (let ((org-capture-templates (org-dog-file-capture-templates file))
+           org-capture-templates-contexts)
+       (org-capture)))))
 
 ;;;###autoload
 (defun org-dog-capture-to-this-file ()
