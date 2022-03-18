@@ -7,7 +7,7 @@
 
 (defgroup org-dog-datetree nil
   "Date tree file type for org-dog."
-  :prefix "org-dog-journal-"
+  :prefix "org-dog-datetree-"
   :group 'org-reverse-datetree
   :group 'org-dog)
 
@@ -45,7 +45,7 @@
                             options))))))
 
 ;;;###autoload
-(defun org-dog-journal-refile (file)
+(defun org-dog-datetree-refile (file)
   "Refile to the datetree in FILE."
   (interactive (list (completing-read
                       "Refile to datetree: "
@@ -53,7 +53,7 @@
                       nil nil nil org-dog-datetree-refile-history)))
   (org-reverse-datetree-refile-to-file file))
 
-(defun org-dog-journal-refile-to-this-file ()
+(defun org-dog-datetree-refile-to-this-file ()
   "Refile to the datetree in the current file."
   (interactive)
   (let ((file (buffer-file-name)))
