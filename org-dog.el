@@ -93,7 +93,7 @@
   "Minor mode which can be activated in an Org Dog file.
 
 For now, this is only used for enabling `org-dog-file-mode-map'."
-  :lighter "Dog"
+  :lighter " Dog"
   (when org-dog-file-mode
     (cond
      ((org-dog-current-buffer-object)
@@ -385,7 +385,7 @@ Alternatively, you can use `org-dog-update-id-locations' for
 scanning dog files for IDs without modifying
 `org-id-extra-files'."
   :global t
-  :lighter "DogId"
+  :lighter " DogId"
   :group 'org-dog
   ;; TODO: More comprehensive cleanup (e.g. restoring and saving the original
   ;; value)
