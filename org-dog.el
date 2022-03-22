@@ -40,6 +40,13 @@
 (defvar org-id-extra-files)
 (defvar org-id-track-globally)
 
+;;;; Custom variables
+
+(defcustom org-dog-file-mode-functions nil
+  "List of functions called when `org-dog-file-mode' is turned on."
+  :group 'org-dog
+  :type 'hook)
+
 ;;;; Faces
 
 (defface org-dog-file-directory-face
@@ -95,22 +102,22 @@
 For now, this is only used for enabling `org-dog-file-mode-map'."
   :lighter " Dog"
   (when org-dog-file-mode
-    (cond
-     ((org-dog-current-buffer-object)
-      t)
-     ((derived-mode-p 'org-mode)
-      (let* ((filename (buffer-file-name (org-base-buffer (current-buffer))))
-             (obj (org-dog-file-object filename))
-             (message-log-max nil))
-        (if obj
-            (message "Generated a new object typed %s for %s"
-                     (eieio-object-class-name obj)
-                     filename)
-          (org-dog-file-mode -1)
-          (error "There is no route for %s, or the file is not in an repository."
-                 filename))))
-     (t
-      (error "This mode must be turned on in an `org-mode' buffer.")))))
+    (if-let (obj (org-dog-current-buffer-object))
+        (run-hook-with-args 'org-dog-file-mode-functions obj)
+      (if (derived-mode-p 'org-mode)
+          (let* ((filename (buffer-file-name (org-base-buffer (current-buffer))))
+                 (obj (org-dog-file-object filename)))
+            (if obj
+                (let ((message-log-max nil))
+                  (message "Generated a new object typed %s for %s"
+                           (eieio-object-class-name obj)
+                           filename)
+                  (run-hook-with-args 'org-dog-file-mode-functions obj))
+              (org-dog-file-mode -1)
+              (error "There is no route for %s, or the file is not in an repository."
+                     filename)))
+        (t
+         (error "This mode must be turned on in an `org-mode' buffer."))))))
 
 ;;;###autoload
 (defun org-dog-file-mode-maybe ()
