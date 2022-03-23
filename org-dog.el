@@ -75,7 +75,9 @@
   "List used to track Org files in `org-dog-id-mode'.")
 
 (defvar org-dog--indirect-buffers nil
-  "Hash table for tracking Org indirect buffers.")
+  "Hash table for tracking Org indirect buffers.
+
+The key should be an id property of the first Org entry in each buffer.")
 
 ;;;; Associating the file object with a buffer
 
