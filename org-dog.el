@@ -81,7 +81,7 @@
 
 (defun org-dog-buffer-object ()
   "Return the `org-dog-file' object for the current buffer, if any."
-  (when-let (filename (buffer-file-name))
+  (when-let (filename (buffer-file-name (org-base-buffer (current-buffer))))
     (org-dog-file-object (abbreviate-file-name filename))))
 
 (defun org-dog-maybe-file-buffer (file-obj)
