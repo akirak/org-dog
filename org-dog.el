@@ -42,8 +42,11 @@
 
 ;;;; Custom variables
 
-(defcustom org-dog-file-mode-functions nil
-  "List of functions called when `org-dog-file-mode' is turned on."
+(defcustom org-dog-file-mode-hook nil
+  "Hook called when `org-dog-file-mode' is turned on.
+
+When this hook is called, `org-dog-buffer-file-object' should
+have been already set to the object of the buffer file."
   :group 'org-dog
   :type 'hook)
 
@@ -127,7 +130,7 @@ For now, this is only used for enabling `org-dog-file-mode-map'."
       (setq-local org-dog-buffer-file-object obj
                   org-dog-indirect-buffer-p (when (buffer-base-buffer)
                                               t))
-      (run-hook-with-args 'org-dog-file-mode-functions obj))))
+      (run-hooks 'org-dog-file-mode-hook))))
 
 (defun org-dog--new-object ()
   "Return a new object for the buffer."
