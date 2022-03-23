@@ -126,11 +126,15 @@ For now, this is only used for enabling `org-dog-file-mode-map'."
         (org-dog-file-mode -1)
         (error "There is no route for %s, or the file is not in an repository."
                (buffer-file-name (org-base-buffer (current-buffer)))))
-
-      (setq-local org-dog-buffer-file-object obj
-                  org-dog-indirect-buffer-p (when (buffer-base-buffer)
-                                              t))
+      (org-dog--set-file-identity obj)
+      (add-hook 'clone-indirect-buffer-hook #'org-dog--set-file-identity
+                nil t)
       (run-hooks 'org-dog-file-mode-hook))))
+
+(defun org-dog--set-file-identity (&optional obj)
+  (setq-local org-dog-buffer-file-object (or obj (org-dog-buffer-object))
+              org-dog-indirect-buffer-p (when (buffer-base-buffer)
+                                          t)))
 
 (defun org-dog--new-object ()
   "Return a new object for the buffer."
