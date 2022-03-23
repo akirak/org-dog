@@ -50,6 +50,14 @@ have been already set to the object of the buffer file."
   :group 'org-dog
   :type 'hook)
 
+(defcustom org-dog-file-mode-lighter
+  '(" Dog["
+    (:eval (org-dog-format-lighter org-dog-buffer-file-object))
+    "]")
+  "Mode line construct for `org-dog-file-mode'."
+  :type 'sexp
+  :risky t)
+
 ;;;; Faces
 
 (defface org-dog-file-directory-face
@@ -118,7 +126,7 @@ and it is only set in `org-dog-file-mode'.")
   "Minor mode which can be activated in an Org Dog file.
 
 For now, this is only used for enabling `org-dog-file-mode-map'."
-  :lighter " Dog"
+  :lighter org-dog-file-mode-lighter
   (when org-dog-file-mode
     (let ((obj (or (org-dog-buffer-object)
                    (org-dog--new-object))))
@@ -162,6 +170,18 @@ For now, this is only used for enabling `org-dog-file-mode-map'."
                  (eieio-object-class-name obj)
                  (oref obj-generated absolute)))
       obj)))
+
+(cl-defgeneric org-dog-format-lighter (_obj)
+  "Format the inner content of the lighter.")
+
+(cl-defmethod org-dog-format-lighter ((obj org-dog-file))
+  (let ((class (eieio-object-class-name obj)))
+    (if (eq class org-dog-default-file-class)
+        "default"
+      (thread-last
+        (symbol-name class)
+        (string-remove-prefix "org-dog-")
+        (string-remove-suffix "-file")))))
 
 ;;;###autoload
 (defun org-dog-file-mode-maybe ()
