@@ -92,7 +92,7 @@
 
 (defun org-dog-facade-goto-section (file)
   (interactive (list (or (and (not current-prefix-arg)
-                              (org-dog-current-buffer-object))
+                              (org-dog-buffer-object))
                          (org-dog-complete-file))))
   (let ((file (cl-etypecase file
                 (string (org-dog-file-object file))

@@ -79,7 +79,7 @@
 
 ;;;; Associating the file object with a buffer
 
-(defun org-dog-current-buffer-object ()
+(defun org-dog-buffer-object ()
   "Return the `org-dog-file' object for the current buffer, if any."
   (when-let (filename (buffer-file-name))
     (org-dog-file-object (abbreviate-file-name filename))))
@@ -102,7 +102,7 @@
 For now, this is only used for enabling `org-dog-file-mode-map'."
   :lighter " Dog"
   (when org-dog-file-mode
-    (if-let (obj (org-dog-current-buffer-object))
+    (if-let (obj (org-dog-buffer-object))
         (run-hook-with-args 'org-dog-file-mode-functions obj)
       (if (derived-mode-p 'org-mode)
           (let* ((filename (buffer-file-name (org-base-buffer (current-buffer))))
@@ -199,7 +199,7 @@ This is mostly for optimization."
 (defun org-dog-capture-to-this-file ()
   "Capture an entry to the current buffer."
   (interactive)
-  (when-let (obj (org-dog-current-buffer-object))
+  (when-let (obj (org-dog-buffer-object))
     (org-dog-capture-to-file obj)))
 
 ;;;; Completion
