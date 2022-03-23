@@ -79,6 +79,19 @@
 
 The key should be an id property of the first Org entry in each buffer.")
 
+(defvar org-dog-buffer-file-object nil
+  "Object for the file of the buffer.
+
+This variable is intended for use in the mode-line constructs,
+and it is only set in `org-dog-file-mode'. If the file is not
+tracked by dog, it is nil.")
+
+(defvar org-dog-indirect-buffer-p nil
+  "Whether the current buffer is an indirect buffer.
+
+This variable is intended for use in the mode-line constructs,
+and it is only set in `org-dog-file-mode'.")
+
 ;;;; Associating the file object with a buffer
 
 (defun org-dog-buffer-object ()
@@ -104,22 +117,32 @@ The key should be an id property of the first Org entry in each buffer.")
 For now, this is only used for enabling `org-dog-file-mode-map'."
   :lighter " Dog"
   (when org-dog-file-mode
-    (if-let (obj (org-dog-buffer-object))
-        (run-hook-with-args 'org-dog-file-mode-functions obj)
-      (if (derived-mode-p 'org-mode)
-          (let* ((filename (buffer-file-name (org-base-buffer (current-buffer))))
-                 (obj (org-dog-file-object filename)))
-            (if obj
-                (let ((message-log-max nil))
-                  (message "Generated a new object typed %s for %s"
-                           (eieio-object-class-name obj)
-                           filename)
-                  (run-hook-with-args 'org-dog-file-mode-functions obj))
-              (org-dog-file-mode -1)
-              (error "There is no route for %s, or the file is not in an repository."
-                     filename)))
-        (t
-         (error "This mode must be turned on in an `org-mode' buffer."))))))
+    (let ((obj (or (org-dog-buffer-object)
+                   (org-dog--new-object))))
+      (unless obj
+        (org-dog-file-mode -1)
+        (error "There is no route for %s, or the file is not in an repository."
+               (buffer-file-name (org-base-buffer (current-buffer)))))
+
+      (setq-local org-dog-buffer-file-object obj
+                  org-dog-indirect-buffer-p (when (buffer-base-buffer)
+                                              t))
+      (run-hook-with-args 'org-dog-file-mode-functions obj))))
+
+(defun org-dog--new-object ()
+  "Return a new object for the buffer."
+  (unless (derived-mode-p 'org-mode)
+    (error "This mode must be turned on in an `org-mode' buffer."))
+  (when-let (obj (thread-last
+                   (org-base-buffer (current-buffer))
+                   (buffer-file-name)
+                   (org-dog-file-object)))
+    (when obj
+      (let ((message-log-max nil))
+        (message "Generated a new object typed %s for %s"
+                 (eieio-object-class-name obj)
+                 (oref obj-generated absolute)))
+      obj)))
 
 ;;;###autoload
 (defun org-dog-file-mode-maybe ()
