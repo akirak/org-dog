@@ -129,12 +129,24 @@ For now, this is only used for enabling `org-dog-file-mode-map'."
       (org-dog--set-file-identity obj)
       (add-hook 'clone-indirect-buffer-hook #'org-dog--set-file-identity
                 nil t)
+      (add-hook 'after-set-visited-file-name-hook #'org-dog--handle-file-rename
+                nil t)
       (run-hooks 'org-dog-file-mode-hook))))
 
 (defun org-dog--set-file-identity (&optional obj)
   (setq-local org-dog-buffer-file-object (or obj (org-dog-buffer-object))
               org-dog-indirect-buffer-p (when (buffer-base-buffer)
                                           t)))
+
+(defun org-dog--handle-file-rename ()
+  "Update the file table after the file has been renamed."
+  (when org-dog-buffer-file-object
+    (let ((old-path (oref org-dog-buffer-file-object absolute)))
+      (unwind-protect
+          ;; Regenerate a new object and update the identity
+          (org-dog-file-mode t)
+        (unless (equal old-path (oref org-dog-buffer-file-object absolute))
+          (map-delete org-dog--file-table old-path))))))
 
 (defun org-dog--new-object ()
   "Return a new object for the buffer."
