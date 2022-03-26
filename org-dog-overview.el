@@ -72,34 +72,71 @@ files. An entry where its cdr is nil has no file linking to it.")
 This is non-nil if and only if the initial file list is not
 `org-agenda-files'.")
 
-(defun org-dog-overview-scan (files &optional clear)
-  "Scan file links in FILES."
-  (when clear
-    (setq org-dog-overview-backlinks nil))
+(cl-defun org-dog-overview-scan (files &key clear fast)
+  "Scan file links in files.
+
+FILES must be a list of Org files.
+
+If CLEAR is non-nil, the existing value of
+`org-dog-overview-backlinks' is cleared.
+
+If FAST is non-nil, it operates in fast mode. This mode does not
+keep buffers created for the function to run, so markers are
+unusable. It can be useful if you are interested in only the
+resulting file set, and not their contexts."
   (let* ((queue (mapcar #'abbreviate-file-name files))
+         (result (unless (or clear fast)
+                   org-dog-overview-backlinks))
          file)
     (dolist (x queue)
-      (unless (assoc x org-dog-overview-backlinks)
-        (push (list (substring x)) org-dog-overview-backlinks)))
+      (unless (assoc x result)
+        (push (list (substring x)) result)))
     (while (setq file (pop queue))
       (pcase-dolist
           (`(,dest . ,marker)
-           (with-current-buffer (or (find-buffer-visiting file)
-                                    (find-file-noselect file))
-             (org-with-wide-buffer
-              (goto-char (point-min))
-              (org-dog-overview--file-links
-               (save-excursion
-                 (re-search-forward (rx bol (+ "*") space) nil t))))))
-        (if-let (cell (assoc dest org-dog-overview-backlinks))
+           (if fast
+               (org-dog-overview--header-links-fast file)
+             (org-dog-overview--header-links file)))
+        (if-let (cell (assoc dest result))
             (unless (member file (cdr cell))
               (setcdr cell (cons (cons (substring file) marker)
                                  (cdr (copy-sequence cell)))))
           (push dest queue)
           (push (list dest
                       (cons file marker))
-                org-dog-overview-backlinks))))
-    org-dog-overview-backlinks))
+                result))))
+    (if fast
+        result
+      (setq org-dog-overview-backlinks result))))
+
+(defun org-dog-overview--header-links (file)
+  "Return an alist of dog links before the first heading in FILE."
+  (with-current-buffer (or (find-buffer-visiting file)
+                           (find-file-noselect file))
+    (org-with-wide-buffer
+     (goto-char (point-min))
+     (org-dog-overview--file-links
+      (save-excursion
+        (re-search-forward (rx bol (+ "*") space) nil t))))))
+
+(defun org-dog-overview--header-links-fast (file)
+  "Return an alist of dog links before the first heading in FILE.
+
+This is a faster version, which does not keep a full buffer of
+the file unless it is already open."
+  (if-let (buf (find-buffer-visiting file))
+      (org-dog-overview--header-links file)
+    (with-temp-buffer
+      (insert-file-contents file)
+      (goto-char (point-min))
+      ;; Drop entries of the file for faster enabling of org-mode.
+      (when (re-search-forward (rx bol (+ "*") space) nil t)
+        (delete-region (match-beginning 0) (point-max))
+        (goto-char (point-min)))
+      ;; To produce a proper value of `org-link-any-re', `org-mode' needs to be
+      ;; turned on, but the other hooks are unnecessary.
+      (delay-mode-hooks (org-mode))
+      (org-dog-overview--file-links (point-max)))))
 
 (defun org-dog-overview--file-links (bound)
   "Return an alist of file-link markers till BOUND."
@@ -164,7 +201,7 @@ as the initial input."
                        (setq org-dog-overview-non-default-files nil)
                        org-agenda-files)))
   (when files
-    (org-dog-overview-scan files t))
+    (org-dog-overview-scan files :clear t))
   (unless org-dog-overview-saved-wconf
     (setq org-dog-overview-saved-wconf
           (current-window-configuration)))
@@ -311,7 +348,7 @@ as the initial input."
   (interactive)
   (org-dog-overview-scan (or org-dog-overview-non-default-files
                              org-agenda-files)
-                         t)
+                         :clear t)
   (org-dog-overview-viz-buffer)
   (org-dog-overview-sidebar-buffer))
 
