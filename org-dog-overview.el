@@ -26,6 +26,12 @@
 This function takes `org-dog-overview-backlinks' as an argument."
   :type 'function)
 
+(defcustom org-dog-overview-clustering nil
+  "Strategy for clustering nodes."
+  :type '(choice (const :tag "Group nodes without backlink" orphans)
+                 (const :tag "Group by relative directory" directory)
+                 (const nil)))
+
 (defcustom org-dog-overview-sidebar-width 80
   "Width of the sidebar window."
   :type 'number)
@@ -271,10 +277,40 @@ as the initial input."
             (string org-dog-overview-dot-stmts)
             (list (string-join org-dog-overview-dot-stmts "\n")))
           "\n")
-  (dolist (node (mapcar #'car graph))
-    (insert (format "\"%s\"" node)
-            (funcall org-dog-overview-node-format-fn node)
-            "\n"))
+  (cl-flet
+      ((render-nodes
+         (nodes)
+         (dolist (node (mapcar #'car nodes))
+           (insert (format "\"%s\"" node)
+                   (funcall org-dog-overview-node-format-fn node)
+                   "\n"))))
+    (cl-case org-dog-overview-clustering
+      (orphans
+       (progn
+         (render-nodes (cl-remove-if-not #'cdr graph))
+         (when-let (orphan-nodes (cl-remove-if #'cdr graph))
+           (insert "subgraph cluster_orphans {\n")
+           (render-nodes orphan-nodes)
+           (insert "}\n"))))
+      (directory
+       (pcase-dolist (`(,directory . ,nodes)
+                      (seq-group-by (pcase-lambda (`(,file . ,_))
+                                      (file-name-directory
+                                       (oref (org-dog-file-object file) relative)))
+                                    graph))
+         (if directory
+             (progn
+               (insert "subgraph cluster_"
+                       (thread-last
+                         (string-remove-suffix "/" directory)
+                         (replace-regexp-in-string "/" "_"))
+                       " {\n")
+               (insert (format "label = \"%s\"" directory))
+               (render-nodes nodes)
+               (insert "}\n"))
+           (render-nodes nodes))))
+      (otherwise
+       (render-nodes graph))))
   (pcase-dolist (`(,dest . ,links) graph)
     (dolist (link links)
       (insert (format "\"%s\" -> \"%s\"" (car link) dest)
