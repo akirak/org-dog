@@ -216,6 +216,12 @@ as the initial input."
                                      (window-width . ,org-dog-overview-sidebar-width)))
     (select-window (window-in-direction 'left))))
 
+;;;###autoload
+(defun org-dog-overview-all ()
+  "Run `org-dog-overview' on all registered files."
+  (interactive)
+  (org-dog-overview (map-keys org-dog--file-table)))
+
 (defun org-dog-overview--subtree-links ()
   "Return a list of linked files in the subtree."
   (when (and (derived-mode-p 'org-mode)
