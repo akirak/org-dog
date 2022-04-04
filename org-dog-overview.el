@@ -280,9 +280,10 @@ as the initial input."
   (cl-flet
       ((render-nodes
          (nodes)
-         (dolist (node (mapcar #'car nodes))
+         (pcase-dolist (`(,node . ,backlinks) nodes)
            (insert (format "\"%s\"" node)
-                   (funcall org-dog-overview-node-format-fn node)
+                   (funcall org-dog-overview-node-format-fn
+                            node (length backlinks))
                    "\n"))))
     (cl-case org-dog-overview-clustering
       (orphans
@@ -318,7 +319,7 @@ as the initial input."
               "\n")))
   (insert "}"))
 
-(defun org-dog-overview-node-format-1 (filename)
+(defun org-dog-overview-node-format-1 (filename _num)
   (format "[label=\"%s\"]" (file-name-base filename)))
 
 (defun org-dog-overview-edge-format-1 (_origin _dest)
