@@ -19,5 +19,5 @@ jobs:
 
     - run: nix run .#nomake -- org-dog byte-compile-and-load
     - run: nix run .#nomake -- org-dog-embark byte-compile-and-load
-    - run: nix run .#nomake -- org-dog-consult byte-compile-and-load
     - run: nix run .#nomake -- org-dog-facade byte-compile-and-load
+    - run: nix run .#nomake -- consult-org-dog byte-compile-and-load
