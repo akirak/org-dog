@@ -26,7 +26,7 @@
 
 (defclass org-dog-datetree-file (org-dog-file)
   ((journal-capture-templates
-    :initform org-dog-datetree-default-templates
+    :initform 'org-dog-datetree-default-templates
     :initarg :datetree-capture-templates)))
 
 (cl-defmethod org-dog-file-refile ((file org-dog-datetree-file))
@@ -39,7 +39,7 @@
                     (`(,key ,description ,template . ,options))
                     (append (list description
                                   :keys key
-                                  :file absolute
+                                  :file (oref file absolute)
                                   :function #'org-reverse-datetree-goto-date-in-file
                                   :template template)
                             options))))))

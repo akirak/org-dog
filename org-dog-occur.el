@@ -1,6 +1,10 @@
 ;;; org-dog-occur.el --- Search in an Org buffer -*- lexical-binding: t -*-
 
+(require 'org)
 (require 'org-dog-utils)
+
+(defvar org-radio-target-group)
+(declare-function thing-at-point-looking-at "thingatpt")
 
 (defgroup org-dog-occur nil
   ""
@@ -47,6 +51,7 @@
   (interactive)
   (unless (derived-mode-p 'org-mode)
     (user-error "This command must run in org-mode"))
+  (require 'thingatpt)
   (apply #'org-dog-occur-link
          (current-buffer)
          (save-match-data
@@ -137,7 +142,7 @@ This function filters non-radio targets from the result of
 `org-dog-occur--link-targets'."
   (seq-filter (pcase-lambda (`(,_ ,_ ,radio-p))
                 (not radio-p))
-              (org-dog-occur--link-targets (current-buffer))))
+              (org-dog-occur--link-targets buffer)))
 
 ;;;###autoload
 (defun org-dog-occur-insert-internal-link ()

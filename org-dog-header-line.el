@@ -2,6 +2,11 @@
 
 (require 'org-dog)
 
+(defgroup org-dog-header-line nil
+  ""
+  :prefix "org-dog-header-line-"
+  :group 'org-dog)
+
 (defcustom org-dog-header-line-format
   '((org-dog-buffer-file-object
      (:eval (oref org-dog-buffer-file-object relative)))

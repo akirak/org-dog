@@ -39,6 +39,8 @@
 (declare-function project-root "ext:project")
 (defvar org-id-extra-files)
 (defvar org-id-track-globally)
+(defvar org-capture-templates)
+(defvar org-capture-templates-contexts)
 
 ;;;; Custom variables
 
@@ -56,6 +58,7 @@ have been already set to the object of the buffer file."
     "]")
   "Mode line construct for `org-dog-file-mode'."
   :type 'sexp
+  :group 'org-dog
   :risky t)
 
 ;;;; Faces
@@ -168,7 +171,7 @@ For now, this is only used for enabling `org-dog-file-mode-map'."
       (let ((message-log-max nil))
         (message "Generated a new object typed %s for %s"
                  (eieio-object-class-name obj)
-                 (oref obj-generated absolute)))
+                 (oref obj absolute)))
       obj)))
 
 (cl-defgeneric org-dog-format-lighter (_obj)
@@ -210,8 +213,8 @@ You can add this function "
   "Return an list of keys and names of the capture templates.
 
 This is mostly for optimization."
-  (mapcar (lambda (template) (seq-take templates 2))
-          (org-dog-file-capture-templates)))
+  (mapcar (lambda (template) (seq-take template 2))
+          (org-dog-file-capture-templates file)))
 
 (cl-defgeneric org-dog-file-capture-entry (file key)
   (assoc key (org-dog-file-capture-templates file)))

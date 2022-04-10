@@ -84,7 +84,7 @@
 (cl-defmethod org-dog-file-capture-templates ((file org-dog-facade-datetree-file))
   ;; TODO: Append templates for the facade sections
   (mapcar (pcase-lambda (`(,key . ,rest))
-            (cons (concat (char-to-string org-facade-datetree-key) key)
+            (cons (concat (char-to-string org-dog-facade-datetree-key) key)
                   rest))
           (cl-call-next-method file)))
 
