@@ -8,6 +8,12 @@
       repo = "consult";
       type = "github";
     };
+    consult-org-dog = {
+      flake = false;
+      owner = "akirak";
+      repo = "org-dog";
+      type = "github";
+    };
     dash = {
       flake = false;
       owner = "magnars";
@@ -27,12 +33,6 @@
       type = "github";
     };
     org-dog = {
-      flake = false;
-      owner = "akirak";
-      repo = "org-dog";
-      type = "github";
-    };
-    org-dog-consult = {
       flake = false;
       owner = "akirak";
       repo = "org-dog";

@@ -29,8 +29,8 @@
       localPackages = [
         "org-dog"
         "org-dog-embark"
-        "org-dog-consult"
         "org-dog-facade"
+        "consult-org-dog"
       ];
     };
 }
