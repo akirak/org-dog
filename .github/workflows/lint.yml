@@ -2,7 +2,9 @@ name: Lint
 
 on:
   push:
-    paths: '**.el'
+    paths-ignore:
+      - 'doc/**'
+      - 'README.*'
 
 jobs:
   lint:
