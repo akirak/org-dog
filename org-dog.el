@@ -32,6 +32,7 @@
 ;;; Code:
 
 (require 'org-dog-core)
+(require 'org-dog-utils)
 
 (declare-function org-link-set-parameters "ext:ol")
 (declare-function org-element-property "ext:org-element")
@@ -444,6 +445,15 @@ Only interesting items are returned."
 (org-link-set-parameters "org-dog"
                          :follow #'org-dog-follow-link
                          :complete #'org-dog-complete-link)
+
+(defun org-dog-store-file-link ()
+  "Store a `org-dog' file link to the current buffer."
+  (interactive)
+  (if-let (obj (org-dog-buffer-object))
+      (push (list (concat "org-dog:" (oref obj relative))
+                  (org-dog--file-title))
+            org-stored-links)
+    (user-error "Not in an org-dog buffer")))
 
 ;;;; Integrating with org-id.el
 
