@@ -145,7 +145,7 @@ This function filters non-radio targets from the result of
               (org-dog-occur--link-targets buffer)))
 
 ;;;###autoload
-(defun org-dog-occur-insert-internal-link ()
+(defun org-dog-insert-internal-link ()
   "Insert a link to an in-buffer target."
   (interactive)
   (let* ((targets (org-dog-occur--nonradio-targets (current-buffer)))
