@@ -68,14 +68,16 @@
 (defun org-dog-occur--show-occurrences (target matches)
   "Return a buffer that shows links occurrences."
   (with-current-buffer (get-buffer-create org-dog-occur-buffer)
-    (let ((inhibit-read-only t))
+    (let ((inhibit-read-only t)
+          (width (window-width)))
       (erase-buffer)
       (insert "Occurrences of "
               (propertize target 'face 'org-dog-occur-query-face)
               ":" ?\n)
-      (pcase-dolist (`(,path ,marker ,occurrence) matches)
+      (pcase-dolist (`(,olp ,marker ,occurrence) matches)
         (let ((start (point)))
-          (insert path "\n")
+          (insert (org-format-outline-path olp width)
+                  "\n")
           (unless (string-empty-p occurrence)
             (insert occurrence "\n"))
           (let ((overlay (make-overlay start (point))))
@@ -104,8 +106,7 @@
                  (end (org-entry-end-position))
                  (match (re-search-forward ,regexp end t)))
             (when match
-              (list (org-format-outline-path
-                     (org-get-outline-path t t))
+              (list (org-get-outline-path t t)
                     (point-marker)
                     (save-excursion
                       (beginning-of-line 1)
