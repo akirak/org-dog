@@ -331,6 +331,31 @@ properly handle it."
               " "
               (propertize (oref obj root) 'face 'org-dog-repository-face)))))
 
+(cl-defun org-dog-complete-multiple-files (&optional prompt initial-input _history
+                                                     &key class pred)
+  "Complete multiple org files."
+  (let* ((all-files (thread-last
+                      (org-dog-select-files
+                       (or pred
+                           (org-dog-make-file-pred :class class)))
+                      (mapcar (lambda (obj) (oref obj absolute)))))
+         (sels (completing-read-multiple
+                (or prompt "Select files, enter regexp, or empty for all files: ")
+                all-files
+                nil nil
+                initial-input)))
+    (if sels
+        (thread-last
+          sels
+          (mapcar (lambda (cand)
+                    (if (member cand all-files)
+                        cand
+                      (seq-filter (lambda (file)
+                                    (string-match-p cand file))
+                                  all-files))))
+          (flatten-list))
+      all-files)))
+
 ;;;; Miscellaneous utilities for convenience of users
 
 (defun org-dog-symbol-value (x)
