@@ -355,6 +355,53 @@ properly handle it."
                  (seq-filter predicate-fn)
                  (mapcar (lambda (name) (expand-file-name name root))))))
 
+(defun org-dog-subdirs-recursively (prune skip root)
+  "Return a list of directories under a root.
+
+Both PRUNE and SKIP can be a function, a string, or nil.
+PRUNE determines when a recursive search is terminated, and SKIP
+specifies directories that are not included in the result.
+
+If it is a function, it takes the relative path to a directory as
+an argument. If the function returns non-nil, the directory is
+pruned or skipped.
+
+If it is a string, it must be a regular expression that matches
+against the relative path to the directory.
+
+If it is nil, no directory is pruned or skipped.
+
+ROOT is the path to a directory."
+  (let (result
+        (prune-predicate (cl-typecase prune
+                           (function prune)
+                           (string `(lambda (s)
+                                      (string-match-p ,prune s)))
+                           (null (lambda (_) nil))))
+        (skip-predicate (cl-typecase skip
+                          (function skip)
+                          (string `(lambda (s)
+                                     (string-match-p ,skip s)))
+                          (null (lambda (_) nil))))
+        (root (file-name-as-directory (expand-file-name root))))
+    (cl-labels
+        ((go (relative)
+           (dolist (x (directory-files-and-attributes
+                       (if relative
+                           (expand-file-name relative root)
+                         root)
+                       nil "^[a-z]" t))
+             (pcase x
+               ((and `(,name ,dir . ,_)
+                     (guard dir))
+                (let ((path (concat relative name "/")))
+                  (unless (funcall skip-predicate path)
+                    (push (concat root path) result)
+                    (unless (funcall prune-predicate path)
+                      (go path)))))))))
+      (go nil))
+    result))
+
 (cl-defun org-dog-make-file-pred (&key class
                                        relative
                                        relative-prefix
