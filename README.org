@@ -30,9 +30,9 @@ The following is an example configuration for this repository:
   (setq org-dog-repository-alist
         `(("~/org/"
            :subdirs
-           ,(apply-partially #'org-dog-subdirs-with-predicate
-                             (lambda (name)
-                               (not (equal name "archive"))))
+           ,(apply-partially #'org-dog-subdirs-recursively
+                             nil
+                             (rx bol (or "archive" "lib") "/"))
            :routes
            (("hacking" org-dog-facade-datetree-file)
             ("learning" org-dog-facade-datetree-file)
