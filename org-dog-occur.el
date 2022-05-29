@@ -14,7 +14,7 @@
   "*Org Dog Occur*")
 
 (defface org-dog-occur-query-face
-  '((t :inherit bold))
+  '((default (:inherit bold)))
   "Face for the query in the org-dog-occur buffer."
   :group 'org-dog-occur)
 

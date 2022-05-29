@@ -66,17 +66,17 @@ have been already set to the object of the buffer file."
 ;;;; Faces
 
 (defface org-dog-file-directory-face
-  '((t :foreground "#aaaadd"))
+  '((default (:foreground "#aaaadd")))
   "Face for sub-directory components in completion of `org-dog-file' category."
   :group 'org-dog)
 
 (defface org-dog-file-class-face
-  '((t :inherit font-lock-constant-face))
+  '((default (:inherit font-lock-constant-face)))
   "Face for class names in completion of `org-dog-file' category."
   :group 'org-dog)
 
 (defface org-dog-repository-face
-  '((t :inherit font-lock-comment-face))
+  '((default (:inherit font-lock-comment-face)))
   "Face for repository directories in completion of `org-dog-file' category."
   :group 'org-dog)
 
