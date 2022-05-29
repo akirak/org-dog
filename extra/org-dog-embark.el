@@ -57,6 +57,7 @@
   ("a" org-dog-find-file-ace-window)
   ("s" org-dog-search-in-file)
   ("/" org-dog-search-file-ace-window)
+  ("L" org-dog-insert-link-to-file)
   ("r" org-dog-refile-to-file)
   ("c" org-dog-capture-to-file))
 

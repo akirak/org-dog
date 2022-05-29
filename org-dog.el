@@ -38,6 +38,7 @@
 (declare-function org-element-property "ext:org-element")
 (declare-function org-element-type "ext:org-element")
 (declare-function project-root "ext:project")
+(declare-function thing-at-point-looking-at "thingatpt")
 (defvar org-id-extra-files)
 (defvar org-id-track-globally)
 (defvar org-capture-templates)
@@ -269,6 +270,25 @@ This is mostly for optimization."
   (interactive)
   (when-let (obj (org-dog-buffer-object))
     (org-dog-capture-to-file obj)))
+
+;;;###autoload
+(defun org-dog-insert-link-to-file (file)
+  "Refile the current entry to FILE."
+  (interactive (list (org-dog-complete-file)))
+  (unless (derived-mode-p 'org-mode)
+    (user-error "Not in org-mode"))
+  (require 'thingatpt)
+  (when (thing-at-point-looking-at org-link-any-re)
+    (user-error "Point is at link"))
+  (cl-etypecase file
+    (string (org-dog-insert-link-to-file (org-dog-file-object file)))
+    (org-dog-file (let ((title (or (with-current-buffer
+                                       (org-dog-file-buffer file)
+                                     (org-dog--file-title))
+                                   (read-string "Title: "))))
+                    (insert (org-link-make-string
+                             (concat "org-dog:" (oref file relative))
+                             title))))))
 
 ;;;; Completion
 
