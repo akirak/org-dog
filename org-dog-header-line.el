@@ -23,12 +23,15 @@
 ;;;; Mode line constructs
 
 (defvar org-dog-header-line-fallback-olp
-  '(:eval (org-format-outline-path
-           (thread-last
-             (org-get-outline-path t t)
-             (reverse)
-             (mapcar #'substring-no-properties))
-           nil nil "\\")))
+  '(:eval (if-let (olp (ignore-errors
+                         (org-get-outline-path t t)))
+              (org-format-outline-path
+               (thread-last
+                 olp
+                 (reverse)
+                 (mapcar #'substring-no-properties))
+               nil nil "\\")
+            "")))
 
 ;;;; Other variables
 
