@@ -157,9 +157,9 @@ This function filters non-radio targets from the result of
                                   targets nil nil orig-text)))
     (when orig-text (delete-region (region-beginning) (region-end)))
     (insert (org-link-make-string target
-                                  (when (and orig-text
-                                             (org-dog-case-fold-equal
-                                              orig-text target))
+                                  (unless (and orig-text
+                                               (org-dog-case-fold-equal
+                                                orig-text target))
                                     orig-text)))))
 
 ;;;; Commands available in org-dog-occur-buffer
