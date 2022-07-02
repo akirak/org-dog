@@ -62,6 +62,25 @@
         (org-reverse-datetree-refile-to-file file)
       (user-error "Not in `org-dog-datetree-file'"))))
 
+;;;###autoload
+(defun org-dog-datetree-transclude-this-entry (file)
+  "Add a link to the current entry in another datetree."
+  (interactive (list (completing-read
+                      "Link from datetree: "
+                      (org-dog-file-completion :class 'org-dog-datetree-file))))
+  (unless (derived-mode-p 'org-mode)
+    (user-error "You have to run this command inside org-mode"))
+  (let ((org-capture-entry `("" ""
+                             plain
+                             (file+function
+                              ,file
+                              (lambda ()
+                                (org-reverse-datetree-goto-date-in-file
+                                 ',(org-reverse-datetree-guess-date))))
+                             "#+transclude: %a %?"
+                             :unnarrowed t)))
+    (org-capture)))
+
 ;; TODO: Use org-ql but without helm
 ;; (cl-defmethod org-dog-file-search ((file org-dog-datetree-file)))
 
