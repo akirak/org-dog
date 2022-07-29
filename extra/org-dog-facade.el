@@ -132,5 +132,16 @@
              (push (list key olp marker) result))))
        (nreverse result)))))
 
+;;;###autoload
+(defun org-dog-facade-project-ql-find ()
+  (interactive)
+  (if-let (files (thread-last
+                   (org-dog-context-edge 'project)
+                   (cdr)
+                   (org-dog-context-file-objects)
+                   (mapcar (lambda (obj) (oref obj absolute)))))
+      (org-ql-find files)
+    (user-error "File not found")))
+
 (provide 'org-dog-facade)
 ;;; org-dog-facade.el ends here
