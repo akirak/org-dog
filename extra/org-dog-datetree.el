@@ -87,8 +87,5 @@
     (not (and (<= level (org-reverse-datetree-num-levels))
               (string-match-p "\\`[[:digit:]]\\{4\\}" heading)))))
 
-;; TODO: Use org-ql but without helm
-;; (cl-defmethod org-dog-file-search ((file org-dog-datetree-file)))
-
 (provide 'org-dog-datetree)
 ;;; org-dog-datetree.el ends here
