@@ -135,6 +135,7 @@
 ;;;###autoload
 (defun org-dog-facade-project-ql-find ()
   (interactive)
+  (require 'org-dog-context)
   (if-let (files (thread-last
                    (org-dog-context-edge 'project)
                    (cdr)
