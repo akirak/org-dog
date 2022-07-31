@@ -44,6 +44,8 @@
 (defcustom org-dog-facade-default-sections
   '((?b "Backlog")
     (?k "Keywords")
+    (?i "Index")
+    (?l "Libraries")
     (?p "Projects")
     (?a "Activities")
     (?r "Resources"))
