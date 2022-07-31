@@ -665,5 +665,20 @@ create multiple buffers if the entry has no ID."
                   org-dog--indirect-buffers)
       (mapcar #'cdr))))
 
+;;;; Meaningful entries
+
+(defun org-dog-meaningful-p ()
+  "Return non-nil if the point is on a meaningful entry."
+  (when-let (obj (org-dog-buffer-object))
+    (org-dog-meaningful-in-file-p obj)))
+
+(cl-defgeneric org-dog-meaningful-in-file-p ((_x org-dog-file))
+  "Return non-nil if the point is on a meaningful entry.
+
+Some headings in an Org file may be used for structuring
+purposes. If the point is on such a heading, this function should
+return nil."
+  t)
+
 (provide 'org-dog)
 ;;; org-dog.el ends here
