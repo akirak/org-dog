@@ -132,5 +132,15 @@
              (push (list key olp marker) result))))
        (nreverse result)))))
 
+(cl-defmethod org-dog-meaningful-in-file-p ((file org-dog-facade-datetree-file))
+  (let ((level (org-outline-level))
+        (heading (org-get-heading t t t t)))
+    (and (not (and (= level 1)
+                   (member heading
+                           (mapcar (lambda (x) (nth 1 x))
+                                   (org-dog-symbol-value (oref file sections))))))
+         (not (and (<= level (org-reverse-datetree-num-levels))
+                   (string-match-p "\\`[[:digit:]]\\{4\\}" heading))))))
+
 (provide 'org-dog-facade)
 ;;; org-dog-facade.el ends here

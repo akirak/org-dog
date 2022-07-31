@@ -81,6 +81,12 @@
                              :unnarrowed t)))
     (org-capture)))
 
+(cl-defmethod org-dog-meaningful-in-file-p ((file org-dog-datetree-file))
+  (let ((level (org-outline-level))
+        (heading (org-get-heading t t t t)))
+    (not (and (<= level (org-reverse-datetree-num-levels))
+              (string-match-p "\\`[[:digit:]]\\{4\\}" heading)))))
+
 ;; TODO: Use org-ql but without helm
 ;; (cl-defmethod org-dog-file-search ((file org-dog-datetree-file)))
 
