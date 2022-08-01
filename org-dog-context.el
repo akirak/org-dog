@@ -54,7 +54,11 @@
     (language
      :key ?l
      :value-fn org-dog-context-language-value
-     :callback org-dog-context-language-1))
+     :callback org-dog-context-language-1)
+    (path
+     :key ?f
+     :value-fn org-dog-context-path-value
+     :callback org-dog-context-path-1))
   ""
   :type '(alist :key-type symbol
                 :value-type (plist
@@ -180,6 +184,25 @@
   (make-org-dog-context-in-directory
    :directory "languages/"
    :filenames (list language)))
+
+(defcustom org-dog-context-path-patterns nil
+  ""
+  :type '(alist :key-type regexp
+                :value-type file))
+
+(defun org-dog-context-path-value ()
+  (when-let* ((file (buffer-file-name))
+              (root (vc-root-dir)))
+    (file-relative-name file (expand-file-name root))))
+
+(defun org-dog-context-path-1 (path)
+  (catch 'org-dog-context-path
+    (pcase-dolist (`(,pattern . ,file) org-dog-context-path-patterns)
+      (when (string-match-p pattern path)
+        (throw 'org-dog-context-path
+               (make-org-dog-context-in-directory
+                :directory (file-name-directory file)
+                :filenames (list (file-name-nondirectory file))))))))
 
 (provide 'org-dog-context)
 ;;; org-dog-context.el ends here
