@@ -34,6 +34,7 @@
 (require 'org-dog-datetree)
 (declare-function org-refile "ext:org-refile")
 (declare-function org-agenda-refile "ext:org-agenda")
+(declare-function org-reverse-datetree-num-levels "ext:org-reverse-datetree")
 
 (defgroup org-dog-facade nil
   "Support for facade Org files."

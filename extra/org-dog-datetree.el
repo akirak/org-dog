@@ -5,6 +5,10 @@
 (require 'doct)
 (require 'org-reverse-datetree)
 
+(defvar org-capture-entry)
+(declare-function org-reverse-datetree-num-levels "ext:org-reverse-datetree")
+(declare-function org-reverse-datetree-guess-date "ext:org-reverse-datetree")
+
 (defgroup org-dog-datetree nil
   "Date tree file type for org-dog."
   :prefix "org-dog-datetree-"
@@ -81,7 +85,7 @@
                              :unnarrowed t)))
     (org-capture)))
 
-(cl-defmethod org-dog-meaningful-in-file-p ((file org-dog-datetree-file))
+(cl-defmethod org-dog-meaningful-in-file-p ((_file org-dog-datetree-file))
   (let ((level (org-outline-level))
         (heading (org-get-heading t t t t)))
     (not (and (<= level (org-reverse-datetree-num-levels))
