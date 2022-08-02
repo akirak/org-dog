@@ -672,8 +672,10 @@ create multiple buffers if the entry has no ID."
   (when-let (obj (org-dog-buffer-object))
     (org-dog-meaningful-in-file-p obj)))
 
-(cl-defgeneric org-dog-meaningful-in-file-p ((_x org-dog-file))
+(cl-defgeneric org-dog-meaningful-in-file-p (_x)
   "Return non-nil if the point is on a meaningful entry.
+
+_X must be an object that implements this method.
 
 Some headings in an Org file may be used for structuring
 purposes. If the point is on such a heading, this function should
