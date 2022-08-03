@@ -26,6 +26,19 @@
                                function)
                        (plist :inlint t))))
 
+(defcustom org-dog-datetree-distribute-when-refile
+  nil
+  "Whether to generate transclusion links on refiling.
+
+If this option is set to non-nil,
+`org-dog-datetree-transclude-by-tag' is run when
+`org-dog-datetree-refile' or
+`org-dog-datetree-refile-to-this-file' is run.
+
+This virtually means the information is distributed to its
+relevant files when an entry is archived."
+  :type 'boolean)
+
 (defvar org-dog-datetree-refile-history nil)
 
 (defclass org-dog-datetree-file (org-dog-file)
@@ -55,6 +68,8 @@
                       "Refile to datetree: "
                       (org-dog-file-completion :class 'org-dog-datetree-file)
                       nil nil nil org-dog-datetree-refile-history)))
+  (when org-dog-datetree-distribute-when-refile
+    (org-dog-datetree-transclude-by-tag t))
   (org-reverse-datetree-refile-to-file file))
 
 (defun org-dog-datetree-refile-to-this-file ()
@@ -63,7 +78,10 @@
   (let ((file (buffer-file-name)))
     (if (object-of-class-p (org-dog-file-object (abbreviate-file-name file))
                            'org-dog-datetree-file)
-        (org-reverse-datetree-refile-to-file file)
+        (progn
+          (when org-dog-datetree-distribute-when-refile
+            (org-dog-datetree-transclude-by-tag t))
+          (org-reverse-datetree-refile-to-file file))
       (user-error "Not in `org-dog-datetree-file'"))))
 
 ;;;###autoload
@@ -86,7 +104,7 @@
     (org-capture)))
 
 ;;;###autoload
-(defun org-dog-datetree-transclude-by-tag ()
+(defun org-dog-datetree-transclude-by-tag (&optional allow-empty)
   "Transclude this entry from date trees containing one of the tags."
   (interactive)
   (let* ((this-file (when-let (obj (org-dog-buffer-object))
@@ -107,7 +125,8 @@
           (dolist (file files)
             (org-dog-datetree-transclude-this-entry file :date date))
           (message "Linked to the entry from %s" (string-join files ", ")))
-      (user-error "No files"))))
+      (unless allow-empty
+        (user-error "No files")))))
 
 (cl-defmethod org-dog-meaningful-in-file-p ((_file org-dog-datetree-file))
   (let ((level (org-outline-level))
