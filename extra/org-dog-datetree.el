@@ -81,8 +81,8 @@
                               (lambda ()
                                 (org-reverse-datetree-goto-date-in-file
                                  ',(org-reverse-datetree-guess-date))))
-                             "#+transclude: %a %?"
-                             :unnarrowed t)))
+                             "#+transclude: %a"
+                             :immediate-finish t)))
     (org-capture)))
 
 (cl-defmethod org-dog-meaningful-in-file-p ((_file org-dog-datetree-file))
