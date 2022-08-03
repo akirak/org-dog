@@ -448,6 +448,7 @@ ROOT is the path to a directory."
     result))
 
 (cl-defun org-dog-make-file-pred (&key class
+                                       buffer-pred
                                        relative
                                        relative-prefix
                                        basename-regexp
@@ -464,7 +465,12 @@ ROOT is the path to a directory."
                                             (file-name-base (oref obj relative))))
                          (when negate-basename-regexp
                            `(not (string-match-p ,(concat "^" negate-basename-regexp "$")
-                                                 (file-name-base (oref obj relative))))))
+                                                 (file-name-base (oref obj relative)))))
+                         (when buffer-pred
+                           `(with-current-buffer (org-dog-file-buffer obj)
+                              ,(if (functionp buffer-pred)
+                                   `(funcall ',buffer-pred)
+                                 buffer-pred))))
                    (delq nil)))
       `(lambda (obj)
          (and ,@conds))

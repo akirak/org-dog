@@ -67,8 +67,8 @@
       (user-error "Not in `org-dog-datetree-file'"))))
 
 ;;;###autoload
-(defun org-dog-datetree-transclude-this-entry (file)
-  "Add a link to the current entry in another datetree."
+(cl-defun org-dog-datetree-transclude-this-entry (file &key date)
+  "Add a link to the current entry from another datetree."
   (interactive (list (completing-read
                       "Link from datetree: "
                       (org-dog-file-completion :class 'org-dog-datetree-file))))
@@ -80,10 +80,34 @@
                               ,file
                               (lambda ()
                                 (org-reverse-datetree-goto-date-in-file
-                                 ',(org-reverse-datetree-guess-date))))
+                                 ',(or date (org-reverse-datetree-guess-date)))))
                              "#+transclude: %a"
                              :immediate-finish t)))
     (org-capture)))
+
+;;;###autoload
+(defun org-dog-datetree-transclude-by-tag ()
+  "Transclude this entry from date trees containing one of the tags."
+  (interactive)
+  (let* ((this-file (when-let (obj (org-dog-buffer-object))
+                      (oref obj absolute)))
+         (tags (org-get-tags))
+         (files (thread-last
+                  (org-dog-select-files
+                   (org-dog-make-file-pred
+                    :buffer-pred
+                    `(cl-intersection ',tags org-file-tags :test #'equal)))
+                  (mapcar (lambda (obj)
+                            (oref obj absolute)))
+                  (cl-remove-if `(lambda (file)
+                                   (and ,this-file (equal file ,this-file))))))
+         (date (org-reverse-datetree-guess-date)))
+    (if files
+        (progn
+          (dolist (file files)
+            (org-dog-datetree-transclude-this-entry file :date date))
+          (message "Linked to the entry from %s" (string-join files ", ")))
+      (user-error "No files"))))
 
 (cl-defmethod org-dog-meaningful-in-file-p ((_file org-dog-datetree-file))
   (let ((level (org-outline-level))
