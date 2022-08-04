@@ -107,26 +107,31 @@ relevant files when an entry is archived."
 (defun org-dog-datetree-transclude-by-tag (&optional allow-empty)
   "Transclude this entry from date trees containing one of the tags."
   (interactive)
-  (let* ((this-file (when-let (obj (org-dog-buffer-object))
-                      (oref obj absolute)))
-         (tags (org-get-tags))
-         (files (thread-last
-                  (org-dog-select-files
-                   (org-dog-make-file-pred
-                    :buffer-pred
-                    `(cl-intersection ',tags org-file-tags :test #'equal)))
-                  (mapcar (lambda (obj)
-                            (oref obj absolute)))
-                  (cl-remove-if `(lambda (file)
-                                   (and ,this-file (equal file ,this-file))))))
-         (date (org-reverse-datetree-guess-date)))
-    (if files
-        (progn
-          (dolist (file files)
-            (org-dog-datetree-transclude-this-entry file :date date))
-          (message "Linked to the entry from %s" (string-join files ", ")))
-      (unless allow-empty
-        (user-error "No files")))))
+  (if-let (obj (org-dog-buffer-object))
+      (let* ((this-file (oref obj absolute))
+             (root (oref obj root))
+             (tags (org-get-tags))
+             (files (thread-last
+                      (org-dog-select-files
+                       (org-dog-make-file-pred
+                        :buffer-pred
+                        `(cl-intersection ',tags org-file-tags :test #'equal)))
+                      (cl-remove-if-not `(lambda (obj)
+                                           (and (equal (oref obj root)
+                                                       ,root)
+                                                (not (equal (oref obj absolute)
+                                                            ,this-file)))))
+                      (mapcar (lambda (obj)
+                                (oref obj absolute)))))
+             (date (org-reverse-datetree-guess-date)))
+        (if files
+            (progn
+              (dolist (file files)
+                (org-dog-datetree-transclude-this-entry file :date date))
+              (message "Linked to the entry from %s" (string-join files ", ")))
+          (unless allow-empty
+            (user-error "No files"))))
+    (user-error "The source file needs to be in a repository")))
 
 (cl-defmethod org-dog-meaningful-in-file-p ((_file org-dog-datetree-file))
   (let ((level (org-outline-level))
