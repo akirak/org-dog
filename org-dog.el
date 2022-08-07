@@ -4,7 +4,7 @@
 
 ;; Author: Akira Komamura <akira.komamura@gmail.com>
 ;; Version: 0.1
-;; Package-Requires: ((emacs "28.1") (org "9.5") (project "0.8"))
+;; Package-Requires: ((emacs "28.1") (org "9.5") (project "0.8") (ts "0.2"))
 ;; Keywords: org convenience
 ;; URL: https://github.com/akirak/org-dog
 
@@ -343,13 +343,16 @@ properly handle it."
       (concat (if (eq class org-dog-default-file-class)
                   ""
                 (concat " "
-                        (propertize (thread-last
-                                      (symbol-name class)
-                                      (string-remove-prefix "org-dog-")
-                                      (string-remove-suffix "-file"))
+                        (propertize (org-dog--format-class class)
                                     'face 'org-dog-file-class-face)))
               " "
               (propertize (oref obj root) 'face 'org-dog-repository-face)))))
+
+(defun org-dog--format-class (class)
+  (thread-last
+    (symbol-name class)
+    (string-remove-prefix "org-dog-")
+    (string-remove-suffix "-file")))
 
 (cl-defun org-dog-complete-multiple-files (&optional prompt initial-input _history
                                                      &key class pred)

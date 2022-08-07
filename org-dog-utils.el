@@ -2,6 +2,7 @@
 
 (require 'org)
 (require 'subr-x)
+(require 'ts)
 
 (defvar org-keyword-regexp)
 
@@ -26,6 +27,22 @@
            (throw 'org-dog-file-title nil))
          (forward-line)))
      nil)))
+
+(defun org-dog--latest-inactive-ts ()
+  "Return the latest inactive timestamp in the buffer."
+  (let (result)
+    (while (re-search-forward org-ts-regexp-inactive nil t)
+      (save-excursion
+        (goto-char (match-beginning 0))
+        (let ((ts (thread-last
+                    (org-element-timestamp-parser)
+                    (org-timestamp-to-time)
+                    (float-time)
+                    (make-ts :unix))))
+          (when (or (not result)
+                    (ts> ts result))
+            (setq result ts)))))
+    result))
 
 (provide 'org-dog-utils)
 ;;; org-dog-utils.el ends here
