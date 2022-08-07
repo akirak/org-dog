@@ -48,6 +48,7 @@
     (?i "Index")
     (?l "Libraries")
     (?p "Projects")
+    (?t "Patterns")
     (?a "Activities")
     (?r "Resources"))
   "The default set of sections for facade files."
