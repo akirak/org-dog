@@ -21,6 +21,7 @@
                                ("Repo" 12 t)
                                ("Class" 16 t)
                                ("Agenda" 3 t)
+                               ("File tags" 9 t)
                                ("Activity" 10 t)])
   (setq tabulated-list-padding 2)
   ;; I am not sure what would be the best here, so I may change this later.
@@ -45,6 +46,9 @@
                                                 agenda-files)
                                         "Yes"
                                       "No")
+                                    (with-current-buffer
+                                        (org-dog-file-buffer obj)
+                                      (string-join org-file-tags ","))
                                     (with-current-buffer
                                         (org-dog-file-buffer obj)
                                       (org-with-wide-buffer
