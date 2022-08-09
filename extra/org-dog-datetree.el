@@ -39,6 +39,11 @@ This virtually means the information is distributed to its
 relevant files when an entry is archived."
   :type 'boolean)
 
+(defcustom org-dog-datetree-generate-id-on-refile
+  t
+  "Whether to generate an id on refiling."
+  :type 'boolean)
+
 (defvar org-dog-datetree-refile-history nil)
 
 (defclass org-dog-datetree-file (org-dog-file)
@@ -68,6 +73,8 @@ relevant files when an entry is archived."
                       "Refile to datetree: "
                       (org-dog-file-completion :class 'org-dog-datetree-file)
                       nil nil nil org-dog-datetree-refile-history)))
+  (when org-dog-datetree-generate-id-on-refile
+    (org-id-get-create))
   (when org-dog-datetree-distribute-when-refile
     (org-dog-datetree-transclude-by-tag t))
   (org-reverse-datetree-refile-to-file file))
