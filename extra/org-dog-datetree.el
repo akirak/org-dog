@@ -26,12 +26,12 @@
                                function)
                        (plist :inlint t))))
 
-(defcustom org-dog-datetree-distribute-on-refile
+(defcustom org-dog-datetree-propagate-on-refile
   nil
   "Whether to generate transclusion links on refiling.
 
 If this option is set to non-nil,
-`org-dog-datetree-transclude-by-tag' is run when
+`org-dog-datetree-propagate-by-tag' is run when
 `org-dog-datetree-refile' or
 `org-dog-datetree-refile-to-this-file' is run.
 
@@ -75,8 +75,8 @@ relevant files when an entry is archived."
                       nil nil nil org-dog-datetree-refile-history)))
   (when org-dog-datetree-generate-id-on-refile
     (org-id-get-create))
-  (when org-dog-datetree-distribute-on-refile
-    (org-dog-datetree-transclude-by-tag t))
+  (when org-dog-datetree-propagate-on-refile
+    (org-dog-datetree-propagate-by-tag t))
   (org-reverse-datetree-refile-to-file file))
 
 (defun org-dog-datetree-refile-to-this-file ()
@@ -86,8 +86,8 @@ relevant files when an entry is archived."
     (if (object-of-class-p (org-dog-file-object (abbreviate-file-name file))
                            'org-dog-datetree-file)
         (progn
-          (when org-dog-datetree-distribute-on-refile
-            (org-dog-datetree-transclude-by-tag t))
+          (when org-dog-datetree-propagate-on-refile
+            (org-dog-datetree-propagate-by-tag t))
           (org-reverse-datetree-refile-to-file file))
       (user-error "Not in `org-dog-datetree-file'"))))
 
@@ -111,8 +111,8 @@ relevant files when an entry is archived."
     (org-capture)))
 
 ;;;###autoload
-(defun org-dog-datetree-transclude-by-tag (&optional allow-empty)
-  "Transclude this entry from date trees containing one of the tags."
+(defun org-dog-datetree-propagate-by-tag (&optional allow-empty)
+  "Transclude this entry from other date trees sharing tags."
   (interactive)
   (if-let (obj (org-dog-buffer-object))
       (let* ((this-file (oref obj absolute))
