@@ -111,13 +111,13 @@ relevant files when an entry is archived."
     (org-capture)))
 
 ;;;###autoload
-(defun org-dog-datetree-propagate-by-tag (&optional interactive)
+(cl-defun org-dog-datetree-propagate-by-tag (&key local interactive)
   "Transclude this entry from other date trees sharing tags."
-  (interactive (list t))
+  (interactive (list :interactive t))
   (if-let (obj (org-dog-buffer-object))
       (let* ((this-file (oref obj absolute))
              (root (oref obj root))
-             (tags (org-get-tags))
+             (tags (org-get-tags nil local))
              (files (thread-last
                       (org-dog-select-files
                        (org-dog-make-file-pred
