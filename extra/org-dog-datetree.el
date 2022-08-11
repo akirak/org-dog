@@ -112,33 +112,45 @@ relevant files when an entry is archived."
 
 ;;;###autoload
 (cl-defun org-dog-datetree-propagate-by-tag (&key local interactive
-                                                  date)
+                                                  date subtree)
   "Transclude this entry from other date trees sharing tags."
-  (interactive (list :interactive t))
+  (interactive (list :interactive t
+                     :subtree (eql current-prefix-arg '(4))))
   (if-let (obj (org-dog-buffer-object))
-      (let* ((this-file (oref obj absolute))
-             (root (oref obj root))
-             (tags (org-get-tags nil local))
-             (files (thread-last
-                      (org-dog-select-files
-                       (org-dog-make-file-pred
-                        :buffer-pred
-                        `(cl-intersection ',tags org-file-tags :test #'equal)))
-                      (cl-remove-if-not `(lambda (obj)
-                                           (and (equal (oref obj root)
-                                                       ,root)
-                                                (not (equal (oref obj absolute)
-                                                            ,this-file)))))
-                      (mapcar (lambda (obj)
-                                (oref obj absolute)))))
-             (date (or date (org-reverse-datetree-guess-date))))
-        (if files
-            (progn
-              (dolist (file files)
-                (org-dog-datetree-transclude-this-entry file :date date))
-              (message "Linked to the entry from %s" (string-join files ", ")))
-          (when interactive
-            (user-error "No files"))))
+      (if subtree
+          (let ((end (save-excursion
+                       (org-end-of-subtree))))
+            (catch 'no-subtree
+              (while t
+                (when (org-get-tags nil local)
+                  (org-dog-datetree-propagate-by-tag :interactive t
+                                                     :local t
+                                                     :date date))
+                (unless (re-search-forward org-heading-regexp end t)
+                  (throw 'no-subtree t)))))
+        (let* ((this-file (oref obj absolute))
+               (root (oref obj root))
+               (tags (org-get-tags nil local))
+               (files (thread-last
+                        (org-dog-select-files
+                         (org-dog-make-file-pred
+                          :buffer-pred
+                          `(cl-intersection ',tags org-file-tags :test #'equal)))
+                        (cl-remove-if-not `(lambda (obj)
+                                             (and (equal (oref obj root)
+                                                         ,root)
+                                                  (not (equal (oref obj absolute)
+                                                              ,this-file)))))
+                        (mapcar (lambda (obj)
+                                  (oref obj absolute)))))
+               (date (or date (org-reverse-datetree-guess-date))))
+          (if files
+              (progn
+                (dolist (file files)
+                  (org-dog-datetree-transclude-this-entry file :date date))
+                (message "Linked to the entry from %s" (string-join files ", ")))
+            (when interactive
+              (user-error "No files")))))
     (when interactive
       (user-error "The source file needs to be in a repository"))))
 
