@@ -111,7 +111,8 @@ relevant files when an entry is archived."
     (org-capture)))
 
 ;;;###autoload
-(cl-defun org-dog-datetree-propagate-by-tag (&key local interactive)
+(cl-defun org-dog-datetree-propagate-by-tag (&key local interactive
+                                                  date)
   "Transclude this entry from other date trees sharing tags."
   (interactive (list :interactive t))
   (if-let (obj (org-dog-buffer-object))
@@ -130,7 +131,7 @@ relevant files when an entry is archived."
                                                             ,this-file)))))
                       (mapcar (lambda (obj)
                                 (oref obj absolute)))))
-             (date (org-reverse-datetree-guess-date)))
+             (date (or date (org-reverse-datetree-guess-date))))
         (if files
             (progn
               (dolist (file files)
