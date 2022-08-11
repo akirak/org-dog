@@ -111,9 +111,9 @@ relevant files when an entry is archived."
     (org-capture)))
 
 ;;;###autoload
-(defun org-dog-datetree-propagate-by-tag (&optional allow-empty)
+(defun org-dog-datetree-propagate-by-tag (&optional interactive)
   "Transclude this entry from other date trees sharing tags."
-  (interactive)
+  (interactive (list t))
   (if-let (obj (org-dog-buffer-object))
       (let* ((this-file (oref obj absolute))
              (root (oref obj root))
@@ -136,9 +136,10 @@ relevant files when an entry is archived."
               (dolist (file files)
                 (org-dog-datetree-transclude-this-entry file :date date))
               (message "Linked to the entry from %s" (string-join files ", ")))
-          (unless allow-empty
+          (when interactive
             (user-error "No files"))))
-    (user-error "The source file needs to be in a repository")))
+    (when interactive
+      (user-error "The source file needs to be in a repository"))))
 
 (cl-defmethod org-dog-meaningful-in-file-p ((_file org-dog-datetree-file))
   (let ((level (org-outline-level))
