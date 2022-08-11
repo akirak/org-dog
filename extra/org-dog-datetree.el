@@ -99,16 +99,16 @@ relevant files when an entry is archived."
                       (org-dog-file-completion :class 'org-dog-datetree-file))))
   (unless (derived-mode-p 'org-mode)
     (user-error "You have to run this command inside org-mode"))
-  (let ((org-capture-entry `("" ""
-                             plain
-                             (file+function
-                              ,file
-                              (lambda ()
-                                (org-reverse-datetree-goto-date-in-file
-                                 ',(or date (org-reverse-datetree-guess-date)))))
-                             "#+transclude: %a"
-                             :immediate-finish t)))
-    (org-capture)))
+  (let ((link (org-store-link nil)))
+    (with-current-buffer (or (find-buffer-visiting file)
+                             (find-file-noselect file))
+      (org-with-wide-buffer
+       (org-reverse-datetree-goto-date-in-file
+        (or date (org-reverse-datetree-guess-date)))
+       (org-end-of-meta-data t)
+       (insert "#+transclude: " link "\n")
+       (org-end-of-line 0)
+       (ignore-errors (org-transclusion-add))))))
 
 ;;;###autoload
 (cl-defun org-dog-datetree-propagate-by-tag (&key local interactive
