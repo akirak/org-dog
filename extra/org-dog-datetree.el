@@ -76,7 +76,7 @@ relevant files when an entry is archived."
   (when org-dog-datetree-generate-id-on-refile
     (org-id-get-create))
   (when org-dog-datetree-propagate-on-refile
-    (org-dog-datetree-propagate-by-tag 'interactive))
+    (org-dog-datetree-propagate-by-tag nil))
   (org-reverse-datetree-refile-to-file file))
 
 (defun org-dog-datetree-refile-to-this-file ()
@@ -87,7 +87,7 @@ relevant files when an entry is archived."
                            'org-dog-datetree-file)
         (progn
           (when org-dog-datetree-propagate-on-refile
-            (org-dog-datetree-propagate-by-tag 'interactive))
+            (org-dog-datetree-propagate-by-tag nil))
           (org-reverse-datetree-refile-to-file file))
       (user-error "Not in `org-dog-datetree-file'"))))
 
