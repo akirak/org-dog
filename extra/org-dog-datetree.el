@@ -76,7 +76,7 @@ relevant files when an entry is archived."
   (when org-dog-datetree-generate-id-on-refile
     (org-id-get-create))
   (when org-dog-datetree-propagate-on-refile
-    (org-dog-datetree-propagate-by-tag t))
+    (org-dog-datetree-propagate-by-tag 'interactive))
   (org-reverse-datetree-refile-to-file file))
 
 (defun org-dog-datetree-refile-to-this-file ()
@@ -87,7 +87,7 @@ relevant files when an entry is archived."
                            'org-dog-datetree-file)
         (progn
           (when org-dog-datetree-propagate-on-refile
-            (org-dog-datetree-propagate-by-tag t))
+            (org-dog-datetree-propagate-by-tag 'interactive))
           (org-reverse-datetree-refile-to-file file))
       (user-error "Not in `org-dog-datetree-file'"))))
 
@@ -111,8 +111,9 @@ relevant files when an entry is archived."
        (ignore-errors (org-transclusion-add))))))
 
 ;;;###autoload
-(cl-defun org-dog-datetree-propagate-by-tag (&key local interactive
-                                                  date subtree)
+(cl-defun org-dog-datetree-propagate-by-tag (&optional interactive
+                                                       &key local
+                                                       date subtree)
   "Transclude this entry from other date trees sharing tags."
   (interactive (list :interactive t
                      :subtree (eql current-prefix-arg '(4))))
@@ -123,7 +124,7 @@ relevant files when an entry is archived."
             (catch 'no-subtree
               (while t
                 (when (org-get-tags nil local)
-                  (org-dog-datetree-propagate-by-tag :interactive t
+                  (org-dog-datetree-propagate-by-tag 'interactive
                                                      :local t
                                                      :date date))
                 (unless (re-search-forward org-heading-regexp end t)
