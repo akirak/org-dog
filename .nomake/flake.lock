@@ -154,7 +154,41 @@
         "org-dog": "org-dog",
         "org-dog-embark": "org-dog-embark",
         "org-dog-facade": "org-dog-facade",
-        "org-reverse-datetree": "org-reverse-datetree"
+        "org-reverse-datetree": "org-reverse-datetree",
+        "s": "s",
+        "ts": "ts"
+      }
+    },
+    "s": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1660643819,
+        "narHash": "sha256-ZEN1ynxijPoakz7l6xiC9FpGyFuIAnr8rjrHDh+bMk8=",
+        "owner": "magnars",
+        "repo": "s.el",
+        "rev": "7f25ead4b0deac6f49d07e0c3b8859adedb28207",
+        "type": "github"
+      },
+      "original": {
+        "owner": "magnars",
+        "repo": "s.el",
+        "type": "github"
+      }
+    },
+    "ts": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1628871468,
+        "narHash": "sha256-UdzBCdRVn78nuyeePD2kLBcAyYqrs1uly+BIqin/gYA=",
+        "owner": "alphapapa",
+        "repo": "ts.el",
+        "rev": "3fee71ceefac71ba55eb34829d7e94bb3df37cee",
+        "type": "github"
+      },
+      "original": {
+        "owner": "alphapapa",
+        "repo": "ts.el",
+        "type": "github"
       }
     }
   },

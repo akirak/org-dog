@@ -56,6 +56,18 @@
       repo = "org-reverse-datetree";
       type = "github";
     };
+    "s" = {
+      flake = false;
+      owner = "magnars";
+      repo = "s.el";
+      type = "github";
+    };
+    ts = {
+      flake = false;
+      owner = "alphapapa";
+      repo = "ts.el";
+      type = "github";
+    };
   };
   outputs = { ... }: { };
 }
