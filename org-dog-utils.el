@@ -6,6 +6,8 @@
 
 (defvar org-keyword-regexp)
 
+(declare-function org-element-timestamp-parser "org-element")
+
 (defsubst org-dog-case-fold-equal (string1 string2)
   "Compare two strings, ignoring case."
   (equal (downcase string1)
