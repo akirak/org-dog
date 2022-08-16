@@ -8,6 +8,7 @@
 (defvar org-capture-entry)
 (declare-function org-reverse-datetree-num-levels "ext:org-reverse-datetree")
 (declare-function org-reverse-datetree-guess-date "ext:org-reverse-datetree")
+(declare-function org-transclusion-add "ext:org-transclusion")
 
 (defgroup org-dog-datetree nil
   "Date tree file type for org-dog."
