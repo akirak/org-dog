@@ -139,9 +139,9 @@ relevant files when an entry is archived."
                           ;; The source entry must contain all of the file tags
                           ;; of the destination file.
                           `(and org-file-tags
-                                (seq-every (lambda (tag)
-                                             (member tag ',tags))
-                                           org-file-tags))))
+                                (seq-every-p (lambda (tag)
+                                               (member tag ',tags))
+                                             org-file-tags))))
                         (cl-remove-if-not `(lambda (obj)
                                              (and (equal (oref obj root)
                                                          ,root)
