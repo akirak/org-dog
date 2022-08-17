@@ -116,8 +116,7 @@ relevant files when an entry is archived."
                                                        &key local
                                                        date subtree)
   "Transclude this entry from other date trees sharing tags."
-  (interactive (list :interactive t
-                     :subtree (eql current-prefix-arg '(4))))
+  (interactive (list t :subtree (eql current-prefix-arg '(4))))
   (if-let (obj (org-dog-buffer-object))
       (if subtree
           (let ((end (save-excursion
