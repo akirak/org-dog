@@ -132,6 +132,7 @@
 (cl-defmacro octopus-define-context (name &key context-key
                                           description-label
                                           description-body
+                                          files-suffix
                                           setup-suffix
                                           initial-key)
   (declare (indent 1))
@@ -182,13 +183,31 @@
                               :command symbol))
                      result)
                (cl-incf i)))
-           (nreverse result))))))
+           (nreverse result)))
+
+       (transient-define-suffix ,files-suffix ()
+         :description ,(format "%s Files" description-label)
+         :if #',predicate-sym
+         (interactive)
+         (if-let (files (thread-last
+                          (org-dog-overview-scan
+                           (thread-last
+                             (cdr ,var-sym)
+                             (org-dog-context-file-objects)
+                             (mapcar (lambda (obj) (oref obj absolute))))
+                           :fast t)
+                          (mapcar #'car)
+                          (reverse)))
+             (octopus--dispatch (oref transient-current-prefix command)
+                                files)
+           (user-error "No file in the context"))))))
 
 (octopus-define-context "project"
   :context-key project
   :initial-key "p"
   :description-label "Project"
   :description-body (project-root (cdar octopus--project-context))
+  :files-suffix octopus-project-files-suffix
   :setup-suffix octopus-setup-project-file-targets)
 
 (octopus-define-context "major-mode"
@@ -196,6 +215,7 @@
   :initial-key "m"
   :description-label "Major Mode"
   :description-body (cdar octopus--major-mode-context)
+  :files-suffix octopus-major-mode-files-suffix
   :setup-suffix octopus-setup-major-mode-file-targets)
 
 (octopus-define-context "path"
@@ -203,6 +223,7 @@
   :initial-key "f"
   :description-label "File Path"
   :description-body (cdar octopus--path-context)
+  :files-suffix octopus-path-files-suffix
   :setup-suffix octopus-setup-path-file-targets)
 
 (octopus-define-context "language"
@@ -210,6 +231,7 @@
   :initial-key "l"
   :description-label "Language"
   :description-body (cdar octopus--language-context)
+  :files-suffix octopus-language-files-suffix
   :setup-suffix octopus-setup-language-file-targets)
 
 (defun octopus-setup-context-file-subgroups (_children)
@@ -231,6 +253,17 @@
              octopus--language-description
              :if octopus--language-p
              :setup-children octopus-setup-language-file-targets))))
+
+(defun octopus-setup-context-files-targets (_children)
+  (mapcar (pcase-lambda (`(,key ,suffix))
+            `(,transient--default-child-level
+              transient-suffix
+              ,(list :key key
+                     :command suffix)))
+          '(("p" octopus-project-files-suffix)
+            ("m" octopus-major-mode-files-suffix)
+            ("f" octopus-path-files-suffix)
+            ("l" octopus-language-files-suffix))))
 
 ;;;;; Refile
 
@@ -275,6 +308,24 @@
            (cl-etypecase target
              (org-dog-file (oref target absolute))
              (string target))))
+
+;;;###autoload (autoload 'octopus-find-node "octopus" nil 'interactive)
+(transient-define-prefix octopus-find-node ()
+  ["Context"
+   :class transient-row
+   :setup-children octopus-setup-context-files-targets]
+  ["Static targets"
+   :class transient-row
+   :setup-children octopus-setup-static-targets]
+  ["Other targets"
+   :class transient-row
+   ("/" octopus-read-dog-file-suffix)]
+  (interactive)
+  (transient-setup 'octopus-find-node))
+
+(cl-defmethod octopus--dispatch ((_cmd (eql 'octopus-find-node))
+                                 files)
+  (org-ql-find files))
 
 ;;;###autoload (autoload 'octopus-refile "octopus" nil 'interactive)
 (transient-define-prefix octopus-refile ()
