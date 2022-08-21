@@ -118,6 +118,15 @@
                          filename
                        (org-dog-resolve-relative-file filename))))
 
+;;;;; This file
+
+(transient-define-suffix octopus-in-file-suffix ()
+  :if (lambda () (derived-mode-p 'org-mode))
+  :description "This file"
+  (interactive)
+  (octopus--dispatch (oref transient-current-prefix command)
+                     (buffer-file-name)))
+
 ;;;;; Project context
 
 (defvar octopus--project-context nil)
@@ -148,6 +157,15 @@
                                        (cdr octopus--project-files)))))
     (octopus--dispatch (oref transient-current-prefix command)
                        file)))
+
+;;;;; Refile
+
+(defvar octopus-refile-to-datetree nil)
+
+(transient-define-infix octopus-infix-refile-to-datetree ()
+  :class 'octopus-boolean-variable
+  :variable 'octopus-refile-to-datetree
+  :description "To datetree")
 
 ;;;;; Prompt
 
@@ -186,6 +204,27 @@
            (cl-etypecase target
              (org-dog-file (oref target absolute))
              (string target))))
+
+;;;###autoload (autoload 'octopus-refile "octopus" nil 'interactive)
+(transient-define-prefix octopus-refile ()
+  ["Options"
+   ("-d" octopus-infix-refile-to-datetree)]
+  ["This file"
+   ("." octopus-in-file-suffix)]
+  ["Other targets"
+   :class transient-row
+   ("'" "Avy" avy-org-refile-as-child)
+   ("/" octopus-read-dog-file-suffix)]
+  (interactive)
+  (unless (derived-mode-p 'org-mode 'org-agenda-mode)
+    (user-error "Cannot run in this mode"))
+  (transient-setup 'octopus-refile))
+
+(cl-defmethod octopus--dispatch ((_cmd (eql 'octopus-refile))
+                                 target)
+  (if octopus-refile-to-datetree
+      (org-dog-datetree-refile target)
+    (org-dog-refile-to-file target)))
 
 (provide 'octopus)
 ;;; octopus.el ends here
