@@ -127,78 +127,84 @@
   (octopus--dispatch (oref transient-current-prefix command)
                      (buffer-file-name)))
 
-;;;;; Project context
+;;;;; Contexts
 
-(defvar octopus--project-context nil)
+(cl-defmacro octopus-define-context (name &key context-key
+                                          description-label
+                                          description-body
+                                          setup-suffix
+                                          initial-key)
+  (declare (indent 1))
+  (let ((var-sym (intern (format "octopus--%s-context" name)))
+        (predicate-sym (intern (format "octopus--%s-p" name)))
+        (description-sym (intern (format "octopus--%s-description" name))))
+    `(progn
+       (defvar ,var-sym nil)
 
-(defun octopus--project-p ()
-  (let ((ctx (org-dog-context-edge 'project)))
-    (setq octopus--project-context ctx)
-    (cdr ctx)))
+       (defun ,predicate-sym ()
+         (let ((ctx (org-dog-context-edge ',context-key)))
+           (setq ,var-sym ctx)
+           (cdr ctx)))
 
-(defun octopus--project-description ()
-  (format "Project: %s" (project-root (cdar octopus--project-context))))
+       (defun ,description-sym ()
+         (format "%s: %s" ,description-label ,description-body))
 
-(defun octopus-setup-project-file-targets (children)
-  (let* ((objects (thread-last
-                    (cdr octopus--project-context)
-                    (org-dog-context-file-objects)))
-         (singletonp (= (length objects) 1))
-         (initial-key "p")
-         (i 0)
-         result)
-    (dolist (obj objects)
-      (let ((symbol (intern (format "octopus--context-file-suffix-%s-%d" initial-key i)))
-            (absolute (oref obj absolute))
-            (relative (oref obj relative))
-            (key (concat initial-key (cond
-                                      (singletonp "")
-                                      ((= i 0) initial-key)
-                                      (t (number-to-string i))))))
-        (fset symbol
-              `(lambda ()
-                 (interactive)
-                 (octopus--run-file-suffix ,absolute)))
-        (put symbol 'interactive-only t)
-        (push `(,transient--default-child-level
-                transient-suffix
-                ,(list :key key
-                       :description relative
-                       :command symbol))
-              result)
-        (cl-incf i)))
-    (nreverse result)))
+       (defun ,setup-suffix (children)
+         (let* ((objects (thread-last
+                           (cdr ,var-sym)
+                           (org-dog-context-file-objects)))
+                (singletonp (= (length objects) 1))
+                (i 0)
+                result)
+           (dolist (obj objects)
+             (let ((symbol (intern (format "octopus--context-file-suffix-%s-%d" ,initial-key i)))
+                   (absolute (oref obj absolute))
+                   (relative (oref obj relative))
+                   (key (concat ,initial-key (cond
+                                              (singletonp "")
+                                              ((= i 0) ,initial-key)
+                                              (t (number-to-string i))))))
+               (fset symbol
+                     `(lambda ()
+                        (interactive)
+                        (octopus--run-file-suffix ,absolute)))
+               (put symbol 'interactive-only t)
+               (push `(,transient--default-child-level
+                       transient-suffix
+                       ,(list :key key
+                              :description relative
+                              :command symbol))
+                     result)
+               (cl-incf i)))
+           (nreverse result))))))
 
-;;;;; Mode context
+(octopus-define-context "project"
+  :context-key project
+  :initial-key "p"
+  :description-label "Project"
+  :description-body (project-root (cdar octopus--project-context))
+  :setup-suffix octopus-setup-project-file-targets)
 
-(defvar octopus--major-mode-context nil)
-(defvar octopus--major-mode-files nil)
+(octopus-define-context "major-mode"
+  :context-key major-mode
+  :initial-key "m"
+  :description-label "Major Mode"
+  :description-body (cdar octopus--major-mode-context)
+  :setup-suffix octopus-setup-major-mode-file-targets)
 
-(defun octopus--major-mode-scan ()
-  (let ((ctx (org-dog-context-edge 'major-mode)))
-    (when (cdr ctx)
-      (setq octopus--major-mode-context (cdar ctx))
-      (setq octopus--major-mode-files (org-dog-context-file-objects (cdr ctx))))))
+(octopus-define-context "path"
+  :context-key path
+  :initial-key "f"
+  :description-label "File Path"
+  :description-body (cdar octopus--path-context)
+  :setup-suffix octopus-setup-path-file-targets)
 
-(defun octopus--major-mode-description ()
-  (format "Major-Mode: %s" octopus--major-mode-context))
-
-(transient-define-suffix octopus-major-mode-head-file-suffix ()
-  :if (lambda () octopus--major-mode-files)
-  :description (lambda () (oref (car octopus--major-mode-files) absolute))
-  (interactive)
-  (octopus--dispatch (oref transient-current-prefix command)
-                     (car octopus--major-mode-files)))
-
-(transient-define-suffix octopus-major-mode-other-file-suffix ()
-  :if (lambda () (cdr octopus--major-mode-files))
-  :description "Other files"
-  (interactive)
-  (let ((file (completing-read "Select a major-mode file: "
-                               (mapcar (lambda (obj) (oref obj absolute))
-                                       (cdr octopus--major-mode-files)))))
-    (octopus--dispatch (oref transient-current-prefix command)
-                       file)))
+(octopus-define-context "language"
+  :context-key language
+  :initial-key "l"
+  :description-label "Language"
+  :description-body (cdar octopus--language-context)
+  :setup-suffix octopus-setup-language-file-targets)
 
 ;;;;; Refile
 
@@ -231,9 +237,16 @@
     :setup-children octopus-setup-project-file-targets]
    [:description
     octopus--major-mode-description
-    :if octopus--major-mode-scan
-    ("m" octopus-major-mode-head-file-suffix)
-    ("M" octopus-major-mode-other-file-suffix)]]
+    :if octopus--major-mode-p
+    :setup-children octopus-setup-major-mode-file-targets]
+   [:description
+    octopus--path-description
+    :if octopus--path-p
+    :setup-children octopus-setup-path-file-targets]
+   [:description
+    octopus--language-description
+    :if octopus--language-p
+    :setup-children octopus-setup-language-file-targets]]
   ["Static targets"
    :class transient-row
    :setup-children octopus-setup-static-targets]
