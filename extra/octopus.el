@@ -150,16 +150,22 @@
          (format "%s: %s" ,description-label ,description-body))
 
        (defun ,setup-suffix (children)
-         (let* ((objects (thread-last
-                           (cdr ,var-sym)
-                           (org-dog-context-file-objects)))
-                (singletonp (= (length objects) 1))
+         (let* ((files (thread-last
+                         (cdr ,var-sym)
+                         (org-dog-context-file-objects)
+                         (mapcar (lambda (obj) (oref obj absolute)))))
+                (files (thread-last
+                         (org-dog-overview-scan files :fast t)
+                         (mapcar #'car)
+                         (reverse)))
+                (singletonp (= (length files) 1))
                 (i 0)
                 result)
-           (dolist (obj objects)
-             (let ((symbol (intern (format "octopus--context-file-suffix-%s-%d" ,initial-key i)))
-                   (absolute (oref obj absolute))
-                   (relative (oref obj relative))
+           (dolist (file files)
+             (let ((symbol (intern (format "octopus--context-file-suffix-%s-%d"
+                                           ,initial-key i)))
+                   ;; (absolute (oref obj absolute))
+                   ;; (relative (oref obj relative))
                    (key (concat ,initial-key (cond
                                               (singletonp "")
                                               ((= i 0) ,initial-key)
@@ -167,12 +173,12 @@
                (fset symbol
                      `(lambda ()
                         (interactive)
-                        (octopus--run-file-suffix ,absolute)))
+                        (octopus--run-file-suffix ,file)))
                (put symbol 'interactive-only t)
                (push `(,transient--default-child-level
                        transient-suffix
                        ,(list :key key
-                              :description relative
+                              :description file
                               :command symbol))
                      result)
                (cl-incf i)))
