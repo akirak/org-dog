@@ -130,33 +130,44 @@
 ;;;;; Project context
 
 (defvar octopus--project-context nil)
-(defvar octopus--project-files nil)
 
-(defun octopus--project-scan ()
+(defun octopus--project-p ()
   (let ((ctx (org-dog-context-edge 'project)))
-    (when (cdr ctx)
-      (setq octopus--project-context (cdar ctx))
-      (setq octopus--project-files (org-dog-context-file-objects (cdr ctx))))))
+    (setq octopus--project-context ctx)
+    (cdr ctx)))
 
 (defun octopus--project-description ()
-  (format "Project: %s" (project-root octopus--project-context)))
+  (format "Project: %s" (project-root (cdar octopus--project-context))))
 
-(transient-define-suffix octopus-project-head-file-suffix ()
-  :if (lambda () octopus--project-files)
-  :description (lambda () (oref (car octopus--project-files) absolute))
-  (interactive)
-  (octopus--dispatch (oref transient-current-prefix command)
-                     (car octopus--project-files)))
-
-(transient-define-suffix octopus-project-other-file-suffix ()
-  :if (lambda () (cdr octopus--project-files))
-  :description "Other files"
-  (interactive)
-  (let ((file (completing-read "Select a project file: "
-                               (mapcar (lambda (obj) (oref obj absolute))
-                                       (cdr octopus--project-files)))))
-    (octopus--dispatch (oref transient-current-prefix command)
-                       file)))
+(defun octopus-setup-project-file-targets (children)
+  (let* ((objects (thread-last
+                    (cdr octopus--project-context)
+                    (org-dog-context-file-objects)))
+         (singletonp (= (length objects) 1))
+         (initial-key "p")
+         (i 0)
+         result)
+    (dolist (obj objects)
+      (let ((symbol (intern (format "octopus--context-file-suffix-%s-%d" initial-key i)))
+            (absolute (oref obj absolute))
+            (relative (oref obj relative))
+            (key (concat initial-key (cond
+                                      (singletonp "")
+                                      ((= i 0) initial-key)
+                                      (t (number-to-string i))))))
+        (fset symbol
+              `(lambda ()
+                 (interactive)
+                 (octopus--run-file-suffix ,absolute)))
+        (put symbol 'interactive-only t)
+        (push `(,transient--default-child-level
+                transient-suffix
+                ,(list :key key
+                       :description relative
+                       :command symbol))
+              result)
+        (cl-incf i)))
+    (nreverse result)))
 
 ;;;;; Mode context
 
@@ -216,9 +227,8 @@
    :class transient-columns
    [:description
     octopus--project-description
-    :if octopus--project-scan
-    ("p" octopus-project-head-file-suffix)
-    ("P" octopus-project-other-file-suffix)]
+    :if octopus--project-p
+    :setup-children octopus-setup-project-file-targets]
    [:description
     octopus--major-mode-description
     :if octopus--major-mode-scan
