@@ -212,6 +212,26 @@
   :description-body (cdar octopus--language-context)
   :setup-suffix octopus-setup-language-file-targets)
 
+(defun octopus-setup-context-file-subgroups (_children)
+  (mapcar (lambda (spec)
+            (vector 1 transient-column spec))
+          '((:description
+             octopus--project-description
+             :if octopus--project-p
+             :setup-children octopus-setup-project-file-targets)
+            (:description
+             octopus--major-mode-description
+             :if octopus--major-mode-p
+             :setup-children octopus-setup-major-mode-file-targets)
+            (:description
+             octopus--path-description
+             :if octopus--path-p
+             :setup-children octopus-setup-path-file-targets)
+            (:description
+             octopus--language-description
+             :if octopus--language-p
+             :setup-children octopus-setup-language-file-targets))))
+
 ;;;;; Refile
 
 (defvar octopus-refile-to-datetree nil)
@@ -237,22 +257,7 @@
    ("-o" octopus-infix-other-window)]
   ["Context"
    :class transient-columns
-   [:description
-    octopus--project-description
-    :if octopus--project-p
-    :setup-children octopus-setup-project-file-targets]
-   [:description
-    octopus--major-mode-description
-    :if octopus--major-mode-p
-    :setup-children octopus-setup-major-mode-file-targets]
-   [:description
-    octopus--path-description
-    :if octopus--path-p
-    :setup-children octopus-setup-path-file-targets]
-   [:description
-    octopus--language-description
-    :if octopus--language-p
-    :setup-children octopus-setup-language-file-targets]]
+   :setup-children octopus-setup-context-file-subgroups]
   ["Static targets"
    :class transient-row
    :setup-children octopus-setup-static-targets]
