@@ -158,6 +158,37 @@
     (octopus--dispatch (oref transient-current-prefix command)
                        file)))
 
+;;;;; Mode context
+
+(defvar octopus--major-mode-context nil)
+(defvar octopus--major-mode-files nil)
+
+(defun octopus--major-mode-scan ()
+  (let ((ctx (org-dog-context-edge 'major-mode)))
+    (when (cdr ctx)
+      (setq octopus--major-mode-context (cdar ctx))
+      (setq octopus--major-mode-files (org-dog-context-file-objects (cdr ctx))))))
+
+(defun octopus--major-mode-description ()
+  (format "Major-Mode: %s" octopus--major-mode-context))
+
+(transient-define-suffix octopus-major-mode-head-file-suffix ()
+  :if (lambda () octopus--major-mode-files)
+  :description (lambda () (oref (car octopus--major-mode-files) absolute))
+  (interactive)
+  (octopus--dispatch (oref transient-current-prefix command)
+                     (car octopus--major-mode-files)))
+
+(transient-define-suffix octopus-major-mode-other-file-suffix ()
+  :if (lambda () (cdr octopus--major-mode-files))
+  :description "Other files"
+  (interactive)
+  (let ((file (completing-read "Select a major-mode file: "
+                               (mapcar (lambda (obj) (oref obj absolute))
+                                       (cdr octopus--major-mode-files)))))
+    (octopus--dispatch (oref transient-current-prefix command)
+                       file)))
+
 ;;;;; Refile
 
 (defvar octopus-refile-to-datetree nil)
@@ -181,12 +212,18 @@
 (transient-define-prefix octopus-find-file ()
   ["Options"
    ("-o" octopus-infix-other-window)]
-  [:description
-   octopus--project-description
-   :class transient-row
-   :if octopus--project-scan
-   ("p" octopus-project-head-file-suffix)
-   ("P" octopus-project-other-file-suffix)]
+  ["Context"
+   :class transient-columns
+   [:description
+    octopus--project-description
+    :if octopus--project-scan
+    ("p" octopus-project-head-file-suffix)
+    ("P" octopus-project-other-file-suffix)]
+   [:description
+    octopus--major-mode-description
+    :if octopus--major-mode-scan
+    ("m" octopus-major-mode-head-file-suffix)
+    ("M" octopus-major-mode-other-file-suffix)]]
   ["Static targets"
    :class transient-row
    :setup-children octopus-setup-static-targets]
