@@ -509,6 +509,12 @@ Only interesting items are returned."
       (forward-line))
     nil))
 
+(defun org-dog-resolve-relative-file (path)
+  "Return an absolute path for a relative PATH from a repository."
+  (when-let (obj (org-dog-find-file-object
+                  (org-dog-make-file-pred :relative path)))
+    (oref obj absolute)))
+
 ;;;; Links
 
 (defun org-dog-follow-link (ref _arg)
