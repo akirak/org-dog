@@ -282,6 +282,15 @@
   (octopus--dispatch (oref transient-current-prefix command)
                      (org-dog-complete-file)))
 
+;;;;; Clock
+
+(transient-define-suffix octopus-clock-marker-suffix ()
+  :description "Clock"
+  :if #'org-clocking-p
+  (interactive)
+  (octopus--dispatch (oref transient-current-prefix command)
+                     org-clock-marker))
+
 ;;;; Prefix commands
 
 ;;;###autoload (autoload 'octopus-find-file "octopus" nil t)
@@ -336,7 +345,8 @@
   ["Other targets"
    :class transient-row
    ("'" "Avy" avy-org-refile-as-child)
-   ("/" octopus-read-dog-file-suffix)]
+   ("/" octopus-read-dog-file-suffix)
+   ("@" octopus-clock-marker-suffix)]
   (interactive)
   (unless (derived-mode-p 'org-mode 'org-agenda-mode)
     (user-error "Cannot run in this mode"))
@@ -344,9 +354,16 @@
 
 (cl-defmethod octopus--dispatch ((_cmd (eql 'octopus-refile))
                                  target)
-  (if octopus-refile-to-datetree
-      (org-dog-datetree-refile target)
-    (org-dog-refile-to-file target)))
+  (if (markerp target)
+      (org-refile nil nil
+                  (org-with-point-at target
+                    (list (org-get-heading t t t t)
+                          (buffer-file-name (marker-buffer target))
+                          nil
+                          (marker-position target))))
+    (if octopus-refile-to-datetree
+        (org-dog-datetree-refile target)
+      (org-dog-refile-to-file target))))
 
 (provide 'octopus)
 ;;; octopus.el ends here
