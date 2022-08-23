@@ -54,6 +54,13 @@ have been already set to the object of the buffer file."
   :group 'org-dog
   :type 'hook)
 
+(defcustom org-dog-file-name-regexp "^[a-z]"
+  "Regexp that matches file names and directories.
+
+This is used to search Org files and directories."
+  :group 'org-dog
+  :type 'regexp)
+
 (defcustom org-dog-file-mode-lighter
   '(" Dog["
     (:eval (org-dog-format-lighter org-dog-buffer-file-object))
@@ -396,7 +403,7 @@ properly handle it."
                         (`(exclude ,pattern)
                          `(lambda (name)
                             (not (string-match-p ,pattern name)))))))
-    (thread-last (directory-files-and-attributes root nil "^[a-z]")
+    (thread-last (directory-files-and-attributes root nil org-dog-file-name-regexp)
                  (seq-filter (pcase-lambda (`(,_ ,dir . ,_))
                                dir))
                  (mapcar #'car)
@@ -438,7 +445,7 @@ ROOT is the path to a directory."
                        (if relative
                            (expand-file-name relative root)
                          root)
-                       nil "^[a-z]" t))
+                       nil org-dog-file-name-regexp t))
              (pcase x
                ((and `(,name ,dir . ,_)
                      (guard dir))
