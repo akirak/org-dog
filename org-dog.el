@@ -54,7 +54,7 @@ have been already set to the object of the buffer file."
   :group 'org-dog
   :type 'hook)
 
-(defcustom org-dog-file-name-regexp "^[a-z]"
+(defcustom org-dog-file-name-regexp "^[[:alpha:]]"
   "Regexp that matches file names and directories.
 
 This is used to search Org files and directories."
