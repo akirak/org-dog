@@ -76,9 +76,9 @@ relevant files when an entry is archived."
                       nil nil nil org-dog-datetree-refile-history)))
   (when org-dog-datetree-generate-id-on-refile
     (org-id-get-create))
-  (when org-dog-datetree-propagate-on-refile
-    (org-dog-datetree-propagate-by-tag nil))
-  (org-reverse-datetree-refile-to-file file))
+  (let ((date (org-reverse-datetree-refile-to-file file)))
+    (when org-dog-datetree-propagate-on-refile
+      (org-dog-datetree-propagate-by-tag nil :date date))))
 
 (defun org-dog-datetree-refile-to-this-file ()
   "Refile to the datetree in the current file."
@@ -89,9 +89,9 @@ relevant files when an entry is archived."
         (progn
           (when org-dog-datetree-generate-id-on-refile
             (org-id-get-create))
-          (when org-dog-datetree-propagate-on-refile
-            (org-dog-datetree-propagate-by-tag nil))
-          (org-reverse-datetree-refile-to-file file))
+          (let ((date (org-reverse-datetree-refile-to-file file)))
+            (when org-dog-datetree-propagate-on-refile
+              (org-dog-datetree-propagate-by-tag nil :date date))))
       (user-error "Not in `org-dog-datetree-file'"))))
 
 ;;;###autoload
