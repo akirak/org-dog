@@ -138,7 +138,7 @@ relevant files when an entry is archived."
                  (files (thread-last
                           (org-dog-select-files
                            (org-dog-make-file-pred
-                            :buffer-pred
+                            :header-pred
                             ;; The source entry must contain all of the file tags
                             ;; of the destination file.
                             `(and org-file-tags
