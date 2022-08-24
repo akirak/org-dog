@@ -156,7 +156,9 @@ relevant files when an entry is archived."
                 (progn
                   (dolist (file files)
                     (org-dog-datetree-transclude-this-entry file :date date))
-                  (message "Linked to the entry from %s" (string-join files ", ")))
+                  (message "Linked to \"%s\" from %s"
+                           (org-get-heading t t t t)
+                           (string-join files ", ")))
               (when interactive
                 (user-error "No files"))))))
     (when interactive
