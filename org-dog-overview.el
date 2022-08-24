@@ -139,9 +139,8 @@ the file unless it is already open."
       (when (re-search-forward (rx bol (+ "*") space) nil t)
         (delete-region (match-beginning 0) (point-max))
         (goto-char (point-min)))
-      ;; To produce a proper value of `org-link-any-re', `org-mode' needs to be
-      ;; turned on, but the other hooks are unnecessary.
-      (delay-mode-hooks (org-mode))
+      ;; Set a proper value of `org-link-any-re'.
+      (org-set-regexps-and-options)
       (org-dog-overview--file-links (point-max)))))
 
 (defun org-dog-overview--file-links (bound)
