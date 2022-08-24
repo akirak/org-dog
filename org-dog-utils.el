@@ -13,6 +13,27 @@
   (equal (downcase string1)
          (downcase string2)))
 
+(defmacro org-dog-with-file-header (file &rest progn)
+  "Evaluate a block with the headers of an Org file as buffer."
+  (declare (indent 1))
+  `(if-let (buf (find-buffer-visiting ,file))
+       (with-current-buffer buf
+         (org-with-wide-buffer
+          (goto-char (point-min))
+          (when (re-search-forward org-heading-regexp nil t)
+            (narrow-to-region (point-min) (1- (point)))
+            (goto-char (point-min)))
+          ,@progn))
+     (with-temp-buffer
+       (insert-file-contents ,file)
+       (goto-char (point-min))
+       ;; Drop entries of the file for faster enabling of org-mode.
+       (when (re-search-forward org-heading-regexp nil t)
+         (delete-region (match-beginning 0) (point-max))
+         (goto-char (point-min)))
+       (org-set-regexps-and-options)
+       ,@progn)))
+
 (defun org-dog--file-title ()
   "Return the title of the current Org buffer, if any."
   (catch 'org-dog-file-title
