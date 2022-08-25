@@ -108,7 +108,7 @@
               `(,transient--default-child-level
                 transient-suffix
                 ,(list :key key
-                       :description filename
+                       :description (file-name-nondirectory filename)
                        :command symbol))))
           octopus-static-file-list))
 
