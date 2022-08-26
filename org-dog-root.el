@@ -95,7 +95,7 @@ Each function takes no argument."
 
 (defconst org-dog-root-mode-item
   '(org-dog-root-file
-    (org-dog-root-format " ")))
+    ("" (:eval org-dog-root-format) " ")))
 
 (defface org-dog-root-mode-item-face '((t :inherit default))
   "Face for active root context name.")
