@@ -583,7 +583,8 @@ Only interesting items are returned."
   (interactive)
   (if-let (obj (org-dog-buffer-object))
       (push (list (concat "org-dog:" (oref obj relative))
-                  (org-dog--file-title))
+                  (with-current-buffer (org-dog-file-buffer obj)
+                    (org-dog--file-title)))
             org-stored-links)
     (user-error "Not in an org-dog buffer")))
 
