@@ -148,11 +148,14 @@ Each function takes no argument."
   (interactive "P")
   (let ((org-dog-root-span (if (numberp arg)
                                arg
-                             org-dog-root-span)))
+                             org-dog-root-span))
+        (i 0))
     (dolist (file (org-dog-select 'absolute))
       (unless (member file org-agenda-files)
         (when (org-dog-root--active-file-p file)
-          (push file org-agenda-files))))))
+          (push file org-agenda-files)
+          (cl-incf i))))
+    (message "Added %d files" i)))
 
 (defun org-dog-root--active-file-p (file)
   "Return non-nil if FILE contains latest activities."
