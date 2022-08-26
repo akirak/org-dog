@@ -492,6 +492,18 @@ ROOT is the path to a directory."
          (and ,@conds))
     #'identity))
 
+(defun org-dog-select (&optional slot &rest pred-plist)
+  "A convenient interface for querying file objects."
+  (let ((objs (org-dog-select-files
+                (when pred-plist
+                  (apply #'org-dog-make-file-pred pred-plist)))))
+    (if slot
+        (mapcar (cl-etypecase slot
+                  (symbol `(lambda (obj)
+                             (slot-value obj ',slot))))
+                objs)
+      objs)))
+
 (defun org-dog-file-title (file-obj &optional force)
   "Return the title of a file in its header."
   (when-let (buffer (if force
