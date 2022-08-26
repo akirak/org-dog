@@ -142,7 +142,7 @@ Each function takes no argument."
 (defun org-dog-root--desktop-file (obj)
   (let ((root (oref obj root))
         (relative (oref obj relative)))
-    (expand-file-name (concat ".org-dog-desktops/" (file-name-base relative))
+    (expand-file-name (concat ".org-dog/desktops/" (file-name-base relative))
                       root)))
 
 ;;;; Scanning
