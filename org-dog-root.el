@@ -147,6 +147,7 @@ Each function takes no argument."
 
 ;;;; Scanning
 
+;;;###autoload
 (defun org-dog-root-add-active-files (&optional arg)
   "Add files are considered active to `org-agenda-files'.
 
