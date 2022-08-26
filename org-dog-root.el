@@ -149,9 +149,7 @@ Each function takes no argument."
   (let ((org-dog-root-span (if (numberp arg)
                                arg
                              org-dog-root-span)))
-    (dolist (file (thread-last
-                    (org-dog-select-files)
-                    (mapcar (lambda (obj) (oref obj absolute)))))
+    (dolist (file (org-dog-select 'absolute))
       (unless (member file org-agenda-files)
         (when (org-dog-root--active-file-p file)
           (push file org-agenda-files))))))
