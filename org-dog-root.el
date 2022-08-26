@@ -148,7 +148,11 @@ Each function takes no argument."
 ;;;; Scanning
 
 (defun org-dog-root-add-active-files (&optional arg)
-  "Add files that contain latest activities to `org-agenda-files'."
+  "Add files are considered active to `org-agenda-files'.
+
+File being active means that the file contains a recent clock
+event within the past n days (see `org-dog-root-span' variable)
+or an active time stamp in a non-archived heading."
   (interactive "P")
   (let ((org-dog-root-span (if (numberp arg)
                                arg
@@ -162,11 +166,17 @@ Each function takes no argument."
     (message "Added %d files" i)))
 
 (defun org-dog-root--active-file-p (file)
-  "Return non-nil if FILE contains latest activities."
+  "Return non-nil if FILE is considered active.
+
+See `org-dog-root-add-active-files' for the definition of
+activity."
   (cl-flet
-      ((contain-clock-p
+      ((contain-ts-p
          ()
-         (catch 'found-clock
+         (catch 'found-ts
+           (when (and (re-search-forward org-ts-regexp nil t)
+                      (not (org-in-archived-heading-p)))
+             (throw 'found-ts t))
            (while (re-search-forward org-clock-line-re nil t)
              (let ((time (thread-last
                            (org-element-clock-parser (line-end-position))
@@ -174,18 +184,18 @@ Each function takes no argument."
                            (org-timestamp-to-time))))
                (when (< (- (float-time) (float-time time))
                         (* 3600 24 org-dog-root-span))
-                 (throw 'found-clock t))))
+                 (throw 'found-ts t))))
            nil)))
     (if-let (buffer (find-buffer-visiting file))
         (with-current-buffer buffer
           (org-with-wide-buffer
            (goto-char (point-min))
-           (contain-clock-p)))
+           (contain-ts-p)))
       (with-temp-buffer
         (insert-file-contents file)
         (org-set-regexps-and-options)
         (goto-char (point-min))
-        (contain-clock-p)))))
+        (contain-ts-p)))))
 
 (provide 'org-dog-root)
 ;;; org-dog-root.el ends here
