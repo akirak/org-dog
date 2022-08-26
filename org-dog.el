@@ -582,11 +582,45 @@ Only interesting items are returned."
   "Store a `org-dog' file link to the current buffer."
   (interactive)
   (if-let (obj (org-dog-buffer-object))
-      (push (list (concat "org-dog:" (oref obj relative))
+      (push (list (org-dog--file-link obj)
                   (with-current-buffer (org-dog-file-buffer obj)
                     (org-dog--file-title)))
             org-stored-links)
     (user-error "Not in an org-dog buffer")))
+
+(defun org-dog--file-link (obj)
+  (concat "org-dog:" (oref obj relative)))
+
+;;;###autoload
+(defun org-dog-add-header-link (target &optional source)
+  (interactive (list (org-dog-complete-file "Link target: ")))
+  (let* ((target (cl-etypecase target
+                   (string (org-dog-file-object target))
+                   (org-dog-file target)))
+         (source (if source
+                     (cl-etypecase source
+                       (string (org-dog-file-object))
+                       (org-dog-file source))
+                   (org-dog-file-object (org-dog-complete-file
+                                         (format "Link to %s: "
+                                                 (oref target relative))))))
+         (org-capture-entry `("" ""
+                              item
+                              (file+function
+                               ,(oref source absolute)
+                               (lambda ()
+                                 (goto-char (point-min))
+                                 (if (re-search-forward org-heading-regexp nil t)
+                                     (end-of-line 0)
+                                   (goto-char (point-max)))))
+                              ,(concat (org-link-make-string
+                                        (org-dog--file-link target)
+                                        (with-current-buffer (org-dog-file-buffer target)
+                                          (org-dog--file-title)))
+                                       "%?")
+                              :unnarrowed t))
+         (org-capture-templates-contexts nil))
+    (org-capture)))
 
 ;;;; Integrating with org-id.el
 
