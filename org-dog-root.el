@@ -1,5 +1,9 @@
 ;;; org-dog-root.el --- Manage root contexts -*- lexical-binding: t -*-
 
+(require 'org-element)
+(require 'org-dog)
+(require 'org-dog-overview)
+
 (defgroup org-dog-root nil
   "Manage root contexts."
   :prefix "org-dog-root"
