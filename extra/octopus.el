@@ -206,7 +206,10 @@
   :context-key project
   :initial-key "p"
   :description-label "Project"
-  :description-body (project-root (cdar octopus--project-context))
+  :description-body (thread-last
+                      (cdar octopus--project-context)
+                      (project-root)
+                      (octopus--abbr-file-name))
   :files-suffix octopus-project-files-suffix
   :setup-suffix octopus-setup-project-file-targets)
 
@@ -222,7 +225,9 @@
   :context-key path
   :initial-key "f"
   :description-label "File Path"
-  :description-body (cdar octopus--path-context)
+  :description-body (thread-last
+                      (cdar octopus--path-context)
+                      (octopus--abbr-file-name))
   :files-suffix octopus-path-files-suffix
   :setup-suffix octopus-setup-path-file-targets)
 
@@ -364,6 +369,30 @@
     (if octopus-refile-to-datetree
         (org-dog-datetree-refile target)
       (org-dog-refile-to-file target))))
+
+;;;; Other utilities
+
+(defvar octopus--path-separator nil)
+
+(defun octopus--path-separator ()
+  (or octopus--path-separator
+      (setq octopus--path-separator
+            (string-remove-prefix "a" (file-name-as-directory "a")))))
+
+(defun octopus--abbr-file-name (file)
+  "Return an aggressively abbreviated path to FILE."
+  (let* ((sep (octopus--path-separator))
+         (endsep (string-suffix-p sep file))
+         (segs (cl-remove-if #'string-empty-p (split-string file sep))))
+    (thread-first
+      (mapcar (lambda (s)
+                (if (string-match (rx (* (not (any alnum))) (any alnum)) s)
+                    (match-string 0 s)
+                  s))
+              (butlast segs))
+      (append (last segs))
+      (string-join sep)
+      (concat (if endsep sep "")))))
 
 (provide 'octopus)
 ;;; octopus.el ends here
