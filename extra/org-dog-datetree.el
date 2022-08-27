@@ -76,7 +76,10 @@ relevant files when an entry is archived."
                       nil nil nil org-dog-datetree-refile-history)))
   (when org-dog-datetree-generate-id-on-refile
     (org-id-get-create))
-  (let ((date (org-reverse-datetree-refile-to-file file)))
+  (let* ((file (cl-typecase file
+                 (string file)
+                 (org-dog-file (oref file absolute))))
+         (date (org-reverse-datetree-refile-to-file file)))
     (when org-dog-datetree-propagate-on-refile
       (org-dog-datetree-propagate-by-tag nil :date date))))
 
