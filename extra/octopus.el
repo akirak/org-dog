@@ -287,6 +287,16 @@
   (octopus--dispatch (oref transient-current-prefix command)
                      (org-dog-complete-file)))
 
+;;;;; Current file
+
+(transient-define-suffix octopus-this-file-suffix ()
+  :description "Prompt"
+  :if (lambda () (and (derived-mode-p 'org-mode)
+                      (buffer-file-name)))
+  (interactive)
+  (octopus--dispatch (oref transient-current-prefix command)
+                     (buffer-file-name)))
+
 ;;;;; Clock
 
 (transient-define-suffix octopus-clock-marker-suffix ()
