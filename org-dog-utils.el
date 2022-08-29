@@ -31,7 +31,8 @@
        (when (re-search-forward org-heading-regexp nil t)
          (delete-region (match-beginning 0) (point-max))
          (goto-char (point-min)))
-       (org-set-regexps-and-options)
+       (let ((org-inhibit-startup t))
+         (delay-mode-hooks (org-mode)))
        ,@progn)))
 
 (defun org-dog--file-title ()
