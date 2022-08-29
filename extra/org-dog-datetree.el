@@ -84,6 +84,7 @@ relevant files when an entry is archived."
       (org-dog-datetree-propagate-by-tag nil :date date))
     (org-reverse-datetree-refile-to-file file date)))
 
+;;;###autoload
 (defun org-dog-datetree-refile-to-this-file ()
   "Refile to the datetree in the current file."
   (interactive)
