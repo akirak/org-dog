@@ -79,9 +79,10 @@ relevant files when an entry is archived."
   (let* ((file (cl-typecase file
                  (string file)
                  (org-dog-file (oref file absolute))))
-         (date (org-reverse-datetree-refile-to-file file)))
+         (date (org-reverse-datetree-default-entry-time)))
     (when org-dog-datetree-propagate-on-refile
-      (org-dog-datetree-propagate-by-tag nil :date date))))
+      (org-dog-datetree-propagate-by-tag nil :date date))
+    (org-reverse-datetree-refile-to-file file date)))
 
 (defun org-dog-datetree-refile-to-this-file ()
   "Refile to the datetree in the current file."
@@ -92,9 +93,10 @@ relevant files when an entry is archived."
         (progn
           (when org-dog-datetree-generate-id-on-refile
             (org-id-get-create))
-          (let ((date (org-reverse-datetree-refile-to-file file)))
+          (let ((date (org-reverse-datetree-default-entry-time)))
             (when org-dog-datetree-propagate-on-refile
-              (org-dog-datetree-propagate-by-tag nil :date date))))
+              (org-dog-datetree-propagate-by-tag nil :date date))
+            (org-reverse-datetree-refile-to-file file date)))
       (user-error "Not in `org-dog-datetree-file'"))))
 
 ;;;###autoload
