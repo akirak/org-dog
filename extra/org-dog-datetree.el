@@ -114,9 +114,8 @@ relevant files when an entry is archived."
       (org-with-wide-buffer
        (org-reverse-datetree-goto-date-in-file
         (or date (org-reverse-datetree-guess-date)))
-       (org-end-of-meta-data t)
-       (insert "#+transclude: " link "\n")
-       (org-end-of-line 0)
+       (goto-char (org-entry-end-position))
+       (insert "\n#+transclude: " link)
        (ignore-errors (org-transclusion-add))))))
 
 ;;;###autoload
