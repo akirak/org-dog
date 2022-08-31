@@ -48,6 +48,10 @@ Each function takes no argument."
   "Number of days `org-dog-root-add-active-files' should check for."
   :type 'number)
 
+(defcustom org-dog-root-clock-sum-threshold 20
+  "Threshold of duration in minutes whether a file is active."
+  :type 'number)
+
 (defvar org-dog-root-file nil)
 
 ;;;; Basics
@@ -174,19 +178,24 @@ activity."
   (cl-flet
       ((contain-ts-p
          ()
-         (catch 'found-ts
-           (when (and (re-search-forward org-ts-regexp nil t)
-                      (not (org-in-archived-heading-p)))
-             (throw 'found-ts t))
-           (while (re-search-forward org-clock-line-re nil t)
-             (let ((time (thread-last
-                           (org-element-clock-parser (line-end-position))
-                           (org-element-property :value)
-                           (org-timestamp-to-time))))
-               (when (< (- (float-time) (float-time time))
-                        (* 3600 24 org-dog-root-span))
-                 (throw 'found-ts t))))
-           nil)))
+         (let ((sum 0))
+           (catch 'file-active
+             (when (and (re-search-forward org-ts-regexp nil t)
+                        (not (org-in-archived-heading-p)))
+               (throw 'file-active t))
+             (while (re-search-forward org-clock-line-re nil t)
+               (let* ((element (org-element-clock-parser (line-end-position)))
+                      (time (thread-last
+                              element
+                              (org-element-property :value)
+                              (org-timestamp-to-time))))
+                 (when (< (- (float-time) (float-time time))
+                          (* 3600 24 org-dog-root-span))
+                   (cl-incf sum (org-duration-to-minutes
+                                 (org-element-property :duration element)))
+                   (when (>= sum org-dog-root-clock-sum-threshold)
+                     (throw 'file-active t)))))
+             nil))))
     (if-let (buffer (find-buffer-visiting file))
         (with-current-buffer buffer
           (org-with-wide-buffer
