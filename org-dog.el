@@ -604,7 +604,7 @@ Only interesting items are returned."
                    (org-dog-file-object (org-dog-complete-file
                                          (format "Link to %s: "
                                                  (oref target relative))))))
-         (org-capture-entry `("" ""
+         (org-capture-entry `("x" ""
                               item
                               (file+function
                                ,(oref source absolute)
