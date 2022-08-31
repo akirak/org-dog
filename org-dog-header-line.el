@@ -11,7 +11,7 @@
   '((org-dog-buffer-file-object
      (:eval (oref org-dog-buffer-file-object relative)))
     (org-dog-indirect-buffer-p
-     "%b")
+     " [%b]")
     " "
     (org-dog-buffer-file-object
      (:eval (org-dog-header-line-format-olp org-dog-buffer-file-object))
