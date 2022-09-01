@@ -58,7 +58,8 @@
            (cond
             ((thing-at-point-looking-at org-radio-target-regexp)
              (list (match-string 1) t))
-            ((thing-at-point-looking-at org-target-link-regexp)
+            ((and org-target-link-regexp
+                  (thing-at-point-looking-at org-target-link-regexp))
              (list (match-string 1) t))
             ((thing-at-point-looking-at org-target-regexp)
              (list (match-string 1)))
