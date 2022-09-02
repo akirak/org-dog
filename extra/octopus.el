@@ -290,7 +290,7 @@
 ;;;;; Current file
 
 (transient-define-suffix octopus-this-file-suffix ()
-  :description "Prompt"
+  :description "This file"
   :if (lambda () (and (derived-mode-p 'org-mode)
                       (buffer-file-name)))
   (interactive)
