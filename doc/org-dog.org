@@ -29,3 +29,19 @@ The directory is the root of a repository, and the plist specifies contents in t
 ** Consult integration
 * Defining contexts
 * Defining your own file types
+* Octopus.el
+** Standard keybindings
+- File: find-file, search, etc.
+- Marker: capture, refile, etc.
+
+| Key | Description      | File   | Marker                | Note |
+|-----+------------------+--------+-----------------------+------|
+| @   | Clock target     | N/A    | Clocked entry         |      |
+| '   | Avy target       | N/A    | Avy entry             |      |
+| \   | This file        | N/A    | Somewhere in the file |      |
+| \/  | Choose a file    | Prompt | Prompt for a file     |      |
+| p   | Project context  |        |                       |      |
+| m   | Mode context     |        |                       |      |
+| f   | Path context     |        |                       |      |
+| l   | Language context |        |                       |      |
+
