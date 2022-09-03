@@ -151,7 +151,8 @@ as well."
                                 "Error while instantiating an object: %s"
                               (org-dog--make-file-instance repo absolute))
                       (cl-incf error-count)))))))
-    (run-hooks 'org-dog-reload-hook)
+    (with-demoted-errors "Error in org-dog-reload-hook: %S"
+      (run-hooks 'org-dog-reload-hook))
     (setq org-dog-initialized t)
     (message "Registered %d Org files%s" (map-length org-dog--file-table)
              (if (> error-count 0)
@@ -250,7 +251,8 @@ explicitly given. Maybe unnecessary."
                       :root (oref repo root)
                       (cdr route)))
       (puthash absolute instance org-dog--file-table)
-      (run-hook-with-args 'org-dog-file-registration-hook instance)
+      (with-demoted-errors "Error in org-dog-file-registration-hook: %S"
+        (run-hook-with-args 'org-dog-file-registration-hook instance))
       instance)))
 
 ;;;; Utilities
