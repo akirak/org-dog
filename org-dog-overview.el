@@ -148,26 +148,23 @@ the file unless it is already open."
   (let (result)
     (save-match-data
       (while (re-search-forward org-link-any-re bound t)
-        (let* ((pos (car (match-data)))
-               (href (match-string 2))
-               (dog-file (when href
-                           (save-match-data
-                             (when (string-match (rx bol "org-dog:"
-                                                     (group (+ anything)))
-                                                 href)
-                               (match-string 1 href)))))
-               (obj (when dog-file
-                      (org-dog-find-file-object
-                       `(lambda (obj)
-                          (equal (oref obj relative)
-                                 ,dog-file))))))
-          (cond
-           (obj (push (cons (substring (oref obj absolute))
-                            (copy-marker pos))
-                      result))
-           (dog-file (message "Found a link to a non-existent file %s in %s"
-                              dog-file
-                              (buffer-file-name)))))))
+        (when-let* ((pos (car (match-data)))
+                    (href (match-string 2))
+                    (dog-file (save-match-data
+                                (when (string-match (rx bol "org-dog:"
+                                                        (group (+ anything)))
+                                                    href)
+                                  (match-string 1 href)))))
+          (if-let (obj (org-dog-find-file-object
+                        `(lambda (obj)
+                           (equal (oref obj relative)
+                                  ,dog-file))))
+              (push (cons (substring (oref obj absolute))
+                          (copy-marker pos))
+                    result)
+            (message "Found a link to a non-existent file %s in %s"
+                     dog-file
+                     (buffer-file-name))))))
     result))
 
 ;;;###autoload
