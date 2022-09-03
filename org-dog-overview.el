@@ -150,11 +150,12 @@ the file unless it is already open."
       (while (re-search-forward org-link-any-re bound t)
         (let* ((pos (car (match-data)))
                (href (match-string 2))
-               (dog-file (save-match-data
-                           (when (string-match (rx bol "org-dog:"
-                                                   (group (+ anything)))
-                                               href)
-                             (match-string 1 href))))
+               (dog-file (when href
+                           (save-match-data
+                             (when (string-match (rx bol "org-dog:"
+                                                     (group (+ anything)))
+                                                 href)
+                               (match-string 1 href)))))
                (obj (when dog-file
                       (org-dog-find-file-object
                        `(lambda (obj)
