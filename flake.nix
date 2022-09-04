@@ -31,6 +31,7 @@
         "org-dog-embark"
         "org-dog-facade"
         "consult-org-dog"
+        "octopus"
       ];
     };
 }
