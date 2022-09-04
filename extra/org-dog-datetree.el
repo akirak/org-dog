@@ -115,6 +115,8 @@ relevant files when an entry is archived."
        (org-reverse-datetree-goto-date-in-file
         (or date (org-reverse-datetree-guess-date)))
        (goto-char (org-entry-end-position))
+       (when (bolp)
+         (end-of-line 0))
        (insert "\n#+transclude: " link)
        (ignore-errors (org-transclusion-add))))))
 
