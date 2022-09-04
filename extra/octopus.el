@@ -34,8 +34,14 @@
 (require 'cl-lib)
 (require 'eieio)
 (require 'transient)
+(require 'org-clock)
 (require 'org-dog)
 (require 'org-dog-context)
+(require 'org-dog-overview)
+(require 'project)
+
+(declare-function org-dog-datetree-refile "ext:org-dog-datetree")
+(declare-function org-ql-find "ext:org-ql-find")
 
 (defgroup octopus nil
   "Transient commands for Org Dog."
@@ -150,7 +156,7 @@
        (defun ,description-sym ()
          (format "%s: %s" ,description-label ,description-body))
 
-       (defun ,setup-suffix (children)
+       (defun ,setup-suffix (_children)
          (let* ((files (thread-last
                          (cdr ,var-sym)
                          (org-dog-context-file-objects)
@@ -241,7 +247,7 @@
 
 (defun octopus-setup-context-file-subgroups (_children)
   (mapcar (lambda (spec)
-            (vector 1 transient-column spec))
+            (vector 1 'transient-column spec))
           '((:description
              octopus--project-description
              :if octopus--project-p
@@ -353,6 +359,7 @@
 
 (cl-defmethod octopus--dispatch ((_cmd (eql 'octopus-find-node))
                                  files)
+  (require 'org-ql-find)
   (org-ql-find files))
 
 ;;;###autoload (autoload 'octopus-refile "octopus" nil 'interactive)
@@ -381,7 +388,9 @@
                           nil
                           (marker-position target))))
     (if octopus-refile-to-datetree
-        (org-dog-datetree-refile target)
+        (progn
+          (require 'org-dog-datetree)
+          (org-dog-datetree-refile target))
       (org-dog-refile-to-file target))))
 
 ;;;; Other utilities
