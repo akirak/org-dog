@@ -292,10 +292,14 @@
 (transient-define-suffix octopus-this-file-suffix ()
   :description "This file"
   :if (lambda () (and (derived-mode-p 'org-mode)
-                      (buffer-file-name)))
+                      (octopus--base-buffer-file)))
   (interactive)
   (octopus--dispatch (oref transient-current-prefix command)
-                     (buffer-file-name)))
+                     (octopus--base-buffer-file)))
+
+(defun octopus--base-buffer-file ()
+  "Return the file name for the base buffer."
+  (buffer-file-name (org-base-buffer (current-buffer))))
 
 ;;;;; Clock
 
