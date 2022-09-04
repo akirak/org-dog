@@ -43,6 +43,7 @@
 (defvar org-id-track-globally)
 (defvar org-capture-templates)
 (defvar org-capture-templates-contexts)
+(defvar org-capture-entry)
 
 ;;;; Custom variables
 
