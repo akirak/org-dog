@@ -599,7 +599,7 @@ Only interesting items are returned."
                    (org-dog-file target)))
          (source (if source
                      (cl-etypecase source
-                       (string (org-dog-file-object))
+                       (string (org-dog-file-object source))
                        (org-dog-file source))
                    (org-dog-file-object (org-dog-complete-file
                                          (format "Link to %s: "
