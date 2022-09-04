@@ -148,23 +148,27 @@ the file unless it is already open."
   (let (result)
     (save-match-data
       (while (re-search-forward org-link-any-re bound t)
-        (when-let* ((pos (car (match-data)))
-                    (href (match-string 2))
-                    (dog-file (save-match-data
-                                (when (string-match (rx bol "org-dog:"
-                                                        (group (+ anything)))
-                                                    href)
-                                  (match-string 1 href)))))
-          (if-let (obj (org-dog-find-file-object
-                        `(lambda (obj)
-                           (equal (oref obj relative)
-                                  ,dog-file))))
-              (push (cons (substring (oref obj absolute))
-                          (copy-marker pos))
-                    result)
-            (message "Found a link to a non-existent file %s in %s"
-                     dog-file
-                     (buffer-file-name))))))
+        (unless (save-excursion
+                  (beginning-of-line 1)
+                  (save-match-data
+                    (looking-at org-comment-regexp)))
+          (when-let* ((pos (car (match-data)))
+                      (href (match-string 2))
+                      (dog-file (save-match-data
+                                  (when (string-match (rx bol "org-dog:"
+                                                          (group (+ anything)))
+                                                      href)
+                                    (match-string 1 href)))))
+            (if-let (obj (org-dog-find-file-object
+                          `(lambda (obj)
+                             (equal (oref obj relative)
+                                    ,dog-file))))
+                (push (cons (substring (oref obj absolute))
+                            (copy-marker pos))
+                      result)
+              (message "Found a link to a non-existent file %s in %s"
+                       dog-file
+                       (buffer-file-name)))))))
     result))
 
 ;;;###autoload
