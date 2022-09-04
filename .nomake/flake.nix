@@ -2,6 +2,11 @@
   description =
     "THIS IS AN AUTO-GENERATED FILE. PLEASE DON'T EDIT IT MANUALLY.";
   inputs = {
+    compat = {
+      flake = false;
+      type = "git";
+      url = "https://git.sr.ht/~pkal/compat";
+    };
     consult = {
       flake = false;
       owner = "minad";
@@ -30,6 +35,12 @@
       flake = false;
       owner = "oantolin";
       repo = "embark";
+      type = "github";
+    };
+    octopus = {
+      flake = false;
+      owner = "akirak";
+      repo = "org-dog";
       type = "github";
     };
     org-dog = {
