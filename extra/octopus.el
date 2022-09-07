@@ -370,12 +370,15 @@
    ("." octopus-in-file-suffix)]
   ["Other targets"
    :class transient-row
-   ("'" "Avy" avy-org-refile-as-child)
+   ("'" "Avy" avy-org-refile-as-child
+    :if (lambda () (fboundp 'avy-org-refile-as-child)))
    ("/" octopus-read-dog-file-suffix)
    ("@" octopus-clock-marker-suffix)]
   (interactive)
   (unless (derived-mode-p 'org-mode 'org-agenda-mode)
     (user-error "Cannot run in this mode"))
+  ;; Load avy-org-refile-as-child
+  (require 'avy nil t)
   (transient-setup 'octopus-refile))
 
 (cl-defmethod octopus--dispatch ((_cmd (eql 'octopus-refile))
