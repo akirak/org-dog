@@ -203,8 +203,11 @@ For now, this is only used for enabling `org-dog-file-mode-map'."
 You can add this function "
   (interactive)
   (let ((inhibit-message t))
-    (ignore-errors
-      (org-dog-file-mode t))))
+    (when-let (filename (buffer-file-name))
+      ;; Use org-agenda-file-regexp to check if the file is not an archive file.
+      (when (string-match-p org-agenda-file-regexp filename)
+        (ignore-errors
+          (org-dog-file-mode t))))))
 
 ;;;; File operations
 
