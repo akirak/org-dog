@@ -191,10 +191,12 @@ activity."
                               (org-timestamp-to-time))))
                  (when (< (- (float-time) (float-time time))
                           (* 3600 24 org-dog-root-span))
-                   (cl-incf sum (org-duration-to-minutes
-                                 (org-element-property :duration element)))
-                   (when (>= sum org-dog-root-clock-sum-threshold)
-                     (throw 'file-active t)))))
+                   ;; There is an open clock entry, i.e. a clock line that has
+                   ;; started but not finished, so check if it has a duration.
+                   (when-let (duration (org-element-property :duration element))
+                     (cl-incf sum (org-duration-to-minutes duration))
+                     (when (>= sum org-dog-root-clock-sum-threshold)
+                       (throw 'file-active t))))))
              nil))))
     (if-let (buffer (find-buffer-visiting file))
         (with-current-buffer buffer
