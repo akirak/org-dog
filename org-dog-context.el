@@ -192,8 +192,8 @@
 
 (defun org-dog-context-path-value ()
   (when-let* ((file (buffer-file-name))
-              (root (vc-root-dir)))
-    (file-relative-name file (expand-file-name root))))
+              (project (project-current)))
+    (file-relative-name file (expand-file-name (project-root project)))))
 
 (defun org-dog-context-path-1 (path)
   (catch 'org-dog-context-path
