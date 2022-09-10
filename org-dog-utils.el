@@ -31,7 +31,9 @@
        (when (re-search-forward org-heading-regexp nil t)
          (delete-region (match-beginning 0) (point-max))
          (goto-char (point-min)))
-       (let ((org-inhibit-startup t))
+       (let ((org-inhibit-startup t)
+             ;; Don't load modules.
+             (org-modules-loaded t))
          (delay-mode-hooks (org-mode)))
        ,@progn)))
 
