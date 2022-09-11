@@ -133,6 +133,7 @@ the file unless it is already open."
   (if-let (buf (find-buffer-visiting file))
       (org-dog-overview--header-links file)
     (with-temp-buffer
+      (setq-local org-dog-visited-file-name file)
       (insert-file-contents file)
       (goto-char (point-min))
       ;; Drop entries of the file for faster enabling of org-mode.
@@ -168,7 +169,8 @@ the file unless it is already open."
                       result)
               (message "Found a link to a non-existent file %s in %s"
                        dog-file
-                       (buffer-file-name)))))))
+                       (or (buffer-file-name)
+                           org-dog-visited-file-name)))))))
     result))
 
 ;;;###autoload

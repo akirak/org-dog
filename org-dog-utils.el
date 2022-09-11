@@ -8,6 +8,8 @@
 
 (declare-function org-element-timestamp-parser "org-element")
 
+(defvar org-dog-visited-file-name nil)
+
 (defsubst org-dog-case-fold-equal (string1 string2)
   "Compare two strings, ignoring case."
   (equal (downcase string1)
@@ -25,6 +27,8 @@
             (goto-char (point-min)))
           ,@progn))
      (with-temp-buffer
+       ;; You can add this if necessary
+       ;; (setq-local org-dog-visited-file-name ,file)
        (insert-file-contents ,file)
        (goto-char (point-min))
        ;; Drop entries of the file for faster enabling of org-mode.
