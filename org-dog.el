@@ -219,6 +219,9 @@ You can add this function "
 (cl-defgeneric org-dog-file-refile (file)
   "Refile the current Org entry to FILE.")
 
+(cl-defmethod org-dog-file-refile ((file org-dog-file))
+  (org-dog-refile-1 (oref file absolute)))
+
 (cl-defgeneric org-dog-file-capture-templates (file)
   "Return `org-capture-templates' to the file.")
 
@@ -263,6 +266,14 @@ This is mostly for optimization."
   (cl-etypecase file
     (string (org-dog-file-refile (org-dog-file-object file)))
     (org-dog-file (org-dog-file-refile file))))
+
+(defun org-dog-refile-1 (file)
+  "Refile the current entry to FILE."
+  (cl-check-type file string)
+  (let ((org-refile-targets `(((,file)
+                               :maxlevel . 99)))
+        (org-refile-target-verify-function nil))
+    (org-refile)))
 
 ;;;###autoload
 (defun org-dog-capture-to-file (file)
