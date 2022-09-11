@@ -394,7 +394,9 @@
         (progn
           (require 'org-dog-datetree)
           (org-dog-datetree-refile target))
-      (org-dog-refile-to-file target))))
+      (org-dog-refile-1 (cl-etypecase target
+                          (org-dog-file (oref target absolute))
+                          (string target))))))
 
 ;;;; Other utilities
 
