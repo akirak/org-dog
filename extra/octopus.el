@@ -285,16 +285,22 @@
             (vector 1 'transient-column spec))
           octopus-context-file-subgroups))
 
+(defcustom octopus-context-files-targets
+  '(("p" octopus-project-files-suffix)
+    ("m" octopus-major-mode-files-suffix)
+    ("f" octopus-path-files-suffix)
+    ("l" octopus-language-files-suffix))
+  "List of context file targets."
+  :type '(repeat (list (string :tag "Key")
+                       (symbol :tag "Transient suffix"))))
+
 (defun octopus-setup-context-files-targets (_children)
   (mapcar (pcase-lambda (`(,key ,suffix))
             `(,transient--default-child-level
               transient-suffix
               ,(list :key key
                      :command suffix)))
-          '(("p" octopus-project-files-suffix)
-            ("m" octopus-major-mode-files-suffix)
-            ("f" octopus-path-files-suffix)
-            ("l" octopus-language-files-suffix))))
+          octopus-context-files-targets))
 
 ;;;;; Refile
 
