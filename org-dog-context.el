@@ -58,7 +58,12 @@
     (path
      :key ?f
      :value-fn org-dog-context-path-value
-     :callback org-dog-context-path-1))
+     :callback org-dog-context-path-1)
+    (machine
+     :key ?M
+     ;; TODO: Use `file-remote-p' with identification set to 'host
+     :value-fn system-name
+     :callback org-dog-context-machine-1))
   ""
   :type '(alist :key-type symbol
                 :value-type (plist
@@ -203,6 +208,11 @@
                (make-org-dog-context-in-directory
                 :directory (file-name-directory file)
                 :filenames (list (file-name-nondirectory file))))))))
+
+(defun org-dog-context-machine-1 (hostname)
+  (make-org-dog-context-in-directory
+   :directory "hosts/"
+   :filenames (list hostname)))
 
 (provide 'org-dog-context)
 ;;; org-dog-context.el ends here
