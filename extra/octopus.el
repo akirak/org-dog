@@ -289,7 +289,8 @@
   '(("p" octopus-project-files-suffix)
     ("m" octopus-major-mode-files-suffix)
     ("f" octopus-path-files-suffix)
-    ("l" octopus-language-files-suffix))
+    ("l" octopus-language-files-suffix)
+    ("M" octopus-machine-files-suffix))
   "List of context file targets."
   :type '(repeat (list (string :tag "Key")
                        (symbol :tag "Transient suffix"))))
