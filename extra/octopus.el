@@ -248,6 +248,14 @@
   :files-suffix octopus-language-files-suffix
   :setup-suffix octopus-setup-language-file-targets)
 
+(octopus-define-context "machine"
+  :context-key machine
+  :initial-key "M"
+  :description-label "Machine"
+  :description-body (cdar octopus--machine-context)
+  :files-suffix octopus-machine-files-suffix
+  :setup-suffix octopus-setup-machine-file-targets)
+
 (defcustom octopus-context-file-subgroups
   '((:description
      octopus--project-description
@@ -264,7 +272,11 @@
     (:description
      octopus--language-description
      :if octopus--language-p
-     :setup-children octopus-setup-language-file-targets))
+     :setup-children octopus-setup-language-file-targets)
+    (:description
+     octopus--machine-description
+     :if octopus--machine-p
+     :setup-children octopus-setup-machine-file-targets))
   "List of context file subgroups displayed in transient."
   :type '(repeat plist))
 
