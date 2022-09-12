@@ -245,25 +245,30 @@
   :files-suffix octopus-language-files-suffix
   :setup-suffix octopus-setup-language-file-targets)
 
+(defcustom octopus-context-file-subgroups
+  '((:description
+     octopus--project-description
+     :if octopus--project-p
+     :setup-children octopus-setup-project-file-targets)
+    (:description
+     octopus--major-mode-description
+     :if octopus--major-mode-p
+     :setup-children octopus-setup-major-mode-file-targets)
+    (:description
+     octopus--path-description
+     :if octopus--path-p
+     :setup-children octopus-setup-path-file-targets)
+    (:description
+     octopus--language-description
+     :if octopus--language-p
+     :setup-children octopus-setup-language-file-targets))
+  "List of context file subgroups displayed in transient."
+  :type '(repeat plist))
+
 (defun octopus-setup-context-file-subgroups (_children)
   (mapcar (lambda (spec)
             (vector 1 'transient-column spec))
-          '((:description
-             octopus--project-description
-             :if octopus--project-p
-             :setup-children octopus-setup-project-file-targets)
-            (:description
-             octopus--major-mode-description
-             :if octopus--major-mode-p
-             :setup-children octopus-setup-major-mode-file-targets)
-            (:description
-             octopus--path-description
-             :if octopus--path-p
-             :setup-children octopus-setup-path-file-targets)
-            (:description
-             octopus--language-description
-             :if octopus--language-p
-             :setup-children octopus-setup-language-file-targets))))
+          octopus-context-file-subgroups))
 
 (defun octopus-setup-context-files-targets (_children)
   (mapcar (pcase-lambda (`(,key ,suffix))
