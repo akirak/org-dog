@@ -215,7 +215,7 @@
   :description-body (thread-last
                       (cdar octopus--project-context)
                       (project-root)
-                      (octopus--abbr-file-name))
+                      (octopus--directory-name))
   :files-suffix octopus-project-files-suffix
   :setup-suffix octopus-setup-project-file-targets)
 
@@ -426,6 +426,12 @@
       (append (last segs))
       (string-join sep)
       (concat (if endsep sep "")))))
+
+(defun octopus--directory-name (file)
+  (thread-last
+    file
+    (string-remove-suffix (octopus--path-separator))
+    (file-name-nondirectory)))
 
 (provide 'octopus)
 ;;; octopus.el ends here
