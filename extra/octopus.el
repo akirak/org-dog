@@ -223,7 +223,10 @@
   :context-key major-mode
   :initial-key "m"
   :description-label "Major Mode"
-  :description-body (cdar octopus--major-mode-context)
+  :description-body (thread-last
+                      (cdar octopus--major-mode-context)
+                      (symbol-name)
+                      (string-remove-suffix "-mode"))
   :files-suffix octopus-major-mode-files-suffix
   :setup-suffix octopus-setup-major-mode-file-targets)
 
