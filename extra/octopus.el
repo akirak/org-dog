@@ -185,7 +185,7 @@
                (push `(,transient--default-child-level
                        transient-suffix
                        ,(list :key key
-                              :description file
+                              :description (file-name-nondirectory file)
                               :command symbol))
                      result)
                (cl-incf i)))
