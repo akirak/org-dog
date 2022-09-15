@@ -160,6 +160,11 @@
                        name
                        group)))))
 
+(defcustom org-dog-context-major-mode-aliases
+  '((js-mode . "javascript"))
+  "Alist of mapping from major mode symbols to file names."
+  :type '(alist :key-type symbol :value-type string))
+
 (defun org-dog-context-major-mode-1 (mode)
   (catch 'mode-context
     (let ((mode mode)
@@ -168,7 +173,8 @@
         ;; The mode context is unapplicable
         (when (memq mode '(fundamental-mode special-mode))
           (throw 'mode-context nil))
-        (push (string-remove-suffix "-mode" (symbol-name mode))
+        (push (or (cdr (assq mode org-dog-context-major-mode-aliases))
+                  (string-remove-suffix "-mode" (symbol-name mode)))
               filenames)
         (setq mode (get mode 'derived-mode-parent)))
       (make-org-dog-context-in-directory
