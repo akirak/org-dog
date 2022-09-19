@@ -238,5 +238,18 @@
               (when-let (ctx (cdr (org-dog-context-edge 'project)))
                 (org-dog-context-file-objects ctx)))))
 
+;;;###autoload
+(defun org-dog-context-find-project-file (root)
+  "Visit an Org file for the current project ROOT."
+  (interactive (list (if-let (pr (project-current))
+                         (project-root pr)
+                       (user-error "Not in a project"))))
+  (let* ((enable-dir-local-variables nil)
+         (default-directory root))
+    (if-let* ((ctx (cdr (org-dog-context-edge 'project)))
+              (objs (org-dog-context-file-objects ctx)))
+        (find-file (oref (car objs) absolute))
+      (user-error "No associated Org file"))))
+
 (provide 'org-dog-context)
 ;;; org-dog-context.el ends here
