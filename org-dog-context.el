@@ -220,5 +220,23 @@
    :directory "hosts/"
    :filenames (list hostname)))
 
+;;;; Extra functions
+
+(defun org-dog-context-org-project-roots ()
+  "Return project roots associated with the current Org buffer."
+  (if-let (obj (org-dog-buffer-object))
+      (seq-filter (apply-partially #'org-dog-context--project-org-file
+                                   (oref obj absolute))
+                  (project-known-project-roots))
+    (user-error "Not in org-dog buffer")))
+
+(defun org-dog-context--project-org-file (org-file root)
+  (seq-find `(lambda (obj)
+               (equal (oref obj absolute) ,org-file))
+            (let* ((enable-dir-local-variables nil)
+                   (default-directory root))
+              (when-let (ctx (cdr (org-dog-context-edge 'project)))
+                (org-dog-context-file-objects ctx)))))
+
 (provide 'org-dog-context)
 ;;; org-dog-context.el ends here
