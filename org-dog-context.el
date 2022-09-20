@@ -240,10 +240,15 @@
 
 ;;;###autoload
 (defun org-dog-context-find-project-file (root)
-  "Visit an Org file for the current project ROOT."
-  (interactive (list (if-let (pr (project-current))
-                         (project-root pr)
-                       (user-error "Not in a project"))))
+  "Visit an Org file for the current project.
+
+ROOT can be a file directory. If a universal prefix argument is
+given, you will be asked for a directory."
+  (interactive (list (if current-prefix-arg
+                         (read-directory-name "Project: ")
+                       (if-let (pr (project-current))
+                           (project-root pr)
+                         (user-error "Not in a project")))))
   (let* ((enable-dir-local-variables nil)
          (default-directory root))
     (if-let* ((ctx (cdr (org-dog-context-edge 'project)))

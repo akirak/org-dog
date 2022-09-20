@@ -63,6 +63,10 @@
 
 (add-to-list 'embark-keymap-alist '(org-dog-file . org-dog-embark-file-map))
 
+(add-to-list 'embark-pre-action-hooks
+             '(org-dog-context-find-project-file
+               embark--universal-argument))
+
 ;;;; Commands
 
 (org-dog-embark-aw-command find-file)
