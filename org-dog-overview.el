@@ -336,13 +336,14 @@ as the initial input."
   "Return `org-dog-overview-sidebar-buffer' after initializing it."
   (with-current-buffer (get-buffer-create org-dog-overview-sidebar-buffer)
     (let ((initial-loc (when (> (point) (point-min))
-                         (list (progn
-                                 (beginning-of-line)
-                                 (when (re-search-forward (rx " — " (+ nonl) eol)
-                                                          (save-excursion
-                                                            (org-end-of-subtree))
-                                                          t)
-                                   (match-string 0)))
+                         (list (when-let (subtree-end (save-excursion
+                                                        (org-end-of-subtree)))
+                                 (when (> subtree-end (point))
+                                   (beginning-of-line)
+                                   (when (re-search-forward (rx " — " (+ nonl) eol)
+                                                            subtree-end
+                                                            t)
+                                     (match-string 0))))
                                (progn
                                  (org-back-to-heading)
                                  (buffer-substring-no-properties
