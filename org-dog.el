@@ -270,8 +270,7 @@ This is mostly for optimization."
 (defun org-dog-refile-1 (file)
   "Refile the current entry to FILE."
   (cl-check-type file string)
-  (let ((org-refile-targets `((,file
-                               :maxlevel . 99)))
+  (let ((org-refile-targets (list (cons file '(:maxlevel . 99))))
         (org-refile-target-verify-function nil))
     (org-refile)))
 
