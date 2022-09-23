@@ -44,6 +44,8 @@
 (defvar org-capture-templates)
 (defvar org-capture-templates-contexts)
 (defvar org-capture-entry)
+(defvar org-refile-targets)
+(defvar org-refile-target-verify-function)
 
 ;;;; Custom variables
 
