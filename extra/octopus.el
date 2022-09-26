@@ -357,6 +357,8 @@
    :setup-children octopus-setup-static-targets]
   ["Other targets"
    :class transient-row
+   ;; Select the base buffer of an indirect bufer
+   ("\\" octopus-this-file-suffix :if buffer-base-buffer)
    ("/" octopus-read-dog-file-suffix)]
   (interactive)
   (transient-setup 'octopus-find-file))
