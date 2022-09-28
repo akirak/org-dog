@@ -76,6 +76,19 @@
                                        (list (const :callback)
                                              function)))))
 
+(defun org-dog-context-set-alist (key &rest plist)
+  "Override properties of an entry in `org-dog-context-alist'.
+
+This is a configuration helper. It updates the properties of an
+entry at KEY with PLIST, leaving the other existing properties
+unchanged."
+  (declare (indent 1))
+  (when-let (cell (assq key org-dog-context-alist))
+    (let ((new-plist (cdr cell)))
+      (cl-loop for (prop value) on plist by #'cddr
+               do (plist-put new-plist prop value))
+      (setcdr cell new-plist))))
+
 (defvar org-dog-context-cache nil
   "A hash table.")
 
