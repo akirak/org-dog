@@ -343,6 +343,20 @@
   (octopus--dispatch (oref transient-current-prefix command)
                      org-clock-marker))
 
+;;;;; Avy
+
+(transient-define-suffix octopus-avy-org-heading-suffix ()
+  :description "Avy Org heading"
+  :if (lambda () (require 'avy nil t))
+  (interactive)
+  (avy-with avy-goto-line
+    (avy-jump (rx bol (+ "*") space)
+              :action (lambda (pt)
+                        (avy-action-goto pt)
+                        (org-back-to-heading)
+                        (octopus--dispatch (oref transient-current-prefix command)
+                                           (point-marker))))))
+
 ;;;; Prefix commands
 
 ;;;###autoload (autoload 'octopus-find-file "octopus" nil t)
