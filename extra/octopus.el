@@ -131,7 +131,7 @@
   :description "This file"
   (interactive)
   (octopus--dispatch (oref transient-current-prefix command)
-                     (buffer-file-name)))
+                     (buffer-file-name (org-base-buffer (current-buffer)))))
 
 ;;;;; Contexts
 
