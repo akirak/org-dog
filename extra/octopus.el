@@ -396,6 +396,7 @@
    :setup-children octopus-setup-static-targets]
   ["Other targets"
    :class transient-row
+   ("\\" octopus-in-file-suffix)
    ("/" octopus-read-dog-file-suffix)]
   (interactive)
   (transient-setup 'octopus-find-node))
@@ -442,6 +443,10 @@
                           (string target))))))
 
 ;;;; Other utilities
+
+(defun octopus--org-mode-p ()
+  "Return non-nil if the current buffer is in `org-mode'."
+  (derived-mode-p 'org-mode))
 
 (defvar octopus--path-separator nil)
 
