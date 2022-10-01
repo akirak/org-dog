@@ -343,6 +343,14 @@
   (octopus--dispatch (oref transient-current-prefix command)
                      org-clock-marker))
 
+(transient-define-suffix octopus-clocked-file-suffix ()
+  :description "Clocked file"
+  :if #'org-clocking-p
+  (interactive)
+  (octopus--dispatch (oref transient-current-prefix command)
+                     (buffer-file-name
+                      (org-base-buffer (marker-buffer org-clock-marker)))))
+
 ;;;;; Avy
 
 (transient-define-suffix octopus-avy-org-heading-suffix ()
@@ -397,7 +405,8 @@
   ["Other targets"
    :class transient-row
    ("\\" octopus-in-file-suffix)
-   ("/" octopus-read-dog-file-suffix)]
+   ("/" octopus-read-dog-file-suffix)
+   ("#" octopus-clocked-file-suffix)]
   (interactive)
   (transient-setup 'octopus-find-node))
 
