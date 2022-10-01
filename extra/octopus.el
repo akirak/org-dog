@@ -410,14 +410,13 @@
 (transient-define-prefix octopus-refile ()
   ["Options"
    ("-d" octopus-infix-refile-to-datetree)]
-  ["This file"
-   ("." octopus-in-file-suffix)]
   ["Other targets"
    :class transient-row
    ("'" "Avy" avy-org-refile-as-child
     :if (lambda () (fboundp 'avy-org-refile-as-child)))
    ("/" octopus-read-dog-file-suffix)
-   ("@" octopus-clock-marker-suffix)]
+   ("@" octopus-clock-marker-suffix)
+   ("\\" octopus-in-file-suffix)]
   (interactive)
   (unless (derived-mode-p 'org-mode 'org-agenda-mode)
     (user-error "Cannot run in this mode"))
