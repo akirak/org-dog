@@ -431,6 +431,7 @@
    ("-d" octopus-infix-refile-to-datetree)]
   ["Other targets"
    :class transient-row
+   ("D" "Date tree in this file" org-dog-datetree-refile-to-this-file)
    ("'" "Avy" avy-org-refile-as-child
     :if (lambda () (fboundp 'avy-org-refile-as-child)))
    ("/" octopus-read-dog-file-suffix)
