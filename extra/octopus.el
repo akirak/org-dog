@@ -497,6 +497,9 @@
           (call-interactively #'org-store-link)))
       (insert (apply #'org-link-make-string (pop org-stored-links))))))
 
+;; Maybe I'll drop `octopus-clock-in'. I think there should be a better
+;; interface to the use case that is supposed to be covered by the command.
+
 ;;;###autoload (autoload 'octopus-clock-in "octopus" nil 'interactive)
 (transient-define-prefix octopus-clock-in ()
   "Clock in to an existing heading or create a new heading."
