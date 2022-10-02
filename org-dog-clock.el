@@ -44,8 +44,10 @@ This is an example implementation of
                   (org-dog-read-heading-default
                    files "Clock in: "))))
     (if marker
-        (org-with-point-at marker
-          (org-clock-in))
+        (with-current-buffer (marker-buffer marker)
+          (org-with-wide-buffer
+           (goto-char marker)
+           (org-clock-in)))
       ;; HACK: Retrieve the last input from `minibuffer-history'. It is
       ;; currently impossible to use org-ql-completing-read to read an input
       ;; that does not match any of the candidates. See
