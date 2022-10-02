@@ -450,6 +450,33 @@
                           (org-dog-file (oref target absolute))
                           (string target))))))
 
+;;;###autoload (autoload 'octopus-insert-link "octopus" nil 'interactive)
+(transient-define-prefix octopus-insert-link ()
+  "Insert a link to a heading in a file."
+  ["Context"
+   :class transient-row
+   :setup-children octopus-setup-context-files-targets]
+  ["Static targets"
+   :class transient-row
+   :setup-children octopus-setup-static-targets]
+  ["Other targets"
+   :class transient-row
+   ("\\" octopus-in-file-suffix)
+   ("/" octopus-read-dog-file-suffix)
+   ("#" octopus-clocked-file-suffix)]
+  (interactive)
+  (unless (derived-mode-p 'org-mode)
+    (user-error "You must run this command inside org-mode"))
+  (transient-setup 'octopus-insert-link))
+
+(cl-defmethod octopus--dispatch ((_cmd (eql 'octopus-insert-link))
+                                 files)
+  (let ((marker (org-ql-completing-read files :prompt "Insert a link: ")))
+    (org-with-point-at marker
+      (let ((inhibit-message))
+        (call-interactively #'org-store-link)))
+    (insert (apply #'org-link-make-string (pop org-stored-links)))))
+
 ;;;; Other utilities
 
 (defun octopus--org-mode-p ()
