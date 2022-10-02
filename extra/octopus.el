@@ -497,27 +497,6 @@
           (call-interactively #'org-store-link)))
       (insert (apply #'org-link-make-string (pop org-stored-links))))))
 
-(defcustom octopus-clock-in-fallback-fn
-  #'octopus-clock-in-fallback-1
-  "Fallback function used in `octopus-clock-in'.
-
-The function takes two arguments: the file and an input string
-which is usually the title of a heading. It should creates a new
-heading in the file and clock into the heading."
-  :type 'function)
-
-(defun octopus-clock-in-fallback-1 (file title)
-  "Create a new heading in a file and clock into it.
-
-This is an example implementation of
-`octopus-clock-in-fallback-fn'."
-  (let ((org-capture-entry `("" ""
-                             entry
-                             (file ,file)
-                             ,(concat "* " title "\n%?")
-                             :clock-in t :clock-resume t)))
-    (org-capture)))
-
 ;;;###autoload (autoload 'octopus-clock-in "octopus" nil 'interactive)
 (transient-define-prefix octopus-clock-in ()
   "Clock in to an existing heading or create a new heading."
@@ -537,24 +516,7 @@ This is an example implementation of
 
 (cl-defmethod octopus--dispatch ((_cmd (eql 'octopus-clock-in))
                                  file)
-  (octopus-clock-in-file file))
-
-;;;###autoload
-(cl-defun octopus-clock-in-file (file &key query-prefix query-filter)
-  "Clock in to some heading in FILE."
-  (let ((marker (org-ql-completing-read file
-                  :query-prefix query-prefix
-                  :query-filter query-filter
-                  :prompt "Clock in: ")))
-    (if marker
-        (org-with-point-at marker
-          (org-clock-in))
-      ;; HACK: Retrieve the last input from `minibuffer-history'. It is
-      ;; currently impossible to use org-ql-completing-read to read an input
-      ;; that does not match any of the candidates. See
-      ;; https://github.com/alphapapa/org-ql/issues/299#issuecomment-1230170675
-      (let ((title (car minibuffer-history)))
-        (funcall octopus-clock-in-fallback-fn file title)))))
+  (org-dog-clock-in file))
 
 ;;;; Other utilities
 

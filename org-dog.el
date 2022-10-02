@@ -406,6 +406,20 @@ properly handle it."
           (flatten-list))
       all-files)))
 
+(defun org-dog-read-heading-default (files &optional prompt)
+  "Return a marker to a heading."
+  (let ((org-refile-targets (mapcar (lambda (file)
+                                      (cons file `(:maxlevel . 99)))
+                                    (if (stringp files)
+                                        (list files)
+                                      files))))
+    (pcase (org-refile-get-location prompt)
+      (`(,_ ,filename ,_ ,point)
+       (with-current-buffer (find-buffer-visiting filename)
+         (org-with-wide-buffer
+          (goto-char point)
+          (point-marker)))))))
+
 ;;;; Miscellaneous utilities for convenience of users
 
 (defun org-dog-symbol-value (x)
