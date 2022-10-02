@@ -497,6 +497,57 @@
           (call-interactively #'org-store-link)))
       (insert (apply #'org-link-make-string (pop org-stored-links))))))
 
+(defcustom octopus-clock-in-fallback-fn
+  #'octopus-clock-in-fallback-1
+  "Fallback function used in `octopus-clock-in'.
+
+The function takes two arguments: the file and an input string
+which is usually the title of a heading. It should creates a new
+heading in the file and clock into the heading."
+  :type 'function)
+
+(defun octopus-clock-in-fallback-1 (file title)
+  "Create a new heading in a file and clock into it.
+
+This is an example implementation of
+`octopus-clock-in-fallback-fn'."
+  (let ((org-capture-entry `("" ""
+                             entry
+                             (file ,file)
+                             ,(concat "* " title "\n%?")
+                             :clock-in t :clock-resume t)))
+    (org-capture)))
+
+;;;###autoload (autoload 'octopus-clock-in "octopus" nil 'interactive)
+(transient-define-prefix octopus-clock-in ()
+  "Clock in to an existing heading or create a new heading."
+  ["Context"
+   :class transient-columns
+   :setup-children octopus-setup-context-file-subgroups]
+  ["Static targets"
+   :class transient-row
+   :setup-children octopus-setup-static-targets]
+  ["Other targets"
+   :class transient-row
+   ;; Select the base buffer of an indirect bufer
+   ("\\" octopus-this-file-suffix :if buffer-base-buffer)
+   ("/" octopus-read-dog-file-suffix)]
+  (interactive)
+  (transient-setup 'octopus-clock-in))
+
+(cl-defmethod octopus--dispatch ((_cmd (eql 'octopus-clock-in))
+                                 file)
+  (let ((marker (org-ql-completing-read file :prompt "Insert a link: ")))
+    (if marker
+        (org-with-point-at marker
+          (org-clock-in))
+      ;; HACK: Retrieve the last input from `minibuffer-history'. It is
+      ;; currently impossible to use org-ql-completing-read to read an input
+      ;; that does not match any of the candidates. See
+      ;; https://github.com/alphapapa/org-ql/issues/299#issuecomment-1230170675
+      (let ((title (car minibuffer-history)))
+        (funcall octopus-clock-in-fallback-fn file title)))))
+
 ;;;; Other utilities
 
 (defun octopus--org-mode-p ()
