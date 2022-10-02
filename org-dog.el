@@ -746,21 +746,24 @@ create multiple buffers if the entry has no ID."
        (`(,id ,headline) (if element-marker
                              (list (org-element-property :ID entry)
                                    (org-element-property :raw-value entry))
-                           (org-with-point-at marker
-                             (list (org-id-get)
-                                   (org-get-heading t t t t)))))
+                           (with-current-buffer (marker-buffer marker)
+                             (org-with-wide-buffer
+                              (goto-char marker)
+                              (list (org-id-get)
+                                    (org-get-heading t t t t))))))
        (buffer (when (and id (not no-reuse))
                  (gethash id org-dog--indirect-buffers))))
     (unless (and buffer
                  (bufferp buffer)
                  (buffer-live-p buffer))
       ;; Create a new indirect buffer
-      (setq buffer (org-with-point-at marker
-                     (with-current-buffer
-                         (org-get-indirect-buffer
-                          nil headline)
-                       (org-narrow-to-subtree)
-                       (current-buffer))))
+      (setq buffer (with-current-buffer (org-get-indirect-buffer
+                                         (marker-buffer marker)
+                                         headline)
+                     (widen)
+                     (goto-char marker)
+                     (org-narrow-to-subtree)
+                     (current-buffer)))
       (when id
         (puthash id buffer org-dog--indirect-buffers)))
     buffer))

@@ -468,11 +468,13 @@
                                  target)
   (if (markerp target)
       (org-refile nil nil
-                  (org-with-point-at target
-                    (list (org-get-heading t t t t)
-                          (buffer-file-name (marker-buffer target))
-                          nil
-                          (marker-position target))))
+                  (with-current-buffer (marker-buffer target)
+                    (org-with-wide-buffer
+                     (goto-char target)
+                     (list (org-get-heading t t t t)
+                           (buffer-file-name (marker-buffer target))
+                           nil
+                           (marker-position target)))))
     (if octopus-refile-to-datetree
         (progn
           (require 'org-dog-datetree)
@@ -507,14 +509,18 @@
   (let ((marker (org-ql-completing-read files :prompt "Insert a link: ")))
     (if octopus-enable-super-link
         (progn
-          (org-with-point-at marker
-            (if (fboundp 'org-super-links-store-link)
-                (org-super-links-store-link)
-              (error "org-super-links-store-link is not bound")))
+          (with-current-buffer (marker-buffer marker)
+            (org-with-wide-buffer
+             (goto-char marker)
+             (if (fboundp 'org-super-links-store-link)
+                 (org-super-links-store-link)
+               (error "org-super-links-store-link is not bound"))))
           (org-super-links-insert-link))
-      (org-with-point-at marker
-        (let ((inhibit-message))
-          (call-interactively #'org-store-link)))
+      (with-current-buffer (marker-buffer marker)
+        (org-with-wide-buffer
+         (goto-char marker)
+         (let ((inhibit-message))
+           (call-interactively #'org-store-link))))
       (insert (apply #'org-link-make-string (pop org-stored-links))))))
 
 ;; Maybe I'll drop `octopus-clock-in'. I think there should be a better

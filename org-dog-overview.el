@@ -359,13 +359,15 @@ as the initial input."
                  (file-name-nondirectory dest))
                 "\n")
         (pcase-dolist (`(,src . ,marker) (reverse links))
-          (insert (concat (org-with-point-at marker
-                            (cond
-                             ((org-in-item-p)
-                              (buffer-substring (org-in-item-p)
-                                                (line-end-position)))
-                             (t
-                              (thing-at-point 'paragraph))))
+          (insert (concat (with-current-buffer (marker-buffer marker)
+                            (org-with-wide-buffer
+                             (goto-char marker)
+                             (cond
+                              ((org-in-item-p)
+                               (buffer-substring (org-in-item-p)
+                                                 (line-end-position)))
+                              (t
+                               (thing-at-point 'paragraph)))))
                           " — "
                           (org-link-make-string
                            (concat "org-dog:" (oref (org-dog-file-object src) relative))
