@@ -314,8 +314,7 @@ This is mostly for optimization."
                              title))))))
 
 ;;;; Completion
-
-(cl-defun org-dog-file-completion (&key class pred)
+(cl-defun org-dog-file-completion (&key class pred files)
   "A completion function for `org-dog-file' matching a criteria.
 
 If CLASS is specified, only files associated with an instance of
@@ -323,12 +322,17 @@ the class or its descendant are suggested as candidates.
 
 The category will be CLASS is specified, or `org-dog-file' if omitted.
 
+Alternatively, you can specify FILES directly, which should be a
+list of absolute file names.
+
 To customize the annotation, override `org-dog-annotate-file' method.
 
 For a usage example, see the implementation of
 `org-dog-complete-file'."
-  (let* ((objs (org-dog-select-files (or pred
-                                         (org-dog-make-file-pred :class class))))
+  (let* ((objs (if files
+                   (mapcar #'org-dog-file-object files)
+                 (org-dog-select-files (or pred
+                                           (org-dog-make-file-pred :class class)))))
          (files (mapcar (lambda (obj)
                           (let ((absolute (substring (oref obj absolute))))
                             (when-let (dir (file-name-directory absolute))
