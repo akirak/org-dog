@@ -537,7 +537,12 @@ This is an example implementation of
 
 (cl-defmethod octopus--dispatch ((_cmd (eql 'octopus-clock-in))
                                  file)
-  (let ((marker (org-ql-completing-read file :prompt "Insert a link: ")))
+  (octopus-clock-in-file file))
+
+;;;###autoload
+(defun octopus-clock-in-file (file)
+  "Clock in to some heading in FILE."
+  (let ((marker (org-ql-completing-read file :prompt "Clock in: ")))
     (if marker
         (org-with-point-at marker
           (org-clock-in))
