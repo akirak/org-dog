@@ -42,6 +42,7 @@
 
 (declare-function org-dog-datetree-refile "ext:org-dog-datetree")
 (declare-function org-ql-find "ext:org-ql-find")
+(declare-function org-super-links-store-link "ext:org-super-links")
 
 (defgroup octopus nil
   "Transient commands for Org Dog."
@@ -365,6 +366,15 @@
                         (octopus--dispatch (oref transient-current-prefix command)
                                            (point-marker))))))
 
+;;;;; org-super-link
+
+(defvar octopus-enable-super-link nil)
+
+(transient-define-infix octopus-infix-super-link ()
+  :description "Insert a backlink into the target"
+  :class 'octopus-boolean-variable
+  :variable 'octopus-enable-super-link)
+
 ;;;; Prefix commands
 
 ;;;###autoload (autoload 'octopus-find-file "octopus" nil t)
@@ -453,6 +463,8 @@
 ;;;###autoload (autoload 'octopus-insert-link "octopus" nil 'interactive)
 (transient-define-prefix octopus-insert-link ()
   "Insert a link to a heading in a file."
+  ["Options"
+   ("-s" octopus-infix-super-link)]
   ["Context"
    :class transient-row
    :setup-children octopus-setup-context-files-targets]
@@ -472,10 +484,17 @@
 (cl-defmethod octopus--dispatch ((_cmd (eql 'octopus-insert-link))
                                  files)
   (let ((marker (org-ql-completing-read files :prompt "Insert a link: ")))
-    (org-with-point-at marker
-      (let ((inhibit-message))
-        (call-interactively #'org-store-link)))
-    (insert (apply #'org-link-make-string (pop org-stored-links)))))
+    (if octopus-enable-super-link
+        (progn
+          (org-with-point-at marker
+            (if (fboundp 'org-super-links-store-link)
+                (org-super-links-store-link)
+              (error "org-super-links-store-link is not bound")))
+          (org-super-links-insert-link))
+      (org-with-point-at marker
+        (let ((inhibit-message))
+          (call-interactively #'org-store-link)))
+      (insert (apply #'org-link-make-string (pop org-stored-links))))))
 
 ;;;; Other utilities
 
