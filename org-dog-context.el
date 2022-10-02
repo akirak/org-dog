@@ -99,6 +99,7 @@ unchanged."
               (org-dog-context-edge type)))
     (delq nil)))
 
+;;;###autoload
 (defun org-dog-context-edge (type &optional arg)
   (let* ((plist (cdr (or (assq type org-dog-context-alist)
                          (error "No entry for %s in org-dog-context-alist" type))))
