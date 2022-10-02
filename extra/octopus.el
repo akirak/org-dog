@@ -169,27 +169,47 @@
                 (singletonp (= (length files) 1))
                 (i 0)
                 result)
-           (dolist (file files)
-             (let ((symbol (intern (format "octopus--context-file-suffix-%s-%d"
+           (when (catch 'toomany
+                   (dolist (file files)
+                     (when (> i 2)
+                       (throw 'toomany t))
+                     (let ((symbol (intern (format "octopus--context-file-suffix-%s-%d"
+                                                   ,initial-key i)))
+                           ;; (absolute (oref obj absolute))
+                           ;; (relative (oref obj relative))
+                           (key (concat ,initial-key (cond
+                                                      (singletonp "")
+                                                      ((= i 0) ,initial-key)
+                                                      (t (number-to-string i))))))
+                       (fset symbol
+                             `(lambda ()
+                                (interactive)
+                                (octopus--run-file-suffix ,file)))
+                       (put symbol 'interactive-only t)
+                       (push `(,transient--default-child-level
+                               transient-suffix
+                               ,(list :key key
+                                      :description (file-name-nondirectory file)
+                                      :command symbol))
+                             result)
+                       (cl-incf i)
+                       nil)))
+             (let ((symbol (intern (format "octopus--context-file-suffix-%s-rest"
                                            ,initial-key i)))
-                   ;; (absolute (oref obj absolute))
-                   ;; (relative (oref obj relative))
-                   (key (concat ,initial-key (cond
-                                              (singletonp "")
-                                              ((= i 0) ,initial-key)
-                                              (t (number-to-string i))))))
+                   (key (concat ,initial-key "/")))
                (fset symbol
                      `(lambda ()
                         (interactive)
-                        (octopus--run-file-suffix ,file)))
+                        (octopus--run-file-suffix
+                         (completing-read "Select a file: "
+                                          (org-dog-file-completion :files ',files)))))
                (put symbol 'interactive-only t)
                (push `(,transient--default-child-level
                        transient-suffix
                        ,(list :key key
-                              :description (file-name-nondirectory file)
+                              :description "more"
                               :command symbol))
-                     result)
-               (cl-incf i)))
+                     result)))
            (nreverse result)))
 
        (transient-define-suffix ,files-suffix ()
