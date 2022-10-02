@@ -540,9 +540,12 @@ This is an example implementation of
   (octopus-clock-in-file file))
 
 ;;;###autoload
-(defun octopus-clock-in-file (file)
+(cl-defun octopus-clock-in-file (file &key query-prefix query-filter)
   "Clock in to some heading in FILE."
-  (let ((marker (org-ql-completing-read file :prompt "Clock in: ")))
+  (let ((marker (org-ql-completing-read file
+                  :query-prefix query-prefix
+                  :query-filter query-filter
+                  :prompt "Clock in: ")))
     (if marker
         (org-with-point-at marker
           (org-clock-in))
