@@ -491,6 +491,7 @@ ROOT is the path to a directory."
       (go nil))
     result))
 
+;; TODO: This API is ugly, so it needs refinement.
 (cl-defun org-dog-make-file-pred (&key class
                                        header-pred
                                        buffer-pred
