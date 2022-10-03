@@ -496,6 +496,7 @@ ROOT is the path to a directory."
                                        buffer-pred
                                        relative
                                        relative-prefix
+                                       relative-regexp
                                        basename-regexp
                                        negate-basename-regexp)
   (if-let (conds (thread-last
@@ -505,6 +506,8 @@ ROOT is the path to a directory."
                            `(equal ,relative (oref obj relative)))
                          (when relative-prefix
                            `(string-prefix-p ,relative-prefix (oref obj relative)))
+                         (when relative-regexp
+                           `(string-match-p ,relative-regexp (oref obj relative)))
                          (when basename-regexp
                            `(string-match-p ,(concat "^" basename-regexp "$")
                                             (file-name-base (oref obj relative))))
