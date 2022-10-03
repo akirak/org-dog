@@ -162,13 +162,17 @@ or an active time stamp in a non-archived heading."
   (let ((org-dog-root-span (if (numberp arg)
                                arg
                              org-dog-root-span))
-        (i 0))
+        added-files)
     (dolist (file (org-dog-select 'absolute))
       (unless (member file org-agenda-files)
         (when (org-dog-root--active-file-p file)
           (push file org-agenda-files)
-          (cl-incf i))))
-    (message "Added %d files" i)))
+          (push file added-files))))
+    (if added-files
+        (message "Added %d files: %s"
+                 (length added-files)
+                 added-files)
+      (message "No added files"))))
 
 (defun org-dog-root--active-file-p (file)
   "Return non-nil if FILE is considered active.
