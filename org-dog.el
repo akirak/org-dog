@@ -531,6 +531,7 @@ ROOT is the path to a directory."
 
 (defun org-dog-select (&optional slot &rest pred-plist)
   "A convenient interface for querying file objects."
+  (declare (indent 1))
   (let ((objs (org-dog-select-files
                 (when pred-plist
                   (apply #'org-dog-make-file-pred pred-plist)))))
