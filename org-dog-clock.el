@@ -1,6 +1,15 @@
 ;;; org-dog-clock.el --- org-clock functionalities -*- lexical-binding: t -*-
 
+(require 'org-macs)
+(require 'org-capture)
+(require 'org-dog)
+
+(defvar org-capture-entry)
 (declare-function org-ql-completing-read "ext:org-ql")
+
+(defgroup org-dog-clock nil
+  "Integration with org-clock."
+  :group 'org-dog)
 
 (defcustom org-dog-clock-use-ql t
   "Whether to use `org-ql-completing-read' to select a heading.
@@ -8,7 +17,7 @@
 It is recommended to set this option to t. Otherwise,
 `org-dog-read-heading-default' will be used, but it does not
 support creating a new todo heading."
-  :group 'org-dog
+  :group 'org-dog-clock
   :type 'boolean)
 
 (defcustom org-dog-clock-in-fallback-fn
