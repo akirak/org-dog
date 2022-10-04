@@ -24,9 +24,10 @@ support creating a new todo heading."
   #'org-dog-clock-in-fallback-1
   "Fallback function used in `org-dog-clock-in'.
 
-The function takes two arguments: the file and an input string
-which is usually the title of a heading. It should creates a new
-heading in the file and clock into the heading."
+The function should take at least two arguments: the file and an
+input string which is usually the title of a heading. Extra
+arguments to `org-dog-clock-in' are passed as is. It should
+creates a new heading in the file and clock into the heading."
   :type 'function)
 
 (defun org-dog-clock-in-fallback-1 (file title)
@@ -42,7 +43,8 @@ This is an example implementation of
     (org-capture)))
 
 ;;;###autoload
-(cl-defun org-dog-clock-in (files &key query-prefix query-filter)
+(cl-defun org-dog-clock-in (files &rest args &key query-prefix query-filter
+                                  &allow-other-keys)
   "Clock in to some heading in one of the files."
   (let ((marker (if (and org-dog-clock-use-ql
                          (fboundp 'org-ql-completing-read))
@@ -62,16 +64,20 @@ This is an example implementation of
       ;; that does not match any of the candidates. See
       ;; https://github.com/alphapapa/org-ql/issues/299#issuecomment-1230170675
       (let ((title (car minibuffer-history)))
-        (funcall org-dog-clock-in-fallback-fn
-                 (cond
-                  ((stringp files)
-                   files)
-                  ((= 1 (length files))
-                   (car files))
-                  (t
-                   (completing-read (format "Files in which you'll create \"%s\": " title)
-                                    (org-dog-file-completion :files files))))
-                 title)))))
+        (apply org-dog-clock-in-fallback-fn
+               (cond
+                ((stringp files)
+                 files)
+                ((= 1 (length files))
+                 (car files))
+                (t
+                 (completing-read (format "Files in which you'll create \"%s\": " title)
+                                  (org-dog-file-completion :files files))))
+               title
+               (thread-first
+                 args
+                 (map-delete :query-prefix)
+                 (map-delete :query-filter)))))))
 
 (provide 'org-dog-clock)
 ;;; org-dog-clock.el ends here
