@@ -69,37 +69,54 @@ relevant files when an entry is archived."
                             options))))))
 
 ;;;###autoload
-(defun org-dog-datetree-refile (file)
-  "Refile to the datetree in FILE."
+(defun org-dog-datetree-refile (file &optional read-date)
+  "Refile to the datetree in a file.
+
+The FILE must be an Org file.
+
+If the command is called with a single universal prefix argument
+or READ-DATE is non-nil, the user will be asked for a date."
   (interactive (list (completing-read
                       "Refile to datetree: "
                       (org-dog-file-completion :class 'org-dog-datetree-file)
-                      nil nil nil org-dog-datetree-refile-history)))
+                      nil nil nil org-dog-datetree-refile-history)
+                     (equal current-prefix-arg '(4))))
   (when org-dog-datetree-generate-id-on-refile
     (org-id-get-create))
   (let* ((file (cl-typecase file
                  (string file)
                  (org-dog-file (oref file absolute))))
-         (date (org-reverse-datetree-default-entry-time)))
+         (date (if read-date
+                   (org-dog-datetree--read-date)
+                 (org-reverse-datetree-default-entry-time))))
     (when org-dog-datetree-propagate-on-refile
       (org-dog-datetree-propagate-by-tag nil :date date))
     (org-reverse-datetree-refile-to-file file date)))
 
 ;;;###autoload
-(defun org-dog-datetree-refile-to-this-file ()
-  "Refile to the datetree in the current file."
-  (interactive)
+(defun org-dog-datetree-refile-to-this-file (&optional read-date)
+  "Refile to the datetree in the current file.
+
+If the command is called with a single universal prefix argument
+or READ-DATE is non-nil, the user will be asked for a date."
+  (interactive (list (equal current-prefix-arg '(4))))
   (let ((file (buffer-file-name)))
     (if (object-of-class-p (org-dog-file-object (abbreviate-file-name file))
                            'org-dog-datetree-file)
         (progn
           (when org-dog-datetree-generate-id-on-refile
             (org-id-get-create))
-          (let ((date (org-reverse-datetree-default-entry-time)))
+          (let ((date (if read-date
+                          (org-dog-datetree--read-date)
+                        (org-reverse-datetree-default-entry-time))))
             (when org-dog-datetree-propagate-on-refile
               (org-dog-datetree-propagate-by-tag nil :date date))
             (org-reverse-datetree-refile-to-file file date)))
       (user-error "Not in `org-dog-datetree-file'"))))
+
+(defun org-dog-datetree--read-date ()
+  "Prompt for a date and return an internal time."
+  (org-read-date nil t))
 
 ;;;###autoload
 (cl-defun org-dog-datetree-transclude-this-entry (file &key date)
