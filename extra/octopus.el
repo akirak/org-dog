@@ -395,6 +395,15 @@
   :class 'octopus-boolean-variable
   :variable 'octopus-enable-super-link)
 
+;;;;; org-transclusion
+
+(defvar octopus-enable-transclusion-link nil)
+
+(transient-define-infix octopus-infix-transclusion-link ()
+  :description "Insert transclusion"
+  :class 'octopus-boolean-variable
+  :variable 'octopus-enable-transclusion-link)
+
 ;;;; Prefix commands
 
 ;;;###autoload (autoload 'octopus-find-file "octopus" nil t)
@@ -487,7 +496,8 @@
 (transient-define-prefix octopus-insert-link ()
   "Insert a link to a heading in a file."
   ["Options"
-   ("-s" octopus-infix-super-link)]
+   ("-s" octopus-infix-super-link)
+   ("-t" octopus-infix-transclusion-link)]
   ["Context"
    :class transient-row
    :setup-children octopus-setup-context-files-targets]
@@ -507,21 +517,26 @@
 (cl-defmethod octopus--dispatch ((_cmd (eql 'octopus-insert-link))
                                  files)
   (let ((marker (org-ql-completing-read files :prompt "Insert a link: ")))
-    (if octopus-enable-super-link
-        (progn
-          (with-current-buffer (marker-buffer marker)
-            (org-with-wide-buffer
-             (goto-char marker)
-             (if (fboundp 'org-super-links-store-link)
-                 (org-super-links-store-link)
-               (error "org-super-links-store-link is not bound"))))
-          (org-super-links-insert-link))
-      (with-current-buffer (marker-buffer marker)
-        (org-with-wide-buffer
-         (goto-char marker)
-         (let ((inhibit-message))
-           (call-interactively #'org-store-link))))
-      (insert (apply #'org-link-make-string (pop org-stored-links))))))
+    (atomic-change-group
+      (when octopus-enable-transclusion-link
+        (unless (bolp)
+          (insert "\n"))
+        (insert "#+transclude: "))
+      (if octopus-enable-super-link
+          (progn
+            (with-current-buffer (marker-buffer marker)
+              (org-with-wide-buffer
+               (goto-char marker)
+               (if (fboundp 'org-super-links-store-link)
+                   (org-super-links-store-link)
+                 (error "org-super-links-store-link is not bound"))))
+            (org-super-links-insert-link))
+        (with-current-buffer (marker-buffer marker)
+          (org-with-wide-buffer
+           (goto-char marker)
+           (let ((inhibit-message))
+             (call-interactively #'org-store-link))))
+        (insert (apply #'org-link-make-string (pop org-stored-links)))))))
 
 ;; Maybe I'll drop `octopus-clock-in'. I think there should be a better
 ;; interface to the use case that is supposed to be covered by the command.
