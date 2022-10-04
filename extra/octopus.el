@@ -372,6 +372,23 @@
                      (buffer-file-name
                       (org-base-buffer (marker-buffer org-clock-marker)))))
 
+;;;;; Capture locations
+
+(transient-define-suffix octopus-last-capture-marker-suffix ()
+  :description (lambda ()
+                 (concat "Last capture "
+                         (save-current-buffer
+                           (org-with-point-at org-capture-last-stored-marker
+                             (format "\"%s\""
+                                     (substring-no-properties
+                                      (org-get-heading t t t t)))))))
+  :if (lambda ()
+        (and org-capture-last-stored-marker
+             (buffer-live-p (marker-buffer org-capture-last-stored-marker))))
+  (interactive)
+  (octopus--dispatch (oref transient-current-prefix command)
+                     org-capture-last-stored-marker))
+
 ;;;;; Avy
 
 (transient-define-suffix octopus-avy-org-heading-suffix ()
@@ -510,7 +527,8 @@
    ("\\" octopus-in-file-suffix)
    ("/" octopus-read-dog-file-suffix)
    ("@" octopus-clock-marker-suffix)
-   ("#" octopus-clocked-file-suffix)]
+   ("#" octopus-clocked-file-suffix)
+   ("$" octopus-last-capture-marker-suffix)]
   (interactive)
   (unless (derived-mode-p 'org-mode)
     (user-error "You must run this command inside org-mode"))
