@@ -506,8 +506,10 @@
    :setup-children octopus-setup-static-targets]
   ["Other targets"
    :class transient-row
+   ("'" octopus-avy-org-heading-suffix)
    ("\\" octopus-in-file-suffix)
    ("/" octopus-read-dog-file-suffix)
+   ("@" octopus-clock-marker-suffix)
    ("#" octopus-clocked-file-suffix)]
   (interactive)
   (unless (derived-mode-p 'org-mode)
@@ -515,8 +517,10 @@
   (transient-setup 'octopus-insert-link))
 
 (cl-defmethod octopus--dispatch ((_cmd (eql 'octopus-insert-link))
-                                 files)
-  (let ((marker (org-ql-completing-read files :prompt "Insert a link: ")))
+                                 target)
+  (let ((marker (if (markerp target)
+                    target
+                  (org-ql-completing-read target :prompt "Insert a link: "))))
     (atomic-change-group
       (when octopus-enable-transclusion-link
         (unless (bolp)
