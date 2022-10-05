@@ -383,7 +383,7 @@
                                      (substring-no-properties
                                       (org-get-heading t t t t)))))))
   :if (lambda ()
-        (and org-capture-last-stored-marker
+        (and (bound-and-true-p org-capture-last-stored-marker)
              (buffer-live-p (marker-buffer org-capture-last-stored-marker))))
   (interactive)
   (octopus--dispatch (oref transient-current-prefix command)
