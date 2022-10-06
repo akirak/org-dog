@@ -63,6 +63,8 @@ The functions in this hook take no argument."
 
 (defvar org-dog--file-table nil)
 
+(defvar org-dog--root-regexp nil)
+
 ;;;;; Classes
 
 (defclass org-dog-repository ()
@@ -165,6 +167,11 @@ as well."
   (if org-dog--repository-table
       (clrhash org-dog--repository-table)
     (setq org-dog--repository-table (make-hash-table :test #'equal :size 10)))
+  (setq org-dog--root-regexp (rx-to-string
+                              `(and bos (or ,@(thread-last
+                                                org-dog-repository-alist
+                                                (mapcar #'car)
+                                                (mapcar #'expand-file-name))))))
   (pcase-dolist (`(,root . ,plist) org-dog-repository-alist)
     (when (file-directory-p root)
       (puthash root (apply #'org-dog--make-repository root
