@@ -44,6 +44,7 @@ This is an example implementation of
 
 ;;;###autoload
 (cl-defun org-dog-clock-in (files &rest args &key query-prefix query-filter
+                                  (prompt "Clock in: ")
                                   &allow-other-keys)
   "Clock in to some heading in one of the files."
   (let ((marker (if (and org-dog-clock-use-ql
@@ -51,9 +52,9 @@ This is an example implementation of
                     (org-ql-completing-read files
                       :query-prefix query-prefix
                       :query-filter query-filter
-                      :prompt "Clock in: ")
+                      :prompt prompt)
                   (org-dog-read-heading-default
-                   files "Clock in: "))))
+                   files prompt))))
     (if marker
         (with-current-buffer (marker-buffer marker)
           (org-with-wide-buffer
