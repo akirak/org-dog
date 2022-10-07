@@ -769,6 +769,8 @@ create multiple buffers if the entry has no ID."
                      (widen)
                      (goto-char marker)
                      (org-narrow-to-subtree)
+                     ;; FIXME: Pick the most suitable function from org-fold.el
+                     (org-fold-show-children)
                      (current-buffer)))
       (when id
         (puthash id buffer org-dog--indirect-buffers)))
