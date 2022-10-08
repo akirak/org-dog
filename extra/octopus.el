@@ -42,7 +42,15 @@
 
 (declare-function org-dog-datetree-refile "ext:org-dog-datetree")
 (declare-function org-ql-find "ext:org-ql-find")
+(declare-function org-ql-completing-read "ext:org-ql")
 (declare-function org-super-links-store-link "ext:org-super-links")
+(declare-function org-super-links-insert-link "ext:org-super-links")
+(declare-function org-dog-clock-in "ext:org-dog")
+(declare-function avy-action-goto "ext:avy")
+(declare-function avy-jump "ext:avy")
+(declare-function avy-with "ext:avy")
+(defvar org-capture-last-stored-marker)
+(defvar avy-goto-line)
 
 (defgroup octopus nil
   "Transient commands for Org Dog."
