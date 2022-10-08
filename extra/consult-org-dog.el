@@ -4,7 +4,7 @@
 
 ;; Author: Akira Komamura <akira.komamura@gmail.com>
 ;; Version: 0.1
-;; Package-Requires: ((emacs "27.1") (org "9.5") (org-dog "0.1") (consult "0.15"))
+;; Package-Requires: ((emacs "28.1") (org "9.5") (org-dog "0.1") (consult "0.19"))
 ;; Keywords: org outlines
 ;; URL: https://github.com/akirak/org-dog
 

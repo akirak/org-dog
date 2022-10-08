@@ -4,7 +4,7 @@
 
 ;; Author: Akira Komamura <akira.komamura@gmail.com>
 ;; Version: 0.1
-;; Package-Requires: ((emacs "27.1") (org "9.5") (org-dog "0.1"))
+;; Package-Requires: ((emacs "28.1") (org "9.5") (org-dog "0.1"))
 ;; Keywords: org convenience
 ;; URL: https://github.com/akirak/org-dog
 
