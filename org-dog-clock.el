@@ -77,6 +77,7 @@ This is an example implementation of
                title
                (thread-first
                  args
+                 (map-delete :prompt)
                  (map-delete :query-prefix)
                  (map-delete :query-filter)))))))
 
