@@ -195,7 +195,7 @@
                        (cl-incf i)
                        nil)))
              (let ((symbol (intern (format "octopus--context-file-suffix-%s-rest"
-                                           ,initial-key i)))
+                                           ,initial-key)))
                    (key (concat ,initial-key "/")))
                (fset symbol
                      `(lambda ()
