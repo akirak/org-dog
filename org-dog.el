@@ -39,6 +39,8 @@
 (declare-function org-element-type "ext:org-element")
 (declare-function project-root "ext:project")
 (declare-function thing-at-point-looking-at "thingatpt")
+(declare-function org-fold-show-children "ext:org-fold")
+(declare-function org-refile-get-location "ext:org-refile")
 (defvar org-id-extra-files)
 (defvar org-id-track-globally)
 (defvar org-capture-templates)
