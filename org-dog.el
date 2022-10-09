@@ -333,9 +333,11 @@ To customize the annotation, override `org-dog-annotate-file' method.
 For a usage example, see the implementation of
 `org-dog-complete-file'."
   (let* ((objs (if files
-                   (mapcar (lambda (file)
-                             (org-dog-file-object file :allow-missing t))
-                           files)
+                   (thread-last
+                     files
+                     (mapcar (lambda (file)
+                               (org-dog-file-object file :allow-missing t)))
+                     (delq nil))
                  (org-dog-select-files (or pred
                                            (org-dog-make-file-pred :class class)))))
          (files (mapcar (lambda (obj)
