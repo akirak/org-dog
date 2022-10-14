@@ -39,7 +39,7 @@
 (declare-function org-element-type "ext:org-element")
 (declare-function project-root "ext:project")
 (declare-function thing-at-point-looking-at "thingatpt")
-(declare-function org-fold-show-children "ext:org-fold")
+(declare-function org-show-children "ext:org")
 (declare-function org-refile-get-location "ext:org-refile")
 (defvar org-id-extra-files)
 (defvar org-id-track-globally)
@@ -776,7 +776,7 @@ create multiple buffers if the entry has no ID."
                      (goto-char marker)
                      (org-narrow-to-subtree)
                      ;; FIXME: Pick the most suitable function from org-fold.el
-                     (org-fold-show-children)
+                     (org-show-children)
                      (current-buffer)))
       (when id
         (puthash id buffer org-dog--indirect-buffers)))
