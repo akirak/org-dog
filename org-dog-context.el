@@ -216,7 +216,7 @@ unchanged."
                 :value-type file))
 
 (defun org-dog-context-path-value ()
-  (when-let* ((file (buffer-file-name))
+  (when-let* ((file (buffer-file-name (buffer-base-buffer)))
               (project (project-current)))
     (file-relative-name file (expand-file-name (project-root project)))))
 
