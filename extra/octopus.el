@@ -506,7 +506,7 @@
                     (org-with-wide-buffer
                      (goto-char target)
                      (list (org-get-heading t t t t)
-                           (buffer-file-name (marker-buffer target))
+                           (buffer-file-name (org-base-buffer (marker-buffer target)))
                            nil
                            (marker-position target)))))
     (if octopus-refile-to-datetree

@@ -100,7 +100,7 @@ or READ-DATE is non-nil, the user will be asked for a date."
 If the command is called with a single universal prefix argument
 or READ-DATE is non-nil, the user will be asked for a date."
   (interactive (list (equal current-prefix-arg '(4))))
-  (let ((file (buffer-file-name)))
+  (let ((file (buffer-file-name (org-base-buffer (current-buffer)))))
     (if (object-of-class-p (org-dog-file-object (abbreviate-file-name file))
                            'org-dog-datetree-file)
         (progn
