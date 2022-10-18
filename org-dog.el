@@ -739,6 +739,7 @@ point, so it is useful for narrowing to the current Org entry.
 
 The comparison is made by the existing ID property, so it can
 create multiple buffers if the entry has no ID."
+  (interactive (list (point-marker)))
   (unless org-dog--indirect-buffers
     (setq org-dog--indirect-buffers (make-hash-table :test #'equal)))
   (pcase-let*
