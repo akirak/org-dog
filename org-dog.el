@@ -498,7 +498,6 @@ ROOT is the path to a directory."
       (go nil))
     result))
 
-;; TODO: This API is ugly, so it needs refinement.
 (cl-defun org-dog-make-file-pred (&key class
                                        header-pred
                                        buffer-pred
@@ -507,6 +506,9 @@ ROOT is the path to a directory."
                                        relative-regexp
                                        basename-regexp
                                        negate-basename-regexp)
+  "Return a predicate on a file object.
+
+This function is deprecated. Use `org-dog-file-pred-1' instead."
   (if-let (conds (thread-last
                    (list (when class
                            `(object-of-class-p obj ',class))
@@ -537,12 +539,68 @@ ROOT is the path to a directory."
          (and ,@conds))
     #'identity))
 
-(defun org-dog-select (&optional slot &rest pred-plist)
+(defun org-dog-file-pred-1 (query)
+  "Return a predicate on a file object."
+  `(lambda (obj)
+     ,(macroexpand-all
+       `(cl-macrolet
+            ((check-path (operand args)
+               (pcase args
+                 (`(,string)
+                  `(string-equal ,string ,operand))
+                 (`(:prefix ,string)
+                  `(string-prefix-p ,string ,operand))
+                 (`(:regexp ,string)
+                  `(string-match-p ,string ,operand))))
+             (class (klass)
+               `(object-of-class-p obj ',klass))
+             (relative (&rest args)
+               `(check-path (oref obj relative) ,args))
+             (absolute (&rest args)
+               `(check-path (oref obj absolute) ,args))
+             (root (&rest args)
+               `(check-path (oref obj root) ,args))
+             (with-file-header (&rest progn)
+               `(org-dog-with-file-header (oref obj absolute)
+                  ,@progn))
+             (file-tags-subset-of (tags)
+               `(with-file-header
+                 (and org-file-tags
+                      (seq-every-p (lambda (tag)
+                                     (member tag ',tags))
+                                   org-file-tags))))
+             (file-tags-intersection (tags)
+               `(with-file-header
+                 (and org-file-tags
+                      (seq-find (lambda (tag)
+                                  (member tag ',tags))
+                                org-file-tags))))
+             (with-file-content (&rest progn)
+               `(if-let (buf (find-buffer-visiting (oref obj absolute)))
+                    (with-current-buffer buf
+                      (org-with-wide-buffer
+                       (goto-char (point-min))
+                       ,@progn))
+                  (with-temp-buffer
+                    (insert-file-contents (oref obj absolute))
+                    (goto-char (point-min))
+                    ,@progn)))
+             (regexp (pattern)
+               `(with-file-content
+                 (re-search-forward ,pattern nil t))))
+          ,query))))
+
+(defun org-dog-select (&optional slot query &rest deprecated-pred-args)
   "A convenient interface for querying file objects."
   (declare (indent 1))
   (let ((objs (org-dog-select-files
-               (when pred-plist
-                 (apply #'org-dog-make-file-pred pred-plist)))))
+               (cond
+                ((keywordp query)
+                 (apply #'org-dog-make-file-pred query deprecated-pred-args))
+                ((functionp query)
+                 query)
+                (query
+                 (org-dog-file-pred-1 query))))))
     (if slot
         (mapcar (cl-etypecase slot
                   (symbol `(lambda (obj)
