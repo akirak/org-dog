@@ -541,8 +541,8 @@ ROOT is the path to a directory."
   "A convenient interface for querying file objects."
   (declare (indent 1))
   (let ((objs (org-dog-select-files
-                (when pred-plist
-                  (apply #'org-dog-make-file-pred pred-plist)))))
+               (when pred-plist
+                 (apply #'org-dog-make-file-pred pred-plist)))))
     (if slot
         (mapcar (cl-etypecase slot
                   (symbol `(lambda (obj)
