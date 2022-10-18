@@ -498,47 +498,6 @@ ROOT is the path to a directory."
       (go nil))
     result))
 
-(cl-defun org-dog-make-file-pred (&key class
-                                       header-pred
-                                       buffer-pred
-                                       relative
-                                       relative-prefix
-                                       relative-regexp
-                                       basename-regexp
-                                       negate-basename-regexp)
-  "Return a predicate on a file object.
-
-This function is deprecated. Use `org-dog-file-pred-1' instead."
-  (if-let (conds (thread-last
-                   (list (when class
-                           `(object-of-class-p obj ',class))
-                         (when relative
-                           `(equal ,relative (oref obj relative)))
-                         (when relative-prefix
-                           `(string-prefix-p ,relative-prefix (oref obj relative)))
-                         (when relative-regexp
-                           `(string-match-p ,relative-regexp (oref obj relative)))
-                         (when basename-regexp
-                           `(string-match-p ,(concat "^" basename-regexp "$")
-                                            (file-name-base (oref obj relative))))
-                         (when negate-basename-regexp
-                           `(not (string-match-p ,(concat "^" negate-basename-regexp "$")
-                                                 (file-name-base (oref obj relative)))))
-                         (when header-pred
-                           `(org-dog-with-file-header (oref obj absolute)
-                              ,(if (functionp header-pred)
-                                   `(funcall ',header-pred)
-                                 header-pred)))
-                         (when buffer-pred
-                           `(with-current-buffer (org-dog-file-buffer obj)
-                              ,(if (functionp buffer-pred)
-                                   `(funcall ',buffer-pred)
-                                 buffer-pred))))
-                   (delq nil)))
-      `(lambda (obj)
-         (and ,@conds))
-    #'identity))
-
 (defun org-dog-file-pred-1 (query)
   "Return a predicate on a file object."
   `(lambda (obj)
@@ -590,13 +549,11 @@ This function is deprecated. Use `org-dog-file-pred-1' instead."
                  (re-search-forward ,pattern nil t))))
           ,query))))
 
-(defun org-dog-select (&optional slot query &rest deprecated-pred-args)
+(defun org-dog-select (&optional slot query)
   "A convenient interface for querying file objects."
   (declare (indent 1))
   (let ((objs (org-dog-select-files
                (cond
-                ((keywordp query)
-                 (apply #'org-dog-make-file-pred query deprecated-pred-args))
                 ((functionp query)
                  query)
                 (query
