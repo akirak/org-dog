@@ -74,5 +74,25 @@
             (setq result ts)))))
     result))
 
+;;;; Build regular expressions for a particular period
+
+(defun org-dog-inactive-ts-regexp (start &optional end)
+  (concat "\\[\\("
+          (org-dog--date-range-regexp start (or end (current-time)))
+          " [^z-a]*?\\)\\]"))
+
+(defun org-dog--date-range-regexp (start end)
+  (let ((end-string (format-time-string "%F" end))
+        (date (decode-time start))
+        strings)
+    (catch 'finish
+      (while t
+        (let ((str (format-time-string "%F" (encode-time date))))
+          (push str strings)
+          (when (equal str end-string)
+            (throw 'finish t))
+          (setq date (decoded-time-add date (make-decoded-time :day 1))))))
+    (rx-to-string `(or ,@strings))))
+
 (provide 'org-dog-utils)
 ;;; org-dog-utils.el ends here
