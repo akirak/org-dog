@@ -339,7 +339,8 @@ For a usage example, see the implementation of
                                (org-dog-file-object file :allow-missing t)))
                      (delq nil))
                  (org-dog-select nil
-                   (or pred `(class ,class)))))
+                   (or pred
+                       (when class `(class ,class))))))
          (files (mapcar (lambda (obj)
                           (let ((absolute (substring (oref obj absolute))))
                             (when-let (dir (file-name-directory absolute))
