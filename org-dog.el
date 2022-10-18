@@ -546,7 +546,32 @@ ROOT is the path to a directory."
                     ,@progn)))
              (regexp (pattern)
                `(with-file-content
-                 (re-search-forward ,pattern nil t))))
+                 (re-search-forward ,pattern nil t)))
+             (ts-since-date (date)
+               (let* ((time (org-date--day-start (org-read-date nil t date)))
+                      (regexp (org-dog-inactive-ts-regexp time)))
+                 `(with-file-content
+                   (catch 'match-date
+                     (while (re-search-forward ,regexp nil t)
+                       (when (time-less-p ',time
+                                          (thread-first
+                                            (match-string 1)
+                                            (parse-time-string)
+                                            (encode-time)))
+                         (throw 'match-date t)))))))
+             (clocked-since-date (date)
+               (let* ((time (org-date--day-start (org-read-date nil t date)))
+                      (regexp (concat "^[[:blank:]]*" org-clock-string "[[:blank:]]*"
+                                      (org-dog-inactive-ts-regexp time))))
+                 `(with-file-content
+                   (catch 'match-date
+                     (while (re-search-forward ,regexp nil t)
+                       (when (time-less-p ',time
+                                          (thread-first
+                                            (match-string 1)
+                                            (parse-time-string)
+                                            (encode-time)))
+                         (throw 'match-date t))))))))
           ,query))))
 
 (defun org-dog-select (&optional slot query)

@@ -94,5 +94,15 @@
           (setq date (decoded-time-add date (make-decoded-time :day 1))))))
     (rx-to-string `(or ,@strings))))
 
+(defun org-date--day-start (time)
+  (let ((decoded (decode-time time)))
+    (when (and org-extend-today-until
+               (< (nth 2 decoded) org-extend-today-until))
+      (decoded-time-add decoded (make-decoded-time :day -1)))
+    (setf (decoded-time-minute decoded) 0)
+    (setf (decoded-time-second decoded) 0)
+    (setf (decoded-time-hour decoded) (or org-extend-today-until 0))
+    (encode-time decoded)))
+
 (provide 'org-dog-utils)
 ;;; org-dog-utils.el ends here
