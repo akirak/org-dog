@@ -338,8 +338,8 @@ For a usage example, see the implementation of
                      (mapcar (lambda (file)
                                (org-dog-file-object file :allow-missing t)))
                      (delq nil))
-                 (org-dog-select-files (or pred
-                                           (org-dog-make-file-pred :class class)))))
+                 (org-dog-select nil
+                   (or pred `(class ,class)))))
          (files (mapcar (lambda (obj)
                           (let ((absolute (substring (oref obj absolute))))
                             (when-let (dir (file-name-directory absolute))
@@ -392,9 +392,9 @@ properly handle it."
                                                      &key class pred)
   "Complete multiple org files."
   (let* ((all-files (thread-last
-                      (org-dog-select-files
-                       (or pred
-                           (org-dog-make-file-pred :class class)))
+                      (org-dog-select nil
+                        (or pred
+                            `(class ,class)))
                       (mapcar (lambda (obj) (oref obj absolute)))))
          (sels (completing-read-multiple
                 (or prompt "Select files, enter regexp, or empty for all files: ")
@@ -641,7 +641,7 @@ Only interesting items are returned."
 (defun org-dog-resolve-relative-file (path)
   "Return an absolute path for a relative PATH from a repository."
   (when-let (obj (org-dog-find-file-object
-                  (org-dog-make-file-pred :relative path)))
+                  (org-dog-file-pred-1 `(relative ,path))))
     (oref obj absolute)))
 
 ;;;; Links
@@ -667,7 +667,7 @@ Only interesting items are returned."
 
 (defun org-dog--linked-object (ref)
   "Return an object referred to by REF."
-  (org-dog-find-file-object (org-dog-make-file-pred :relative ref)))
+  (org-dog-find-file-object (org-dog-file-pred-1 `(relative ,ref))))
 
 (defun org-dog-complete-link (&optional _arg)
   "Complete a link to an Org Dog file."

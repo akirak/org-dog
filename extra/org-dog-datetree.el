@@ -161,22 +161,10 @@ or READ-DATE is non-nil, the user will be asked for a date."
                  (root (oref obj root))
                  (date (or date (org-reverse-datetree-guess-date)))
                  (files (thread-last
-                          (org-dog-select-files
-                           (org-dog-make-file-pred
-                            :header-pred
-                            ;; The source entry must contain all of the file tags
-                            ;; of the destination file.
-                            `(and org-file-tags
-                                  (seq-every-p (lambda (tag)
-                                                 (member tag ',tags))
-                                               org-file-tags))))
-                          (cl-remove-if-not `(lambda (obj)
-                                               (and (equal (oref obj root)
-                                                           ,root)
-                                                    (not (equal (oref obj absolute)
-                                                                ,this-file)))))
-                          (mapcar (lambda (obj)
-                                    (oref obj absolute))))))
+                          (org-dog-select 'absolute
+                            `(and (root ,root)
+                                  (not (absolute ,this-file))
+                                  (file-tags-subset-of ',tags))))))
             (if files
                 (progn
                   (dolist (file files)
