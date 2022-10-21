@@ -403,13 +403,11 @@
   :description "Avy Org heading"
   :if (lambda () (require 'avy nil t))
   (interactive)
-  (avy-with avy-goto-line
-    (avy-jump (rx bol (+ "*") space)
-              :action (lambda (pt)
-                        (avy-action-goto pt)
-                        (org-back-to-heading)
-                        (octopus--dispatch (oref transient-current-prefix command)
-                                           (point-marker))))))
+  (when-let (marker (save-window-excursion
+                      (and (avy-jump (rx bol (+ "*") space))
+                           (point-marker))))
+    (octopus--dispatch (oref transient-current-prefix command)
+                       marker)))
 
 ;;;;; org-super-link
 
@@ -554,6 +552,8 @@
         (insert "#+transclude: "))
       (if octopus-enable-super-link
           (progn
+            ;; save-window-excursion is only necessary to targets that selects a
+            ;; window, e.g. avy
             (with-current-buffer (marker-buffer marker)
               (org-with-wide-buffer
                (goto-char marker)
