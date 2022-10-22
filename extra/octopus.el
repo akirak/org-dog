@@ -404,8 +404,9 @@
   :if (lambda () (require 'avy nil t))
   (interactive)
   (when-let (marker (save-window-excursion
-                      (and (avy-jump (rx bol (+ "*") space))
-                           (point-marker))))
+                      (save-excursion
+                        (and (avy-jump (rx bol (+ "*") space))
+                             (point-marker)))))
     (octopus--dispatch (oref transient-current-prefix command)
                        marker)))
 
