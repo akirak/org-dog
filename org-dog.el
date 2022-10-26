@@ -804,7 +804,8 @@ create multiple buffers if the entry has no ID."
                              (org-with-wide-buffer
                               (goto-char marker)
                               (list (org-id-get)
-                                    (org-get-heading t t t t))))))
+                                    (org-link-display-format
+                                     (org-get-heading t t t t)))))))
        (buffer (when (and id (not no-reuse))
                  (gethash id org-dog--indirect-buffers))))
     (unless (and buffer
