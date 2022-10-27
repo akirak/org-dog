@@ -164,7 +164,7 @@ or READ-DATE is non-nil, the user will be asked for a date."
                           (org-dog-select 'absolute
                             `(and (root ,root)
                                   (not (absolute ,this-file))
-                                  (file-tags-subset-of ',tags))))))
+                                  (file-tags-subset-of ,tags))))))
             (if files
                 (progn
                   (dolist (file files)
