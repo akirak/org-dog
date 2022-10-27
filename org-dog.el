@@ -146,8 +146,9 @@ and it is only set in `org-dog-file-mode'.")
 For now, this is only used for enabling `org-dog-file-mode-map'."
   :lighter org-dog-file-mode-lighter
   (when org-dog-file-mode
-    (let ((obj (or (org-dog-buffer-object)
-                   (org-dog--new-object))))
+    (let ((obj (and (string-match-p org-dog--root-regexp (buffer-file-name))
+                    (or (org-dog-buffer-object)
+                        (org-dog--new-object)))))
       (unless obj
         (org-dog-file-mode -1)
         (error "There is no route for %s, or the file is not in an repository."
