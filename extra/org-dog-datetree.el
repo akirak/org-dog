@@ -93,6 +93,17 @@ or READ-DATE is non-nil, the user will be asked for a date."
       (org-dog-datetree-propagate-by-tag nil :date date))
     (org-reverse-datetree-refile-to-file file date)))
 
+(defmacro org-dog-datetree--with-bulk-entries (&rest body)
+  `(pcase-dolist (`(,buffer . ,olp)
+                  (save-current-buffer
+                    (mapcar (lambda (marker)
+                              (org-with-point-at marker
+                                (cons (marker-buffer marker) (org-get-outline-path t))))
+                            org-agenda-bulk-marked-entries)))
+     (with-current-buffer buffer
+       (goto-char (org-find-olp olp t))
+       ,@body)))
+
 ;;;###autoload
 (defun org-dog-datetree-refile-to-this-file (&optional read-date)
   "Refile to the datetree in the current file.
@@ -100,19 +111,35 @@ or READ-DATE is non-nil, the user will be asked for a date."
 If the command is called with a single universal prefix argument
 or READ-DATE is non-nil, the user will be asked for a date."
   (interactive (list (equal current-prefix-arg '(4))))
-  (let ((file (buffer-file-name (org-base-buffer (current-buffer)))))
-    (if (object-of-class-p (org-dog-file-object (abbreviate-file-name file))
-                           'org-dog-datetree-file)
-        (progn
-          (when org-dog-datetree-generate-id-on-refile
-            (org-id-get-create))
-          (let ((date (if read-date
-                          (org-dog-datetree--read-date)
-                        (org-reverse-datetree-default-entry-time))))
-            (when org-dog-datetree-propagate-on-refile
-              (org-dog-datetree-propagate-by-tag nil :date date))
-            (org-reverse-datetree-refile-to-file file date)))
-      (user-error "Not in `org-dog-datetree-file'"))))
+  (cl-case (derived-mode-p 'org-mode 'org-agenda-mode)
+    (org-mode
+     (let ((file (buffer-file-name (org-base-buffer (current-buffer)))))
+       (if (object-of-class-p (org-dog-file-object (abbreviate-file-name file))
+                              'org-dog-datetree-file)
+           (progn
+             (when org-dog-datetree-generate-id-on-refile
+               (org-id-get-create))
+             (let ((date (if read-date
+                             (org-dog-datetree--read-date)
+                           (org-reverse-datetree-default-entry-time))))
+               (when org-dog-datetree-propagate-on-refile
+                 (org-dog-datetree-propagate-by-tag nil :date date))
+               (org-reverse-datetree-refile-to-file file date)))
+         (user-error "Not in `org-dog-datetree-file'"))))
+    (org-agenda-mode
+     (if org-agenda-bulk-marked-entries
+         (progn
+           (org-dog-datetree--with-bulk-entries
+            (org-dog-datetree-refile-to-this-file read-date))
+           (org-agenda-bulk-unmark-all))
+       (if-let (marker (or (get-char-property (pos-bol) 'org-marker)
+                           (get-char-property (pos-bol) 'org-hd-marker)))
+           (save-current-buffer
+             (org-with-point-at marker
+               (org-dog-datetree-refile-to-this-file read-date)))
+         (user-error "No marker is found"))))
+    (otherwise
+     (user-error "You must run this command inside org-mode or org-agenda-mode"))))
 
 (defun org-dog-datetree--read-date ()
   "Prompt for a date and return an internal time."
