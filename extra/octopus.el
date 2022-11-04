@@ -428,6 +428,22 @@
   :class 'octopus-boolean-variable
   :variable 'octopus-enable-transclusion-link)
 
+;;;;; Org-ql
+
+(defcustom octopus-view-function #'org-ql-search
+  "Function used to view Org files in `octopus-find-node'.
+
+It should be a function that takes a list of Org files as the
+argument."
+  :type 'function)
+
+(defvar octopus-view-list nil)
+
+(transient-define-infix octopus-infix-view-list ()
+  :description "View list"
+  :class 'octopus-boolean-variable
+  :variable 'octopus-view-list)
+
 ;;;; Prefix commands
 
 ;;;###autoload (autoload 'octopus-find-file "octopus" nil t)
@@ -459,6 +475,8 @@
 
 ;;;###autoload (autoload 'octopus-find-node "octopus" nil 'interactive)
 (transient-define-prefix octopus-find-node ()
+  ["Options"
+   ("-v" octopus-infix-view-list)]
   ["Context"
    :class transient-row
    :setup-children octopus-setup-context-files-targets]
@@ -471,12 +489,15 @@
    ("/" octopus-read-dog-file-suffix)
    ("#" octopus-clocked-file-suffix)]
   (interactive)
+  (setq octopus-view-list nil)
   (transient-setup 'octopus-find-node))
 
 (cl-defmethod octopus--dispatch ((_cmd (eql 'octopus-find-node))
                                  files)
   (require 'org-ql-find)
-  (org-ql-find files))
+  (if octopus-view-list
+      (funcall octopus-view-function files)
+    (org-ql-find files)))
 
 ;;;###autoload (autoload 'octopus-refile "octopus" nil 'interactive)
 (transient-define-prefix octopus-refile ()
