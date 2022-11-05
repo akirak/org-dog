@@ -120,6 +120,12 @@ tracked by dog, it is nil.")
 This variable is intended for use in the mode-line constructs,
 and it is only set in `org-dog-file-mode'.")
 
+(defvar org-dog-new-indirect-buffer-p nil
+  "Non-nil if `org-dog-indirect-buffer' has created a new buffer.
+
+This variable is set while the function is run, so the user can
+ use the value to check if the indirect buffer is a new buffer.")
+
 ;;;; Associating the file object with a buffer
 
 (defun org-dog-buffer-object ()
@@ -809,9 +815,10 @@ create multiple buffers if the entry has no ID."
                                      (org-get-heading t t t t)))))))
        (buffer (when (and id (not no-reuse))
                  (gethash id org-dog--indirect-buffers))))
-    (unless (and buffer
-                 (bufferp buffer)
-                 (buffer-live-p buffer))
+    (if (and buffer
+             (bufferp buffer)
+             (buffer-live-p buffer))
+        (setq org-dog-new-indirect-buffer-p nil)
       ;; Create a new indirect buffer
       (setq buffer (with-current-buffer (org-get-indirect-buffer
                                          (marker-buffer marker)
@@ -823,7 +830,8 @@ create multiple buffers if the entry has no ID."
                      (org-show-children)
                      (current-buffer)))
       (when id
-        (puthash id buffer org-dog--indirect-buffers)))
+        (puthash id buffer org-dog--indirect-buffers))
+      (setq org-dog-new-indirect-buffer-p t))
     buffer))
 
 (defun org-dog-indirect-buffers ()
