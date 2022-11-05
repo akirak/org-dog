@@ -786,7 +786,11 @@ even if there is an existing one. This prevents motion of the
 point, so it is useful for narrowing to the current Org entry.
 
 The comparison is made by the existing ID property, so it can
-create multiple buffers if the entry has no ID."
+create multiple buffers if the entry has no ID.
+
+The function doesn't control the folding state, so the user or an
+application developer might run a function such as
+`org-show-entry'."
   (interactive (list (point-marker)))
   (unless org-dog--indirect-buffers
     (setq org-dog--indirect-buffers (make-hash-table :test #'equal)))
@@ -826,8 +830,6 @@ create multiple buffers if the entry has no ID."
                      (widen)
                      (goto-char marker)
                      (org-narrow-to-subtree)
-                     ;; FIXME: Pick the most suitable function from org-fold.el
-                     (org-show-children)
                      (current-buffer)))
       (when id
         (puthash id buffer org-dog--indirect-buffers))
