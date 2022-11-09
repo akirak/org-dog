@@ -62,6 +62,13 @@
   :type '(repeat (list (string :tag "Key")
                        (string :tag "Relative path or absolute path"))))
 
+(defcustom octopus-ql-find-options nil
+  "Options passed from `octopus-find-node' to `org-ql-find'.
+
+It is a plist that contains options of `org-ql-find', e.g.
+:query-prefix, :query-filter, etc."
+  :type 'plist)
+
 ;;;; Generic
 
 ;;;;; Generic functions
@@ -497,7 +504,7 @@ argument."
   (require 'org-ql-find)
   (if octopus-view-list
       (funcall octopus-view-function files)
-    (org-ql-find files)))
+    (apply #'org-ql-find files octopus-ql-find-options)))
 
 ;;;###autoload (autoload 'octopus-refile "octopus" nil 'interactive)
 (transient-define-prefix octopus-refile ()
