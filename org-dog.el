@@ -556,7 +556,7 @@ ROOT is the path to a directory."
                `(with-file-content
                  (re-search-forward ,pattern nil t)))
              (ts-since-date (date)
-               (let* ((time (org-date--day-start (org-read-date nil t date)))
+               (let* ((time (org-dog--day-start (org-read-date nil t date)))
                       (regexp (org-dog-inactive-ts-regexp time)))
                  `(with-file-content
                    (catch 'match-date
@@ -568,7 +568,7 @@ ROOT is the path to a directory."
                                             (encode-time)))
                          (throw 'match-date t)))))))
              (clocked-since-date (date)
-               (let* ((time (org-date--day-start (org-read-date nil t date)))
+               (let* ((time (org-dog--day-start (org-read-date nil t date)))
                       (regexp (concat "^[[:blank:]]*" org-clock-string "[[:blank:]]*"
                                       (org-dog-inactive-ts-regexp time))))
                  `(with-file-content

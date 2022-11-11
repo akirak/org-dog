@@ -94,7 +94,7 @@
           (setq date (decoded-time-add date (make-decoded-time :day 1))))))
     (rx-to-string `(or ,@strings))))
 
-(defun org-date--day-start (time)
+(defun org-dog--day-start (time)
   (let ((decoded (decode-time time)))
     (when (and org-extend-today-until
                (< (nth 2 decoded) org-extend-today-until))
