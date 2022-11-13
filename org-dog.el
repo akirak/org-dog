@@ -662,11 +662,10 @@ Only interesting items are returned."
 (defun org-dog-complete-link (&optional _arg)
   "Complete a link to an Org Dog file."
   (let* ((path (org-dog-complete-file))
-         (object (org-dog-file-object path :allow-missing t))
-         (relative (if object
-                       (oref object relative)
-                     path)))
-    (concat "org-dog:" relative)))
+         (object (org-dog-file-object path :allow-missing t)))
+    (if object
+        (org-dog-make-file-link object)
+      (concat "org-dog:" path))))
 
 (org-link-set-parameters "org-dog"
                          :follow #'org-dog-follow-link
@@ -676,13 +675,13 @@ Only interesting items are returned."
   "Store a `org-dog' file link to the current buffer."
   (interactive)
   (if-let (obj (org-dog-buffer-object))
-      (push (list (org-dog--file-link obj)
                   (with-current-buffer (org-dog-file-buffer obj)
                     (org-dog--file-title)))
+      (push (list (org-dog-make-file-link obj)
             org-stored-links)
     (user-error "Not in an org-dog buffer")))
 
-(defun org-dog--file-link (obj)
+(defun org-dog-make-file-link (obj)
   (concat "org-dog:" (oref obj relative)))
 
 ;;;###autoload
@@ -708,7 +707,7 @@ Only interesting items are returned."
                                      (end-of-line 0)
                                    (goto-char (point-max)))))
                               ,(concat (org-link-make-string
-                                        (org-dog--file-link target)
+                                        (org-dog-make-file-link target)
                                         (with-current-buffer (org-dog-file-buffer target)
                                           (org-dog--file-title)))
                                        "%?")
