@@ -126,6 +126,8 @@ and it is only set in `org-dog-file-mode'.")
 This variable is set while the function is run, so the user can
  use the value to check if the indirect buffer is a new buffer.")
 
+(defvar org-dog-link-target-cache nil)
+
 ;;;; Associating the file object with a buffer
 
 (defun org-dog-buffer-object ()
@@ -812,6 +814,62 @@ application developer might run a function such as
                     (buffer-live-p buffer))
                   org-dog--indirect-buffers)
       (mapcar #'cdr))))
+
+;;;; Targets
+
+(defun org-dog-search-link-target ()
+  (dolist (file (org-dog-select 'absolute))
+    (let ((mtime (file-attribute-modification-time
+                  (file-attributes file)))
+          (cell (assoc file org-dog-link-target-cache)))
+      (unless (and cell (time-equal-p (cadr cell) mtime))
+        (let (targets)
+          (cl-flet
+              ((scan-targets ()
+                 (goto-char (point-min))
+                 (while (re-search-forward org-target-regexp nil t)
+                   (unless (save-match-data
+                             (thing-at-point-looking-at org-radio-target-regexp))
+                     (push (match-string-no-properties 1)
+                           targets)))))
+            (if (find-buffer-visiting file)
+                (with-current-buffer (find-buffer-visiting file)
+                  (org-with-wide-buffer
+                   (scan-targets)))
+              (with-temp-buffer
+                (insert-file-contents file)
+                (scan-targets))))
+          (if cell
+              (setcdr cell (cons mtime targets))
+            (push (cons file (cons mtime targets))
+                  org-dog-link-target-cache))))))
+  (let (alist)
+    (pcase-dolist (`(,file ,_ . ,entries)
+                   org-dog-link-target-cache)
+      (dolist (target entries)
+        (push (cons target file) alist)))
+    (cl-labels
+        ((group (candidate transform)
+           (if transform
+               candidate
+             (if-let (filename (cdr (assoc candidate alist)))
+                 (concat " " filename)
+               "")))
+         (completions (string pred action)
+           (if (eq action 'metadata)
+               (cons 'metadata
+                     (list (cons 'category 'category)
+                           (cons 'group-function #'group)))
+             (complete-with-action action alist string pred)))
+         (match-name (entry cell)
+           (string-equal-ignore-case (car cell) entry)))
+      (let ((name (completing-read "Find a link target: "
+                                   #'completions nil t)))
+        (cons name
+              (thread-last
+                alist
+                (seq-filter (apply-partially #'match-name name))
+                (mapcar #'cdr)))))))
 
 ;;;; Meaningful entries
 
