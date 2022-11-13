@@ -315,9 +315,8 @@ This is mostly for optimization."
     (user-error "Point is at link"))
   (cl-etypecase file
     (string (org-dog-insert-link-to-file (org-dog-file-object file)))
-    (org-dog-file (let ((title (or (with-current-buffer
-                                       (org-dog-file-buffer file)
-                                     (org-dog--file-title))
+    (org-dog-file (let ((title (or (org-dog-with-file-header file
+                                     (org-dog-search-keyword-line "title"))
                                    (read-string "Title: "))))
                     (insert (org-link-make-string
                              (concat "org-dog:" (oref file relative))
@@ -645,9 +644,9 @@ ROOT is the path to a directory."
   "Store a `org-dog' file link to the current buffer."
   (interactive)
   (if-let (obj (org-dog-buffer-object))
-                  (with-current-buffer (org-dog-file-buffer obj)
-                    (org-dog--file-title)))
       (push (list (org-dog-make-file-link obj)
+                  (org-dog-with-file-header file
+                    (org-dog-search-keyword-line "title")))
             org-stored-links)
     (user-error "Not in an org-dog buffer")))
 
@@ -678,8 +677,8 @@ ROOT is the path to a directory."
                                    (goto-char (point-max)))))
                               ,(concat (org-link-make-string
                                         (org-dog-make-file-link target)
-                                        (with-current-buffer (org-dog-file-buffer target)
-                                          (org-dog--file-title)))
+                                        (org-dog-with-file-header (oref file absolute)
+                                          (org-dog-search-keyword-line "title")))
                                        "%?")
                               :unnarrowed t))
          (org-capture-templates-contexts nil))
