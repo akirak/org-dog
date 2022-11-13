@@ -598,36 +598,6 @@ ROOT is the path to a directory."
                 objs)
       objs)))
 
-(defun org-dog-file-title (file-obj &optional force)
-  "Return the title of a file in its header."
-  (when-let (buffer (if force
-                        (org-dog-file-buffer file-obj)
-                      (org-dog-maybe-file-buffer file-obj)))
-    (with-current-buffer buffer
-      (org-with-wide-buffer
-       (when-let (title (org-dog-file-header "title"))
-         (oset file-obj title title)
-         title)))))
-
-(defun org-dog-file-header (keyword &optional noprops)
-  "Return the file headers of the Org current buffer.
-
-Only interesting items are returned."
-  ;; If you want to retrieve multiple keywords, it will be necessary to tweak
-  ;; this function.
-  (goto-char (point-min))
-  (catch 'finish
-    (while (or (looking-at (rx (* space) eol))
-               (looking-at org-comment-regexp)
-               (looking-at org-keyword-regexp))
-      (when-let (key (match-string 1))
-        (when (equal key keyword)
-          (throw 'finish (if noprops
-                             (substring-no-properties (match-string 2))
-                           (match-string 2)))))
-      (forward-line))
-    nil))
-
 (defun org-dog-resolve-relative-file (path)
   "Return an absolute path for a relative PATH from a repository."
   (when-let (obj (org-dog-find-file-object
