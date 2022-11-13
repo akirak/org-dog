@@ -93,8 +93,8 @@ accessed."
 
 FILE should be an abbreviated path to an Org file.
 
-Unless ALLOW-MISSING is non-nil, it throws an error if the file
-is not readable."
+If the file does not exist, it returns nil if and only if
+ALLOW-MISSING is non-nil. Otherwise, it throws an error."
   (org-dog--ensure-file-table)
   (or (gethash file org-dog--file-table)
       (let ((abbr (abbreviate-file-name file)))
