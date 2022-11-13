@@ -41,6 +41,23 @@
          (delay-mode-hooks (org-mode)))
        ,@progn)))
 
+(defun org-dog-search-keyword-line (keyword &optional noprops)
+  "Find a next header matching a keyword.
+
+This should be called inside `org-dog-with-file-header'.
+ Otherwise, it will look in the entire buffer, which can take
+ longer than it needs."
+
+  (catch 'org-dog-header
+    (while (re-search-forward org-keyword-regexp nil t)
+      (when (org-dog-case-fold-equal (match-string 1)
+                                     keyword)
+        (throw 'org-dog-header
+               (if noprops
+                   (string-trim (match-string-no-properties 2))
+                 (string-trim (match-string 2))))))
+    nil))
+
 (defun org-dog--file-title ()
   "Return the title of the current Org buffer, if any."
   (catch 'org-dog-file-title

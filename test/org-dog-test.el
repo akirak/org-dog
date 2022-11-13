@@ -57,4 +57,21 @@
             (org-dog-inactive-ts-regexp (org-read-date nil t "2020-09-30")
                                         (org-read-date nil t "2020-10-02")))))
 
+(describe "org-dog-search-keyword-line"
+  (it "returns the value of a keyword line"
+    (expect (org-dog-with-file-header "data/keywords1.org"
+              (org-dog-search-keyword-line "title"))
+            :to-equal "Test Title")
+    (expect (org-dog-with-file-header "data/keywords1.org"
+              (org-dog-search-keyword-line "subtitle"))
+            :to-equal "Test Subtitle"))
+  (it "case-insensitivity"
+    (expect (org-dog-with-file-header "data/keywords1.org"
+              (org-dog-search-keyword-line "TITLE"))
+            :to-equal "Test Title"))
+  (it "org-dog-with-file-header ignores text after the first headline"
+    (expect (org-dog-with-file-header "data/keywords1.org"
+              (org-dog-search-keyword-line "name"))
+            :to-be nil)))
+
 (provide 'org-dog-test)
