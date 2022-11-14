@@ -647,7 +647,7 @@ ROOT is the path to a directory."
   (interactive)
   (if-let (obj (org-dog-buffer-object))
       (push (list (org-dog-make-file-link obj)
-                  (org-dog-with-file-header file
+                  (org-dog-with-file-header (oref obj absolute)
                     (org-dog-search-keyword-line "title")))
             org-stored-links)
     (user-error "Not in an org-dog buffer")))
