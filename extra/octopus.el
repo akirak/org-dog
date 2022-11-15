@@ -532,7 +532,7 @@ marker to an Org entry or nil."
   ["Other targets"
    :class transient-row
    ("D" "Date tree in this file" org-dog-datetree-refile-to-this-file)
-   ("'" "Avy" avy-org-refile-as-child
+   ("'" "Avy" octopus-refile-to-avy-as-child
     :if (lambda () (fboundp 'avy-org-refile-as-child)))
    ("/" octopus-read-dog-file-suffix)
    ("@" octopus-clock-marker-suffix)
@@ -563,6 +563,11 @@ marker to an Org entry or nil."
         (org-dog-refile-1 (cl-etypecase target
                             (org-dog-file (oref target absolute))
                             (string target)))))))
+
+(defun octopus-refile-to-avy-as-child ()
+  (interactive)
+  (org-with-point-at (octopus--refiled-entry)
+    (avy-org-refile-as-child)))
 
 ;;;###autoload (autoload 'octopus-insert-link "octopus" nil 'interactive)
 (transient-define-prefix octopus-insert-link ()
