@@ -506,6 +506,25 @@ argument."
       (funcall octopus-view-function files)
     (apply #'org-ql-find files octopus-ql-find-options)))
 
+(defcustom octopus-refiled-entry-functions
+  ;; `org-agenda-get-any-marker' is undocumented now
+  '(octopus-org-agenda-marker)
+  "Alternative functions to return an Org marker in non `org-mode'.
+
+Each function should have no side-effect and return either a
+marker to an Org entry or nil."
+  :type 'hook)
+
+(defun octopus-org-agenda-marker ()
+  (when (derived-mode-p 'org-agenda-mode)
+    (org-agenda-get-any-marker)))
+
+(defun octopus--refiled-entry ()
+  "Return a marker to an Org entry to be refiled."
+  (if (derived-mode-p 'org-mode)
+      (point-marker)
+    (run-hook-with-args-until-success 'octopus-refiled-entry-functions)))
+
 ;;;###autoload (autoload 'octopus-refile "octopus" nil 'interactive)
 (transient-define-prefix octopus-refile ()
   ["Options"
@@ -519,30 +538,31 @@ argument."
    ("@" octopus-clock-marker-suffix)
    ("\\" octopus-in-file-suffix)]
   (interactive)
-  (unless (derived-mode-p 'org-mode 'org-agenda-mode)
-    (user-error "Cannot run in this mode"))
+  (unless (octopus--refiled-entry)
+    (user-error "Support `octopus-refiled-entry-functions'"))
   ;; Load avy-org-refile-as-child
   (require 'avy nil t)
   (transient-setup 'octopus-refile))
 
 (cl-defmethod octopus--dispatch ((_cmd (eql 'octopus-refile))
                                  target)
-  (if (markerp target)
-      (org-refile nil nil
-                  (with-current-buffer (marker-buffer target)
-                    (org-with-wide-buffer
-                     (goto-char target)
-                     (list (org-get-heading t t t t)
-                           (buffer-file-name (org-base-buffer (marker-buffer target)))
-                           nil
-                           (marker-position target)))))
-    (if octopus-refile-to-datetree
-        (progn
-          (require 'org-dog-datetree)
-          (org-dog-datetree-refile target))
-      (org-dog-refile-1 (cl-etypecase target
-                          (org-dog-file (oref target absolute))
-                          (string target))))))
+  (org-with-point-at (octopus--refiled-entry)
+    (if (markerp target)
+        (org-refile nil nil
+                    (with-current-buffer (marker-buffer target)
+                      (org-with-wide-buffer
+                       (goto-char target)
+                       (list (org-get-heading t t t t)
+                             (buffer-file-name (org-base-buffer (marker-buffer target)))
+                             nil
+                             (marker-position target)))))
+      (if octopus-refile-to-datetree
+          (progn
+            (require 'org-dog-datetree)
+            (org-dog-datetree-refile target))
+        (org-dog-refile-1 (cl-etypecase target
+                            (org-dog-file (oref target absolute))
+                            (string target)))))))
 
 ;;;###autoload (autoload 'octopus-insert-link "octopus" nil 'interactive)
 (transient-define-prefix octopus-insert-link ()
