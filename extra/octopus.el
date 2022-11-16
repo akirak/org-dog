@@ -45,10 +45,13 @@
 (declare-function org-ql-completing-read "ext:org-ql")
 (declare-function org-super-links-store-link "ext:org-super-links")
 (declare-function org-super-links-insert-link "ext:org-super-links")
-(declare-function org-dog-clock-in "ext:org-dog")
+(declare-function org-dog-clock-in "org-dog-clock")
 (declare-function avy-action-goto "ext:avy")
 (declare-function avy-jump "ext:avy")
 (declare-function avy-with "ext:avy")
+(declare-function avy-org-refile-as-child "ext:avy")
+(declare-function org-agenda-get-any-marker "org-agenda")
+(declare-function org-ql-search "ext:org-ql-search")
 (defvar org-capture-last-stored-marker)
 (defvar avy-goto-line)
 
@@ -566,6 +569,7 @@ marker to an Org entry or nil."
 
 (defun octopus-refile-to-avy-as-child ()
   (interactive)
+  (require 'avy)
   (org-with-point-at (octopus--refiled-entry)
     (avy-org-refile-as-child)))
 
