@@ -681,7 +681,7 @@ ROOT is the path to a directory."
                                    (goto-char (point-max)))))
                               ,(concat (org-link-make-string
                                         (org-dog-make-file-link target)
-                                        (org-dog-with-file-header (oref file absolute)
+                                        (org-dog-with-file-header (oref target absolute)
                                           (org-dog-search-keyword-line "title")))
                                        "%?")
                               :unnarrowed t))
