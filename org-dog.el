@@ -762,51 +762,55 @@ create multiple buffers if the entry has no ID.
 
 The function doesn't control the folding state, so the user or an
 application developer might run a function such as
-`org-show-entry'."
+`org-show-entry'.
+
+If the point is before the first headline, the function returns
+nil."
   (interactive (list (point-marker)))
   (unless org-dog--indirect-buffers
     (setq org-dog--indirect-buffers (make-hash-table :test #'equal)))
-  (pcase-let*
-      ((element-marker (and entry
-                            (sequencep entry)
-                            (eq 'headline (org-element-type entry))
-                            (or (org-element-property :org-hd-marker entry)
-                                (org-element-property :org-marker entry))))
-       (marker (or element-marker
-                   (cond
-                    ((markerp entry)
-                     entry)
-                    ((numberp entry)
-                     (copy-marker entry))
-                    (t
-                     (point-marker)))))
-       (`(,id ,headline) (if element-marker
-                             (list (org-element-property :ID entry)
-                                   (org-element-property :raw-value entry))
-                           (with-current-buffer (marker-buffer marker)
-                             (org-with-wide-buffer
-                              (goto-char marker)
-                              (list (org-id-get)
-                                    (org-link-display-format
-                                     (org-get-heading t t t t)))))))
-       (buffer (when (and id (not no-reuse))
-                 (gethash id org-dog--indirect-buffers))))
-    (if (and buffer
-             (bufferp buffer)
-             (buffer-live-p buffer))
-        (setq org-dog-new-indirect-buffer-p nil)
-      ;; Create a new indirect buffer
-      (setq buffer (with-current-buffer (org-get-indirect-buffer
-                                         (marker-buffer marker)
-                                         headline)
-                     (widen)
-                     (goto-char marker)
-                     (org-narrow-to-subtree)
-                     (current-buffer)))
-      (when id
-        (puthash id buffer org-dog--indirect-buffers))
-      (setq org-dog-new-indirect-buffer-p t))
-    buffer))
+  (unless (org-before-first-heading-p)
+    (pcase-let*
+        ((element-marker (and entry
+                              (sequencep entry)
+                              (eq 'headline (org-element-type entry))
+                              (or (org-element-property :org-hd-marker entry)
+                                  (org-element-property :org-marker entry))))
+         (marker (or element-marker
+                     (cond
+                      ((markerp entry)
+                       entry)
+                      ((numberp entry)
+                       (copy-marker entry))
+                      (t
+                       (point-marker)))))
+         (`(,id ,headline) (if element-marker
+                               (list (org-element-property :ID entry)
+                                     (org-element-property :raw-value entry))
+                             (with-current-buffer (marker-buffer marker)
+                               (org-with-wide-buffer
+                                (goto-char marker)
+                                (list (org-id-get)
+                                      (org-link-display-format
+                                       (org-get-heading t t t t)))))))
+         (buffer (when (and id (not no-reuse))
+                   (gethash id org-dog--indirect-buffers))))
+      (if (and buffer
+               (bufferp buffer)
+               (buffer-live-p buffer))
+          (setq org-dog-new-indirect-buffer-p nil)
+        ;; Create a new indirect buffer
+        (setq buffer (with-current-buffer (org-get-indirect-buffer
+                                           (marker-buffer marker)
+                                           headline)
+                       (widen)
+                       (goto-char marker)
+                       (org-narrow-to-subtree)
+                       (current-buffer)))
+        (when id
+          (puthash id buffer org-dog--indirect-buffers))
+        (setq org-dog-new-indirect-buffer-p t))
+      buffer)))
 
 (defun org-dog-indirect-buffers ()
   "Return a list of live indirect buffers."
