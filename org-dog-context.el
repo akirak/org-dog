@@ -23,22 +23,18 @@
   directory filenames)
 
 (cl-defmethod org-dog-context-file-objects ((context org-dog-context-in-directory))
-  (let* ((prefix (org-dog-context-in-directory-directory context))
-         (files (org-dog-select-files
-                 `(lambda (obj)
-                    (string-prefix-p ,prefix (oref obj relative))))))
-    (thread-last
-      (org-dog-context-in-directory-filenames context)
-      (seq-some (apply-partially
-                 (lambda (files basename)
-                   (seq-some `(lambda (file)
-                                (when (equal (file-name-base (oref file relative))
-                                             ,basename)
-                                  file))
-                             files))
-                 files))
-      (list)
-      (delq nil))))
+  (let* ((dir (org-dog-context-in-directory-directory context))
+         (dir-pred (cl-etypecase dir
+                     (string
+                      `(relative :prefix ,dir))
+                     (list
+                      `(relative :regexp ,(rx-to-string `(and bol (or ,@dir))))))))
+    (cl-flet
+        ((make-pred (basename)
+           (when-let (objs (org-dog-select nil `(and ,dir-pred (basename ,basename))))
+             objs)))
+      (seq-some (apply-partially #'make-pred)
+                (org-dog-context-in-directory-filenames context)))))
 
 ;;;;
 
