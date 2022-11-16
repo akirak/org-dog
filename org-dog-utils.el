@@ -10,10 +10,13 @@
 
 (defvar org-dog-visited-file-name nil)
 
-(defsubst org-dog-case-fold-equal (string1 string2)
-  "Compare two strings, ignoring case."
-  (equal (downcase string1)
-         (downcase string2)))
+(eval-and-compile
+  (if (version< "29" emacs-version)
+      (defalias 'org-dog-case-fold-equal #'string-equal-ignore-case)
+    (defsubst org-dog-case-fold-equal (string1 string2)
+      "Compare two strings, ignoring case."
+      (equal (downcase string1)
+             (downcase string2)))))
 
 (defmacro org-dog-with-file-header (file &rest progn)
   "Evaluate a block with the headers of an Org file as buffer."

@@ -868,7 +868,7 @@ nil."
                            (cons 'group-function #'group)))
              (complete-with-action action alist string pred)))
          (match-name (entry cell)
-           (string-equal-ignore-case (car cell) entry)))
+           (org-dog-case-fold-equal (car cell) entry)))
       (let ((name (completing-read "Find a link target: "
                                    #'completions nil t)))
         (cons name
