@@ -526,6 +526,8 @@ ROOT is the path to a directory."
                `(check-path (oref obj relative) ,args))
              (absolute (&rest args)
                `(check-path (oref obj absolute) ,args))
+             (basename (&rest args)
+               `(check-path (file-name-base (oref obj absolute)) ,args))
              (root (&rest args)
                `(check-path (oref obj root) ,args))
              (with-file-header (&rest progn)
