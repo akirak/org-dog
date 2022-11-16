@@ -6,10 +6,12 @@
 (require 'org-reverse-datetree)
 
 (defvar org-capture-entry)
+(defvar org-agenda-bulk-marked-entries)
 (declare-function org-reverse-datetree-num-levels "ext:org-reverse-datetree")
 (declare-function org-reverse-datetree-guess-date "ext:org-reverse-datetree")
 (declare-function org-reverse-datetree-default-entry-time "ext:org-reverse-datetree")
 (declare-function org-transclusion-add "ext:org-transclusion")
+(declare-function org-agenda-bulk-unmark-all "org-agenda")
 
 (defgroup org-dog-datetree nil
   "Date tree file type for org-dog."
@@ -47,6 +49,11 @@ relevant files when an entry is archived."
   :type 'boolean)
 
 (defvar org-dog-datetree-refile-history nil)
+
+(eval-and-compile
+  (if (version< "29" emacs-version)
+      (defalias 'org-dog-datetree--pos-bol #'pos-bol)
+    (defalias 'org-dog-datetree--pos-bol #'line-beginning-position)))
 
 (defclass org-dog-datetree-file (org-dog-file)
   ((journal-capture-templates
@@ -111,6 +118,7 @@ or READ-DATE is non-nil, the user will be asked for a date."
 If the command is called with a single universal prefix argument
 or READ-DATE is non-nil, the user will be asked for a date."
   (interactive (list (equal current-prefix-arg '(4))))
+  (require 'org-agenda)
   (cl-case (derived-mode-p 'org-mode 'org-agenda-mode)
     (org-mode
      (let ((file (buffer-file-name (org-base-buffer (current-buffer)))))
@@ -132,8 +140,10 @@ or READ-DATE is non-nil, the user will be asked for a date."
            (org-dog-datetree--with-bulk-entries
             (org-dog-datetree-refile-to-this-file read-date))
            (org-agenda-bulk-unmark-all))
-       (if-let (marker (or (get-char-property (pos-bol) 'org-marker)
-                           (get-char-property (pos-bol) 'org-hd-marker)))
+       (if-let (marker (or (get-char-property (org-dog-datetree--pos-bol)
+                                              'org-marker)
+                           (get-char-property (org-dog-datetree--pos-bol)
+                                              'org-hd-marker)))
            (save-current-buffer
              (org-with-point-at marker
                (org-dog-datetree-refile-to-this-file read-date)))
