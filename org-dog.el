@@ -766,7 +766,6 @@ application developer might run a function such as
 
 If the point is before the first headline, the function returns
 nil."
-  (interactive (list (point-marker)))
   (unless org-dog--indirect-buffers
     (setq org-dog--indirect-buffers (make-hash-table :test #'equal)))
   (unless (org-before-first-heading-p)
