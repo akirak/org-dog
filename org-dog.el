@@ -789,7 +789,9 @@ nil."
                              (with-current-buffer (marker-buffer marker)
                                (org-with-wide-buffer
                                 (goto-char marker)
-                                (list (org-id-get)
+                                ;; The ID is used as a key in the hash table, so
+                                ;; it is mandatory.
+                                (list (org-id-get-create)
                                       (org-link-display-format
                                        (org-get-heading t t t t)))))))
          (buffer (when (and id (not no-reuse))
