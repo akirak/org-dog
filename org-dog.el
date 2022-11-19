@@ -786,14 +786,12 @@ nil."
          (`(,id ,headline) (if element-marker
                                (list (org-element-property :ID entry)
                                      (org-element-property :raw-value entry))
-                             (with-current-buffer (marker-buffer marker)
-                               (org-with-wide-buffer
-                                (goto-char marker)
-                                ;; The ID is used as a key in the hash table, so
-                                ;; it is mandatory.
-                                (list (org-id-get-create)
-                                      (org-link-display-format
-                                       (org-get-heading t t t t)))))))
+                             (org-with-point-at marker
+                               ;; The ID is used as a key in the hash table, so
+                               ;; it is mandatory.
+                               (list (org-id-get-create)
+                                     (org-link-display-format
+                                      (org-get-heading t t t t))))))
          (buffer (when (and id (not no-reuse))
                    (gethash id org-dog--indirect-buffers))))
       (if (and buffer
