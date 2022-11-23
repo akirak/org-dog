@@ -558,6 +558,14 @@ ROOT is the path to a directory."
              (regexp (pattern)
                `(with-file-content
                  (re-search-forward ,pattern nil t)))
+             (set-midnight (decoded-time)
+               `(append (list (or (nth 0 ,decoded-time)
+                                  1)
+                              (or (nth 1 ,decoded-time)
+                                  0)
+                              (or (nth 2 ,decoded-time)
+                                  (or org-extend-today-until 0)))
+                        (seq-drop ,decoded-time 3)))
              (ts-since-date (date)
                (let* ((time (org-dog--day-start (org-read-date nil t date)))
                       (regexp (org-dog-inactive-ts-regexp time)))
@@ -568,6 +576,7 @@ ROOT is the path to a directory."
                                           (thread-first
                                             (match-string 1)
                                             (parse-time-string)
+                                            (set-midnight)
                                             (encode-time)))
                          (throw 'match-date t)))))))
              (clocked-since-date (date)
@@ -581,6 +590,7 @@ ROOT is the path to a directory."
                                           (thread-first
                                             (match-string 1)
                                             (parse-time-string)
+                                            (set-midnight)
                                             (encode-time)))
                          (throw 'match-date t))))))))
           ,query))))
