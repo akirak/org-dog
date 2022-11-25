@@ -33,5 +33,14 @@
         "consult-org-dog"
         "octopus"
       ];
+
+      scripts.test = {
+        extraPackages = [
+          "buttercup"
+        ];
+        text = ''
+          emacs -batch -l buttercup -L . -f buttercup-run-discover
+        '';
+      };
     };
 }
