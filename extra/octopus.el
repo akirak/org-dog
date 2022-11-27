@@ -600,14 +600,21 @@ marker to an Org entry or nil."
 
 (cl-defmethod octopus--dispatch ((_cmd (eql 'octopus-insert-link))
                                  target)
-  (let ((marker (if (markerp target)
-                    target
-                  (org-ql-completing-read target :prompt "Insert a link: "))))
+  (let* ((region (when (use-region-p)
+                   (car (region-bounds))))
+         (description (when region
+                        (buffer-substring-no-properties
+                         (car region) (cdr region))))
+         (marker (if (markerp target)
+                     target
+                   (org-ql-completing-read target :prompt "Insert a link: "))))
     (atomic-change-group
       (when octopus-enable-transclusion-link
         (unless (bolp)
           (insert "\n"))
         (insert "#+transclude: "))
+      (when region
+        (delete-region (car region) (cdr region)))
       (if octopus-enable-super-link
           (progn
             ;; save-window-excursion is only necessary to targets that selects a
@@ -624,7 +631,11 @@ marker to an Org entry or nil."
            (goto-char marker)
            (let ((inhibit-message))
              (call-interactively #'org-store-link))))
-        (insert (apply #'org-link-make-string (pop org-stored-links)))))))
+        (if-let (link (pop org-stored-links))
+            (insert (org-link-make-string (car link)
+                                          (or description
+                                              (cadr link))))
+          (error "No stored link"))))))
 
 ;; Maybe I'll drop `octopus-clock-in'. I think there should be a better
 ;; interface to the use case that is supposed to be covered by the command.
