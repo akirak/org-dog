@@ -625,7 +625,13 @@ marker to an Org entry or nil."
                (if (fboundp 'org-super-links-store-link)
                    (org-super-links-store-link)
                  (error "org-super-links-store-link is not bound"))))
-            (org-super-links-insert-link))
+            (org-super-links-insert-link)
+            ;; Update the description of the inserted link.
+            (when description
+              (if (thing-at-point-looking-at org-link-bracket-re)
+                  (let ((link (match-string-no-properties 1)))
+                    (delete-region (match-beginning 0) (match-end 0))
+                    (insert (org-link-make-string link description))))))
         (with-current-buffer (marker-buffer marker)
           (org-with-wide-buffer
            (goto-char marker)
