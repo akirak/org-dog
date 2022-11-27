@@ -48,6 +48,17 @@ relevant files when an entry is archived."
   "Whether to generate an id on refiling."
   :type 'boolean)
 
+(defcustom org-dog-datetree-block-refiling t
+  "Whether to prohibit refiling of a blocked entry.
+
+When this option is non-nil, `org-dog-datetree-refile' and
+`org-dog-datetree-refile-to-this-file' commands stop operation
+on an entry where `org-entry-blocked-p' returns non-nil.
+
+This virtually means preventing the user from archiving
+unfinished entries."
+  :type 'boolean)
+
 (defvar org-dog-datetree-refile-history nil)
 
 (eval-and-compile
@@ -88,6 +99,8 @@ or READ-DATE is non-nil, the user will be asked for a date."
                       (org-dog-file-completion :class 'org-dog-datetree-file)
                       nil nil nil org-dog-datetree-refile-history)
                      (equal current-prefix-arg '(4))))
+  (when (org-dog-datetree--refile-blocked-p)
+    (user-error "This entry is blocked, so you cannot refile it"))
   (when org-dog-datetree-generate-id-on-refile
     (org-id-get-create))
   (let* ((file (cl-typecase file
@@ -99,6 +112,11 @@ or READ-DATE is non-nil, the user will be asked for a date."
     (when org-dog-datetree-propagate-on-refile
       (org-dog-datetree-propagate-by-tag nil :date date))
     (org-reverse-datetree-refile-to-file file date)))
+
+(defun org-dog-datetree--refile-blocked-p ()
+  "Return non-nil if the entry at point should not be refiled."
+  (and org-dog-datetree-block-refiling
+       (org-entry-blocked-p)))
 
 (defmacro org-dog-datetree--with-bulk-entries (&rest body)
   `(pcase-dolist (`(,buffer . ,olp)
@@ -122,6 +140,8 @@ or READ-DATE is non-nil, the user will be asked for a date."
   (cl-case (derived-mode-p 'org-mode 'org-agenda-mode)
     (org-mode
      (let ((file (buffer-file-name (org-base-buffer (current-buffer)))))
+       (when (org-dog-datetree--refile-blocked-p)
+         (user-error "This entry is blocked, so you cannot refile it"))
        (if (object-of-class-p (org-dog-file-object (abbreviate-file-name file))
                               'org-dog-datetree-file)
            (progn
@@ -138,7 +158,9 @@ or READ-DATE is non-nil, the user will be asked for a date."
      (if org-agenda-bulk-marked-entries
          (progn
            (org-dog-datetree--with-bulk-entries
-            (org-dog-datetree-refile-to-this-file read-date))
+            (if (org-dog-datetree--refile-blocked-p)
+                (message "Blocked entry: " (org-get-heading))
+              (org-dog-datetree-refile-to-this-file read-date)))
            (org-agenda-bulk-unmark-all))
        (if-let (marker (or (get-char-property (org-dog-datetree--pos-bol)
                                               'org-marker)
@@ -146,6 +168,8 @@ or READ-DATE is non-nil, the user will be asked for a date."
                                               'org-hd-marker)))
            (save-current-buffer
              (org-with-point-at marker
+               (when (org-dog-datetree--refile-blocked-p)
+                 (user-error "This entry is blocked, so you cannot refile it"))
                (org-dog-datetree-refile-to-this-file read-date)))
          (user-error "No marker is found"))))
     (otherwise
