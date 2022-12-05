@@ -85,6 +85,17 @@ unchanged."
                do (plist-put new-plist prop value))
       (setcdr cell new-plist))))
 
+(defvar-local org-dog-context-override-alist nil
+  "Fallback alist of contexts.
+
+By setting this variable local to specific buffers, you can set
+override the contexts.
+
+The value of this variable should be an alist of (CONTEXT .
+VALUE) where CONTEXT is one of the keys in
+`org-dog-context-alist' and VALUE should be a value of the type
+as returned by :value-fn function in the settings.")
+
 (defvar org-dog-context-cache nil
   "A hash table.")
 
@@ -103,6 +114,8 @@ unchanged."
                        (message "Missing :callback for %s" type)))
          (arg (cond
                (arg arg)
+               ((when-let (cell (assq type org-dog-context-override-alist))
+                  (cdr cell)))
                ((plist-get plist :value-fn)
                 (funcall (plist-get plist :value-fn)))
                (t
