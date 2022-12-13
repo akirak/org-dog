@@ -59,6 +59,14 @@ This virtually means preventing the user from archiving
 unfinished entries."
   :type 'boolean)
 
+(defcustom org-dog-datetree-refile-block-hook nil
+  "Hook used to determine whether refiling should be blocked.
+
+Each function in this hook is called at the entry without an
+argument. If any of the functions returns non-nil, refiling will
+be blocked."
+  :type 'boolean)
+
 (defvar org-dog-datetree-refile-history nil)
 
 (eval-and-compile
@@ -115,8 +123,12 @@ or READ-DATE is non-nil, the user will be asked for a date."
 
 (defun org-dog-datetree--refile-blocked-p ()
   "Return non-nil if the entry at point should not be refiled."
-  (and org-dog-datetree-block-refiling
-       (org-entry-blocked-p)))
+  (or (and org-dog-datetree-block-refiling
+           (org-entry-blocked-p))
+      (when org-dog-datetree-refile-block-hook
+        (save-excursion
+          (org-back-to-heading t)
+          (run-hook-with-args-until-success 'org-dog-datetree-refile-block-hook)))))
 
 (defmacro org-dog-datetree--with-bulk-entries (&rest body)
   `(pcase-dolist (`(,buffer . ,olp)
