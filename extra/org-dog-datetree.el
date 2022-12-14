@@ -171,7 +171,7 @@ or READ-DATE is non-nil, the user will be asked for a date."
          (progn
            (org-dog-datetree--with-bulk-entries
             (if (org-dog-datetree--refile-blocked-p)
-                (message "Blocked entry: " (org-get-heading))
+                (message "Blocked entry: %s" (org-get-heading))
               (org-dog-datetree-refile-to-this-file read-date)))
            (org-agenda-bulk-unmark-all))
        (if-let (marker (or (get-char-property (org-dog-datetree--pos-bol)
