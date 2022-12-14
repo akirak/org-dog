@@ -362,12 +362,15 @@ It is a plist that contains options of `org-ql-find', e.g.
 ;;;;; Current file
 
 (transient-define-suffix octopus-this-file-suffix ()
-  :description "This file"
+  :description #'octopus--this-file-description
   :if (lambda () (and (derived-mode-p 'org-mode)
                       (octopus--base-buffer-file)))
   (interactive)
   (octopus--dispatch (oref transient-current-prefix command)
                      (octopus--base-buffer-file)))
+
+(defun octopus--this-file-description ()
+  (format "This file: %s" (file-name-nondirectory (octopus--base-buffer-file))))
 
 (defun octopus--base-buffer-file ()
   "Return the file name for the base buffer."
