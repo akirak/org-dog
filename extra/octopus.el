@@ -52,6 +52,7 @@
 (declare-function avy-org-refile-as-child "ext:avy")
 (declare-function org-agenda-get-any-marker "org-agenda")
 (declare-function org-ql-search "ext:org-ql-search")
+(declare-function thing-at-point-looking-at "thingatpt")
 (defvar org-capture-last-stored-marker)
 (defvar avy-goto-line)
 
