@@ -144,7 +144,7 @@ It is a plist that contains options of `org-ql-find', e.g.
           octopus-static-file-list))
 
 (defun octopus--run-file-suffix (filename)
-  (octopus--dispatch (oref transient-current-prefix command)
+  (octopus--dispatch transient-current-command
                      (if (file-name-absolute-p filename)
                          filename
                        (org-dog-resolve-relative-file filename))))
@@ -155,7 +155,7 @@ It is a plist that contains options of `org-ql-find', e.g.
   :if (lambda () (derived-mode-p 'org-mode))
   :description "This file"
   (interactive)
-  (octopus--dispatch (oref transient-current-prefix command)
+  (octopus--dispatch transient-current-command
                      (buffer-file-name (org-base-buffer (current-buffer)))))
 
 ;;;;; Contexts
@@ -249,7 +249,7 @@ It is a plist that contains options of `org-ql-find', e.g.
                            :fast t)
                           (mapcar #'car)
                           (reverse)))
-             (octopus--dispatch (oref transient-current-prefix command)
+             (octopus--dispatch transient-current-command
                                 files)
            (user-error "No file in the context"))))))
 
@@ -362,7 +362,7 @@ It is a plist that contains options of `org-ql-find', e.g.
 (transient-define-suffix octopus-read-dog-file-suffix ()
   :description "Prompt"
   (interactive)
-  (octopus--dispatch (oref transient-current-prefix command)
+  (octopus--dispatch transient-current-command
                      (org-dog-complete-file)))
 
 ;;;;; Current file
@@ -372,7 +372,7 @@ It is a plist that contains options of `org-ql-find', e.g.
   :if (lambda () (and (derived-mode-p 'org-mode)
                       (octopus--base-buffer-file)))
   (interactive)
-  (octopus--dispatch (oref transient-current-prefix command)
+  (octopus--dispatch transient-current-command
                      (octopus--base-buffer-file)))
 
 (defun octopus--this-file-description ()
@@ -388,14 +388,14 @@ It is a plist that contains options of `org-ql-find', e.g.
   :description "Clock"
   :if #'org-clocking-p
   (interactive)
-  (octopus--dispatch (oref transient-current-prefix command)
+  (octopus--dispatch transient-current-command
                      org-clock-marker))
 
 (transient-define-suffix octopus-clocked-file-suffix ()
   :description "Clocked file"
   :if #'org-clocking-p
   (interactive)
-  (octopus--dispatch (oref transient-current-prefix command)
+  (octopus--dispatch transient-current-command
                      (buffer-file-name
                       (org-base-buffer (marker-buffer org-clock-marker)))))
 
@@ -413,7 +413,7 @@ It is a plist that contains options of `org-ql-find', e.g.
         (and (bound-and-true-p org-capture-last-stored-marker)
              (buffer-live-p (marker-buffer org-capture-last-stored-marker))))
   (interactive)
-  (octopus--dispatch (oref transient-current-prefix command)
+  (octopus--dispatch transient-current-command
                      org-capture-last-stored-marker))
 
 ;;;;; Avy
@@ -426,7 +426,7 @@ It is a plist that contains options of `org-ql-find', e.g.
                       (save-excursion
                         (and (avy-jump (rx bol (+ "*") space))
                              (point-marker)))))
-    (octopus--dispatch (oref transient-current-prefix command)
+    (octopus--dispatch transient-current-command
                        marker)))
 
 ;;;;; org-super-link
