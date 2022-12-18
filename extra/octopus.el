@@ -79,6 +79,11 @@ It is a plist that contains options of `org-ql-find', e.g.
 
 (cl-defgeneric octopus--dispatch (command target))
 
+(cl-defmethod octopus--dispatch ((_cmd (eql nil))
+                                 _target)
+  (error "octopus--dispatch: nil command is passed. transient-current-command: %s"
+         transient-current-command))
+
 ;;;;; octopus-boolean-variable
 
 (defclass octopus-boolean-variable (transient-variable)
