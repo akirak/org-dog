@@ -30,6 +30,16 @@ arguments to `org-dog-clock-in' are passed as is. It should
 creates a new heading in the file and clock into the heading."
   :type 'function)
 
+(defcustom org-dog-clock-in-hook nil
+  "Hook to run after clocking in in `org-dog-clock-in'.
+
+`org-dog-clock-last-marker' is set to the last value of
+`org-clock-marker', so you can use it in the hook."
+  :type 'hook)
+
+(defvar org-dog-clock-last-marker nil
+  "`org-clock-marker' before `org-dog-clock-in' is called.")
+
 (defun org-dog-clock-in-fallback-1 (file title)
   "Create a new heading in a file and clock into it.
 
@@ -59,7 +69,9 @@ This is an example implementation of
         (with-current-buffer (marker-buffer marker)
           (org-with-wide-buffer
            (goto-char marker)
-           (org-clock-in)))
+           (setq org-dog-clock-last-marker org-clock-marker)
+           (org-clock-in)
+           (run-hooks 'org-dog-clock-in-hook)))
       ;; HACK: Retrieve the last input from `minibuffer-history'. It is
       ;; currently impossible to use org-ql-completing-read to read an input
       ;; that does not match any of the candidates. See
