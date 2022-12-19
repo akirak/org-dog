@@ -66,13 +66,6 @@
   :type '(repeat (list (string :tag "Key")
                        (string :tag "Relative path or absolute path"))))
 
-(defcustom octopus-ql-find-options nil
-  "Options passed from `octopus-find-node' to `org-ql-find'.
-
-It is a plist that contains options of `org-ql-find', e.g.
-:query-prefix, :query-filter, etc."
-  :type 'plist)
-
 ;;;; Generic
 
 ;;;;; Generic functions
@@ -112,6 +105,33 @@ It is a plist that contains options of `org-ql-find', e.g.
               'face (if (oref obj value)
                         'transient-value
                       'transient-inactive-value)))
+
+;;;;; octopus-multiple-choice
+
+(defclass octopus-multiple-choice (transient-variable)
+  ((variable :initarg :variable)
+   (choices-variable :initarg :choices-variable)))
+
+(cl-defmethod transient-init-value ((obj octopus-multiple-choice))
+  (let ((value (car (symbol-value (oref obj choices-variable)))))
+    (oset obj value value)
+    (set (oref obj variable) value)))
+
+(cl-defmethod transient-infix-read ((obj octopus-multiple-choice))
+  (read-multiple-choice (oref obj prompt)
+                        (symbol-value (oref obj choices-variable))))
+
+(cl-defmethod transient-infix-set ((obj octopus-multiple-choice) value)
+  (set (oref obj variable) (oset obj value value)))
+
+(cl-defmethod transient-format-value ((obj octopus-multiple-choice))
+  (if-let (value (oref obj value))
+      (concat
+       (propertize "(" 'face 'transient-inactive-value)
+       (propertize (format "%s" (nth 1 value))
+                   'face 'transient-value)
+       (propertize ")" 'face 'transient-inactive-value))
+    ""))
 
 ;;;; Suffixes and infixes
 
@@ -447,21 +467,29 @@ It is a plist that contains options of `org-ql-find', e.g.
   :class 'octopus-boolean-variable
   :variable 'octopus-enable-transclusion-link)
 
-;;;;; Org-ql
+;;;;; octopus-find-node
 
-(defcustom octopus-view-function #'org-ql-search
-  "Function used to view Org files in `octopus-find-node'.
+(defcustom octopus-find-node-verbs
+  '((?f "Display a node" nil org-ql-find))
+  "List of choices of search functions used in `octopus-find-node'.
 
-It should be a function that takes a list of Org files as the
-argument."
-  :type 'function)
+This must be a list that can be passed to `read-multiple-choice',
+and its fourth argument must be a function that takes a list of
+function as the argument."
+  :type '(repeat (list (character :tag "Key")
+                       (string :tag "Name of the choice")
+                       (choice (string :tag "Description")
+                               (const nil))
+                       (function :tag "Function that takes a list of files"))))
 
-(defvar octopus-view-list nil)
+(defvar octopus-find-node-verb nil)
 
-(transient-define-infix octopus-infix-view-list ()
-  :description "View list"
-  :class 'octopus-boolean-variable
-  :variable 'octopus-view-list)
+(transient-define-infix octopus-infix-find-node-verb ()
+  :class 'octopus-multiple-choice
+  :description "Verb"
+  :variable 'octopus-find-node-verb
+  :prompt "Choose a search function"
+  :choices-variable 'octopus-find-node-verbs)
 
 ;;;; Prefix commands
 
@@ -495,7 +523,7 @@ argument."
 ;;;###autoload (autoload 'octopus-find-node "octopus" nil 'interactive)
 (transient-define-prefix octopus-find-node ()
   ["Options"
-   ("-v" octopus-infix-view-list)]
+   ("-" octopus-infix-find-node-verb)]
   ["Context"
    :class transient-row
    :setup-children octopus-setup-context-files-targets]
@@ -508,15 +536,14 @@ argument."
    ("/" octopus-read-dog-file-suffix)
    ("#" octopus-clocked-file-suffix)]
   (interactive)
-  (setq octopus-view-list nil)
   (transient-setup 'octopus-find-node))
 
 (cl-defmethod octopus--dispatch ((_cmd (eql 'octopus-find-node))
                                  files)
-  (require 'org-ql-find)
-  (if octopus-view-list
-      (funcall octopus-view-function files)
-    (apply #'org-ql-find files octopus-ql-find-options)))
+  (funcall (or (nth 3 (or octopus-find-node-verb
+                          (error "octopus-find-node-verb is nil")))
+               (error "Missing the fourth argument: %s" octopus-find-node-verb))
+           files))
 
 (defcustom octopus-refiled-entry-functions
   ;; `org-agenda-get-any-marker' is undocumented now
