@@ -257,7 +257,7 @@
            (nreverse result)))
 
        (transient-define-suffix ,files-suffix ()
-         :description ,(format "%s Files" description-label)
+         :description ',description-sym
          :if #',predicate-sym
          (interactive)
          (if-let (files (thread-last
