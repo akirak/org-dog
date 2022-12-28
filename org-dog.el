@@ -806,7 +806,10 @@ nil."
                    (gethash id org-dog--indirect-buffers))))
       (if (and buffer
                (bufferp buffer)
-               (buffer-live-p buffer))
+               (buffer-live-p buffer)
+               (with-current-buffer buffer
+                 (and (buffer-narrowed-p)
+                      (>= (point-min) (marker-position marker)))))
           (setq org-dog-new-indirect-buffer-p nil)
         ;; Create a new indirect buffer
         (setq buffer (with-current-buffer (org-get-indirect-buffer
