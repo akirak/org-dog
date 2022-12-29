@@ -74,8 +74,16 @@
 
 (cl-defmethod octopus--dispatch ((_cmd (eql nil))
                                  _target)
-  (error "octopus--dispatch: nil command is passed. transient-current-command: %s"
-         transient-current-command))
+  (message "octopus--dispatch: nil command is passed. transient-current-command: %s"
+           transient-current-command)
+  (transient--exit-and-debug))
+
+(defun octopus-current-command ()
+  "Return the current transient command."
+  (oref (or transient--prefix
+            transient-current-prefix
+            (error "No transient-current-prefix"))
+        command))
 
 ;;;;; octopus-boolean-variable
 
@@ -164,7 +172,7 @@
           octopus-static-file-list))
 
 (defun octopus--run-file-suffix (filename)
-  (octopus--dispatch transient-current-command
+  (octopus--dispatch (octopus-current-command)
                      (if (file-name-absolute-p filename)
                          filename
                        (org-dog-resolve-relative-file filename))))
@@ -175,7 +183,7 @@
   :if (lambda () (derived-mode-p 'org-mode))
   :description "This file"
   (interactive)
-  (octopus--dispatch transient-current-command
+  (octopus--dispatch (octopus-current-command)
                      (buffer-file-name (org-base-buffer (current-buffer)))))
 
 ;;;;; Contexts
@@ -269,7 +277,7 @@
                            :fast t)
                           (mapcar #'car)
                           (reverse)))
-             (octopus--dispatch transient-current-command
+             (octopus--dispatch (octopus-current-command)
                                 files)
            (user-error "No file in the context"))))))
 
@@ -382,7 +390,7 @@
 (transient-define-suffix octopus-read-dog-file-suffix ()
   :description "Prompt"
   (interactive)
-  (octopus--dispatch transient-current-command
+  (octopus--dispatch (octopus-current-command)
                      (org-dog-complete-file)))
 
 ;;;;; Current file
@@ -392,7 +400,7 @@
   :if (lambda () (and (derived-mode-p 'org-mode)
                       (octopus--base-buffer-file)))
   (interactive)
-  (octopus--dispatch transient-current-command
+  (octopus--dispatch (octopus-current-command)
                      (octopus--base-buffer-file)))
 
 (defun octopus--this-file-description ()
@@ -408,14 +416,14 @@
   :description "Clock"
   :if #'org-clocking-p
   (interactive)
-  (octopus--dispatch transient-current-command
+  (octopus--dispatch (octopus-current-command)
                      org-clock-marker))
 
 (transient-define-suffix octopus-clocked-file-suffix ()
   :description "Clocked file"
   :if #'org-clocking-p
   (interactive)
-  (octopus--dispatch transient-current-command
+  (octopus--dispatch (octopus-current-command)
                      (buffer-file-name
                       (org-base-buffer (marker-buffer org-clock-marker)))))
 
@@ -433,7 +441,7 @@
         (and (bound-and-true-p org-capture-last-stored-marker)
              (buffer-live-p (marker-buffer org-capture-last-stored-marker))))
   (interactive)
-  (octopus--dispatch transient-current-command
+  (octopus--dispatch (octopus-current-command)
                      org-capture-last-stored-marker))
 
 ;;;;; Avy
@@ -446,7 +454,7 @@
                       (save-excursion
                         (and (avy-jump (rx bol (+ "*") space))
                              (point-marker)))))
-    (octopus--dispatch transient-current-command
+    (octopus--dispatch (octopus-current-command)
                        marker)))
 
 ;;;;; org-super-link
