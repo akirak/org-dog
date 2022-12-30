@@ -81,7 +81,19 @@ This is used to search Org files and directories."
 The hook is called without an argument in the buffer of the visited file.
 
 You can use this hook to turn on certain features that are
-desired only when the buffer is displayed."
+desired only when the buffer is displayed.
+
+See also `org-dog-before-search-hook'."
+  :group 'org-dog
+  :type 'hook)
+
+(defcustom org-dog-before-search-hook nil
+  "Hook run before search is performed in an Org file.
+
+The hook is called without an argument by
+`org-dog-search-in-file' in the buffer of the visited file.
+
+See also `org-dog-find-file-hook'."
   :group 'org-dog
   :type 'hook)
 
@@ -288,9 +300,14 @@ This is mostly for optimization."
 (defun org-dog-search-in-file (file)
   "Open an Org FILE."
   (interactive (list (org-dog-complete-file)))
-  (cl-etypecase file
-    (string (org-dog-file-search (org-dog-file-object file)))
-    (org-dog-file (org-dog-file-search file))))
+  (let* ((obj (cl-etypecase file
+                (string (org-dog-file-object file))
+                (org-dog-file file)))
+         (fpath (oref obj absolute)))
+    (with-current-buffer (or (org-find-base-buffer-visiting fpath)
+                             (find-file-noselect fpath))
+      (run-hooks 'org-dog-before-search-hook))
+    (org-dog-file-search obj)))
 
 ;;;###autoload
 (defun org-dog-refile-to-file (file)

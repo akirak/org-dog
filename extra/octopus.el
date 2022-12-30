@@ -548,6 +548,10 @@ function as the argument."
 
 (cl-defmethod octopus--dispatch ((_cmd (eql 'octopus-find-node))
                                  files)
+  (dolist (file files)
+    (with-current-buffer (or (org-find-base-buffer-visiting file)
+                             (find-file-noselect file))
+      (run-hooks 'org-dog-before-search-hook)))
   (funcall (or (nth 3 (or octopus-find-node-verb
                           (error "octopus-find-node-verb is nil")))
                (error "Missing the fourth argument: %s" octopus-find-node-verb))
