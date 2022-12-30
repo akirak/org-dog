@@ -75,6 +75,16 @@ This is used to search Org files and directories."
   :group 'org-dog
   :risky t)
 
+(defcustom org-dog-find-file-hook nil
+  "Hook run when a file is visited using `org-dog-find-file'.
+
+The hook is called without an argument in the buffer of the visited file.
+
+You can use this hook to turn on certain features that are
+desired only when the buffer is displayed."
+  :group 'org-dog
+  :type 'hook)
+
 ;;;; Faces
 
 (defface org-dog-file-directory-face
@@ -255,15 +265,24 @@ This is mostly for optimization."
 ;;;;; Interactive functions
 
 ;;;###autoload
-(defun org-dog-find-file (file)
+(defun org-dog-find-file (file &optional find-file-fn)
   "Open an Org FILE."
   (interactive (list (org-dog-complete-file)))
-  (if (file-name-absolute-p file)
-      (find-file file)
-    (let ((repo-root (completing-read (format "Choose a repository for %s: " file)
-                                      (map-keys org-dog--repository-table)
-                                      nil t)))
-      (find-file (expand-file-name file repo-root)))))
+  (funcall (or find-file-fn #'find-file)
+           (if (file-name-absolute-p file)
+               file
+             (expand-file-name file
+                               (completing-read (format "Choose a repository for %s: "
+                                                        file)
+                                                (map-keys org-dog--repository-table)
+                                                nil t))))
+  (run-hooks 'org-dog-find-file-hook))
+
+;;;###autoload
+(defun org-dog-find-file-other-window (file)
+  "Open an Org FILE in other window."
+  (interactive (list (org-dog-complete-file)))
+  (org-dog-find-file file #'find-file-other-window))
 
 ;;;###autoload
 (defun org-dog-search-in-file (file)

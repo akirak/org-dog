@@ -522,8 +522,8 @@ function as the argument."
 (cl-defmethod octopus--dispatch ((_cmd (eql 'octopus-find-file))
                                  target)
   (funcall (if octopus-other-window
-               #'find-file-other-window
-             #'find-file)
+               #'org-dog-find-file-other-window
+             #'org-dog-find-file)
            (cl-etypecase target
              (org-dog-file (oref target absolute))
              (string target))))
