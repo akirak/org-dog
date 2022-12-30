@@ -81,7 +81,7 @@ Even though Org Dog does not aim to provide the same set of features as Org Star
 Nonetheless, Org Dog can be quite opinionated and complex, so Org Starter may remain for basic Org configuration.
 (I also have to note that the package should have come with a better, more comprehensive documentation.)
 ** About the name
-At first, I considered naming this package =org-cat(s)= because each Org file corresponds to one category by default, so having a bunch of Org files would mean having many categories (cats).
+At first, I considered naming this package =org-cat= because each Org file corresponds to one category by default, so having a bunch of Org files would mean having many categories (cats).
 
 However, cats are independent-minded.
 This is not an offence to cat lovers, but cats can be troublesome, so I won't allow them to live inside my computer.
