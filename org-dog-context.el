@@ -197,7 +197,10 @@ as returned by :value-fn function in the settings.")
         (when (memq mode '(fundamental-mode special-mode))
           (throw 'mode-context nil))
         (push (or (cdr (assq mode org-dog-context-major-mode-aliases))
-                  (string-remove-suffix "-mode" (symbol-name mode)))
+                  (thread-last
+                    (symbol-name mode)
+                    (string-remove-suffix "-mode")
+                    (string-remove-suffix "-ts")))
               filenames)
         (setq mode (get mode 'derived-mode-parent)))
       (make-org-dog-context-in-directory
