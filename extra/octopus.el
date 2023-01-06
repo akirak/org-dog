@@ -457,6 +457,18 @@
     (octopus--dispatch (octopus-current-command)
                        marker)))
 
+;;;;; Link description
+
+(defvar octopus-edit-link-description nil)
+
+(transient-define-infix octopus-infix-edit-link-description ()
+  :description "Edit the link description"
+  :class 'octopus-boolean-variable
+  ;; If there is an active region, it will be used as the description, so this
+  ;; suffix will be disabled.
+  :if (lambda () (not (use-region-p)))
+  :variable 'octopus-edit-link-description)
+
 ;;;;; org-super-link
 
 (defvar octopus-enable-super-link nil)
@@ -626,7 +638,8 @@ marker to an Org entry or nil."
   "Insert a link to a heading in a file."
   ["Options"
    ("-s" octopus-infix-super-link)
-   ("-t" octopus-infix-transclusion-link)]
+   ("-t" octopus-infix-transclusion-link)
+   ("-d" octopus-infix-edit-link-description)]
   ["Context"
    :class transient-row
    :setup-children octopus-setup-context-files-targets]
@@ -688,7 +701,11 @@ marker to an Org entry or nil."
         (if-let (link (pop org-stored-links))
             (insert (org-link-make-string (car link)
                                           (or description
-                                              (cadr link))))
+                                              (if octopus-edit-link-description
+                                                  (read-from-minibuffer
+                                                   "Link description: "
+                                                   (cadr link))
+                                                (cadr link)))))
           (error "No stored link"))))))
 
 ;; Maybe I'll drop `octopus-clock-in'. I think there should be a better
