@@ -431,15 +431,12 @@
 
 (transient-define-suffix octopus-last-capture-marker-suffix ()
   :description (lambda ()
-                 (concat "Last capture "
-                         (save-current-buffer
-                           (org-with-point-at org-capture-last-stored-marker
-                             (format "\"%s\""
-                                     (substring-no-properties
-                                      (org-get-heading t t t t)))))))
+                 (format "Last capture: \"%s\""
+                         (octopus--marker-heading org-capture-last-stored-marker)))
   :if (lambda ()
         (and (bound-and-true-p org-capture-last-stored-marker)
-             (buffer-live-p (marker-buffer org-capture-last-stored-marker))))
+             (buffer-live-p (marker-buffer org-capture-last-stored-marker))
+             (org-match-line org-heading-regexp)))
   (interactive)
   (octopus--dispatch (octopus-current-command)
                      org-capture-last-stored-marker))
@@ -735,6 +732,13 @@ marker to an Org entry or nil."
   (org-dog-clock-in file))
 
 ;;;; Other utilities
+
+(defun octopus--marker-heading (marker)
+  (save-current-buffer
+    (org-with-point-at marker
+      (if (org-match-line org-complex-heading-regexp)
+          (org-link-display-format (match-string-no-properties 4))
+        (error "Not on a heading")))))
 
 (defun octopus--org-mode-p ()
   "Return non-nil if the current buffer is in `org-mode'."
