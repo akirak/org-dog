@@ -412,15 +412,26 @@
 
 ;;;;; Clock
 
+(defun octopus-clocked-entry-description ()
+  (format "Clock: \"%s\"" (octopus--marker-heading org-clock-hd-marker)))
+
 (transient-define-suffix octopus-clock-marker-suffix ()
-  :description "Clock"
+  :description 'octopus-clocked-entry-description
   :if #'org-clocking-p
   (interactive)
   (octopus--dispatch (octopus-current-command)
                      org-clock-marker))
 
+(defun octopus-clocked-file-description ()
+  (format "Clocked file: \"%s\""
+          (thread-last
+            (marker-buffer org-clock-marker)
+            (org-base-buffer)
+            (buffer-file-name)
+            (file-name-nondirectory))))
+
 (transient-define-suffix octopus-clocked-file-suffix ()
-  :description "Clocked file"
+  :description 'octopus-clocked-file-description
   :if #'org-clocking-p
   (interactive)
   (octopus--dispatch (octopus-current-command)
