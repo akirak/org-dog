@@ -114,6 +114,39 @@
                         'transient-value
                       'transient-inactive-value)))
 
+;;;;; octopus-completion
+
+(defclass octopus-completion (transient-variable)
+  ((variable :initarg :variable)
+   (prompt :initarg :prompt)
+   (table :initarg :table)))
+
+(cl-defmethod transient-init-value ((obj octopus-completion))
+  (let ((value (symbol-value (oref obj variable))))
+    (oset obj value value)
+    (set (oref obj variable) value)))
+
+(cl-defmethod transient-infix-read ((obj octopus-completion))
+  (if-let (value (oref obj value))
+      nil
+    (let ((table (oref obj table)))
+      (completing-read (oref obj prompt)
+                       (if (and (not (functionp table))
+                                (symbolp table))
+                           (symbol-value table)
+                         table)))))
+
+(cl-defmethod transient-infix-set ((obj octopus-completion) value)
+  (set (oref obj variable) (oset obj value value)))
+
+(cl-defmethod transient-format-value ((obj octopus-completion))
+  (let ((value (oref obj value)))
+    (concat (propertize "(" 'face 'transient-inactive-value)
+            (if value
+                (propertize value 'face 'transient-value)
+              "")
+            (propertize ")" 'face 'transient-inactive-value))))
+
 ;;;;; octopus-multiple-choice
 
 (defclass octopus-multiple-choice (transient-variable)
@@ -486,6 +519,17 @@
   :class 'octopus-boolean-variable
   :variable 'octopus-enable-super-link)
 
+(defcustom octopus-super-link-drawer-list nil
+  "List of drawer names suggested in completion."
+  :type '(choice string))
+
+(transient-define-infix octopus-infix-super-link-drawer ()
+  :description "org-super-links drawer"
+  :class 'octopus-completion
+  :variable 'org-super-links-related-into-drawer
+  :prompt "Drawer name: "
+  :table 'octopus-super-link-drawer-list)
+
 ;;;;; org-transclusion
 
 (defvar octopus-enable-transclusion-link nil)
@@ -648,6 +692,7 @@ marker to an Org entry or nil."
   "Insert a link to a heading in a file."
   ["Options"
    ("-s" octopus-infix-super-link)
+   ("-S" octopus-infix-super-link-drawer)
    ("-t" octopus-infix-transclusion-link)
    ("-d" octopus-infix-edit-link-description)]
   ["Context"
