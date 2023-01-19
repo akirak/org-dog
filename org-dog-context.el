@@ -189,6 +189,7 @@ as returned by :value-fn function in the settings.")
   :type '(alist :key-type symbol :value-type string))
 
 (defun org-dog-context-major-mode-1 (mode)
+  (require 'org-src)
   (catch 'mode-context
     (let ((mode mode)
           filenames)
@@ -197,6 +198,8 @@ as returned by :value-fn function in the settings.")
         (when (memq mode '(fundamental-mode special-mode))
           (throw 'mode-context nil))
         (push (or (cdr (assq mode org-dog-context-major-mode-aliases))
+                  (car (rassq (intern (string-remove-suffix "-mode" (symbol-name mode)))
+                              org-src-lang-modes))
                   (thread-last
                     (symbol-name mode)
                     (string-remove-suffix "-mode")
