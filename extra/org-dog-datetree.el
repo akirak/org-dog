@@ -67,6 +67,14 @@ argument. If any of the functions returns non-nil, refiling will
 be blocked."
   :type 'boolean)
 
+(defcustom org-dog-datetree-tag-predicate nil
+  "Predicate to test whether a tag should be considered in propagation.
+
+This should be a function that takes an Org tag as an argument.
+If the function returns nil, the tag is ignored, so the entry
+will not be propagated to a file with the tag."
+  :type 'function)
+
 (defvar org-dog-datetree-refile-history nil)
 
 (eval-and-compile
@@ -229,7 +237,9 @@ or READ-DATE is non-nil, the user will be asked for a date."
                                                      :date date))
                 (unless (re-search-forward org-heading-regexp end t)
                   (throw 'no-subtree t)))))
-        (when-let (tags (org-get-tags nil local))
+        (when-let (tags (seq-filter (or org-dog-datetree-tag-predicate
+                                        #'identity)
+                                    (org-get-tags nil local)))
           (let* ((this-file (oref obj absolute))
                  (root (oref obj root))
                  (date (or date (org-reverse-datetree-guess-date)))
