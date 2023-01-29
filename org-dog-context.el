@@ -197,14 +197,17 @@ as returned by :value-fn function in the settings.")
         ;; The mode context is unapplicable
         (when (memq mode '(fundamental-mode special-mode))
           (throw 'mode-context nil))
-        (push (or (cdr (assq mode org-dog-context-major-mode-aliases))
-                  (car (rassq (intern (string-remove-suffix "-mode" (symbol-name mode)))
-                              org-src-lang-modes))
-                  (thread-last
-                    (symbol-name mode)
-                    (string-remove-suffix "-mode")
-                    (string-remove-suffix "-ts")))
-              filenames)
+        (if-let (lang (cdr (assq mode org-dog-context-major-mode-aliases)))
+            (push lang filenames)
+          (let* ((src-lang (car (rassq (intern (string-remove-suffix "-mode" (symbol-name mode)))
+                                       org-src-lang-modes)))
+                 (default-lang (thread-last
+                                 (symbol-name mode)
+                                 (string-remove-suffix "-mode")
+                                 (string-remove-suffix "-ts"))))
+            (push src-lang filenames)
+            (unless (and src-lang (equal src-lang default-lang))
+              (push default-lang filenames))))
         (setq mode (get mode 'derived-mode-parent)))
       (make-org-dog-context-in-directory
        :directory "programming/"
