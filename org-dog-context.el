@@ -36,6 +36,18 @@
       (seq-some (apply-partially #'make-pred)
                 (org-dog-context-in-directory-filenames context)))))
 
+(cl-defstruct (org-dog-context-org (:include org-dog-context))
+  tags excluded-file)
+
+(cl-defmethod org-dog-context-file-objects ((context org-dog-context-org))
+  (let ((this-file (org-dog-context-org-excluded-file context))
+        (tags (org-dog-context-org-tags context)))
+    (org-dog-select nil
+      `(and ,(if this-file
+                 `(not (absolute ,this-file))
+               t)
+            (file-tags-subset-of ,tags)))))
+
 ;;;;
 
 (defcustom org-dog-context-alist
@@ -55,6 +67,10 @@
      :key ?f
      :value-fn org-dog-context-path-value
      :callback org-dog-context-path-1)
+    (org
+     :key ?o
+     :value-fn org-dog-context-org-value
+     :callback org-dog-context-org-1)
     (machine
      :key ?M
      ;; TODO: Use `file-remote-p' with identification set to 'host
@@ -246,6 +262,18 @@ as returned by :value-fn function in the settings.")
                (make-org-dog-context-in-directory
                 :directory (file-name-directory file)
                 :filenames (list (file-name-nondirectory file))))))))
+
+(defun org-dog-context-org-value ()
+  (when (derived-mode-p 'org-mode)
+    (let ((tags (org-get-tags)))
+      (when tags
+        (list :tags tags)))))
+
+(defun org-dog-context-org-1 (plist)
+  (make-org-dog-context-org
+   :tags (plist-get plist :tags)
+   :excluded-file (when-let (obj (org-dog-buffer-object))
+                    (oref obj absolute))))
 
 (defun org-dog-context-machine-1 (hostname)
   (make-org-dog-context-in-directory
