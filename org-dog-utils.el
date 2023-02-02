@@ -44,6 +44,33 @@
          (delay-mode-hooks (org-mode)))
        ,@progn)))
 
+(defmacro org-dog-with-file-header-1 (file &rest progn)
+  "Evaluate a block with the headers of an Org file as buffer.
+
+This is like `org-dog-with-file-header', but call
+`org-set-regexps-and-options' instead of running `org-mode'. This
+is about 25% faster."
+  (declare (indent 1))
+  `(if-let (buf (find-buffer-visiting ,file))
+       (with-current-buffer buf
+         (org-with-wide-buffer
+          (goto-char (point-min))
+          (when (re-search-forward org-heading-regexp nil t)
+            (narrow-to-region (point-min) (1- (point)))
+            (goto-char (point-min)))
+          ,@progn))
+     (with-temp-buffer
+       ;; You can add this if necessary
+       ;; (setq-local org-dog-visited-file-name ,file)
+       (insert-file-contents ,file)
+       (goto-char (point-min))
+       ;; Drop entries of the file for faster enabling of org-mode.
+       (when (re-search-forward org-heading-regexp nil t)
+         (delete-region (match-beginning 0) (point-max))
+         (goto-char (point-min)))
+       (org-set-regexps-and-options)
+       ,@progn)))
+
 (defun org-dog-search-keyword-line (keyword &optional noprops)
   "Find a next header matching a keyword.
 

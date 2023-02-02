@@ -567,7 +567,7 @@ ROOT is the path to a directory."
              (root (&rest args)
                `(check-path (oref obj root) ,args))
              (with-file-header (&rest progn)
-               `(org-dog-with-file-header (oref obj absolute)
+               `(org-dog-with-file-header-1 (oref obj absolute)
                   ,@progn))
              (file-tags-subset-of (tags)
                `(with-file-header
