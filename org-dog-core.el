@@ -76,7 +76,8 @@ The functions in this hook take no argument."
 (defclass org-dog-file ()
   ((absolute :initarg :absolute)
    (relative :initarg :relative)
-   (root :initarg :root)))
+   (root :initarg :root)
+   (file-tags :initarg :file-tags :initform :unknown)))
 
 ;;;; File table
 

@@ -188,6 +188,7 @@ For now, this is only used for enabling `org-dog-file-mode-map'."
                 nil t)
       (add-hook 'after-set-visited-file-name-hook #'org-dog--handle-file-rename
                 nil t)
+      (oset obj file-tags :uknown)
       (run-hooks 'org-dog-file-mode-hook))))
 
 (defun org-dog--set-file-identity (&optional obj)
@@ -566,21 +567,18 @@ ROOT is the path to a directory."
                `(check-path (file-name-base (oref obj absolute)) ,args))
              (root (&rest args)
                `(check-path (oref obj root) ,args))
-             (with-file-header (&rest progn)
-               `(org-dog-with-file-header-1 (oref obj absolute)
-                  ,@progn))
              (file-tags-subset-of (tags)
-               `(with-file-header
-                 (and org-file-tags
-                      (seq-every-p (lambda (tag)
-                                     (member tag ',tags))
-                                   org-file-tags))))
+               `(let ((file-tags (org-dog-file-tags obj)))
+                  (and file-tags
+                       (seq-every-p (lambda (tag)
+                                      (member tag ',tags))
+                                    file-tags))))
              (file-tags-intersection (tags)
-               `(with-file-header
-                 (and org-file-tags
-                      (seq-find (lambda (tag)
-                                  (member tag ',tags))
-                                org-file-tags))))
+               `(let ((file-tags (org-dog-file-tags obj)))
+                  (and file-tags
+                       (seq-find (lambda (tag)
+                                   (member tag ',tags))
+                                 file-tags))))
              (with-file-content (&rest progn)
                `(if-let (buf (find-buffer-visiting (oref obj absolute)))
                     (with-current-buffer buf
@@ -652,6 +650,15 @@ ROOT is the path to a directory."
   (when-let (obj (org-dog-find-file-object
                   (org-dog-file-pred-1 `(relative ,path))))
     (oref obj absolute)))
+
+(defun org-dog-file-tags (obj)
+  (let ((value (oref obj file-tags)))
+    (if (eq value :unknown)
+        (let ((tags (org-dog-with-file-header-1 (oref obj absolute)
+                      org-file-tags)))
+          (oset obj file-tags tags)
+          tags)
+      value)))
 
 ;;;; Links
 
