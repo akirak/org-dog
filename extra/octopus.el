@@ -354,6 +354,16 @@
   :files-suffix octopus-language-files-suffix
   :setup-suffix octopus-setup-language-file-targets)
 
+(octopus-define-context "org"
+  :context-key org
+  :initial-key "o"
+  :description-label "Org"
+  :description-body (let* ((plist (cdar octopus--org-context))
+                           (tags (plist-get plist :tags)))
+                      (org-no-properties (org-make-tag-string tags)))
+  :files-suffix octopus-org-files-suffix
+  :setup-suffix octopus-setup-org-file-targets)
+
 (octopus-define-context "machine"
   :context-key machine
   :initial-key "M"
@@ -380,6 +390,10 @@
      :if octopus--language-p
      :setup-children octopus-setup-language-file-targets)
     (:description
+     octopus--org-description
+     :if octopus--org-p
+     :setup-children octopus-setup-org-file-targets)
+    (:description
      octopus--machine-description
      :if octopus--machine-p
      :setup-children octopus-setup-machine-file-targets))
@@ -396,6 +410,7 @@
     ("m" octopus-major-mode-files-suffix)
     ("f" octopus-path-files-suffix)
     ("l" octopus-language-files-suffix)
+    ("o" octopus-org-files-suffix)
     ("M" octopus-machine-files-suffix))
   "List of context file targets."
   :type '(repeat (list (string :tag "Key")
