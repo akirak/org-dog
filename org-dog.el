@@ -188,7 +188,7 @@ For now, this is only used for enabling `org-dog-file-mode-map'."
                 nil t)
       (add-hook 'after-set-visited-file-name-hook #'org-dog--handle-file-rename
                 nil t)
-      (oset obj file-tags :uknown)
+      (oset obj file-tags :unknown)
       (run-hooks 'org-dog-file-mode-hook))))
 
 (defun org-dog--set-file-identity (&optional obj)
