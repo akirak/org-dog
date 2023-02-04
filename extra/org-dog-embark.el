@@ -50,16 +50,16 @@
            (aw-switch-to-window (aw-select nil))
            (call-interactively (symbol-function ',fn)))))))
 
-(embark-define-keymap org-dog-embark-file-map
-  "An embark keymap on Org files."
-  :parent nil
-  ("o" find-file-other-window)
-  ("a" org-dog-find-file-ace-window)
-  ("s" org-dog-search-in-file)
-  ("/" org-dog-search-file-ace-window)
-  ("L" org-dog-insert-link-to-file)
-  ("r" org-dog-refile-to-file)
-  ("c" org-dog-capture-to-file))
+(defvar org-dog-embark-file-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "o" #'find-file-other-window)
+    (define-key map "a" #'org-dog-find-file-ace-window)
+    (define-key map "s" #'org-dog-search-in-file)
+    (define-key map "/" #'org-dog-search-file-ace-window)
+    (define-key map "L" #'org-dog-insert-link-to-file)
+    (define-key map "r" #'org-dog-refile-to-file)
+    (define-key map "c" #'org-dog-capture-to-file)
+    map))
 
 (add-to-list 'embark-keymap-alist '(org-dog-file . org-dog-embark-file-map))
 
