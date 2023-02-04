@@ -419,14 +419,18 @@ properly handle it."
 (defun org-dog--annotate-file (file)
   "Annotation function for `org-dog-file'."
   (when-let (obj (gethash file org-dog--file-table))
-    (let ((class (eieio-object-class obj)))
-      (concat (if (eq class org-dog-default-file-class)
-                  ""
-                (concat " "
-                        (propertize (org-dog--format-class class)
-                                    'face 'org-dog-file-class-face)))
-              " "
-              (propertize (oref obj root) 'face 'org-dog-repository-face)))))
+    (let* ((class (eieio-object-class obj))
+           (file-tags (org-dog-file-tags obj)))
+      (thread-last
+        (mapconcat #'identity
+                   (list (unless (eq class org-dog-default-file-class)
+                           (propertize (org-dog--format-class class)
+                                       'face 'org-dog-file-class-face))
+                         (propertize (oref obj root) 'face 'org-dog-repository-face)
+                         (when file-tags
+                           (org-make-tag-string file-tags)))
+                   " ")
+        (concat " ")))))
 
 (defun org-dog--format-class (class)
   (thread-last
