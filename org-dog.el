@@ -97,6 +97,18 @@ See also `org-dog-find-file-hook'."
   :group 'org-dog
   :type 'hook)
 
+(defcustom org-dog-file-annotation-sections
+  '(org-dog--file-class-annotation
+    org-dog--file-repository-annotation
+    org-dog--file-tags-annotation)
+  "List of functions that builds an annotation string.
+
+Each function should take a file object as an argument return
+either a string or nil. If a string is returned, that section is
+ignored. The returned strings are joined with space in between."
+  :group 'org-dog
+  :type '(repeat function))
+
 ;;;; Faces
 
 (defface org-dog-file-directory-face
@@ -416,19 +428,27 @@ properly handle it."
                    nil nil
                    initial-input org-dog-file-completion-history))
 
+(defun org-dog--file-class-annotation (obj)
+  (let ((class (eieio-object-class obj)))
+    (unless (eq class org-dog-default-file-class)
+      (propertize (org-dog--format-class class)
+                  'face 'org-dog-file-class-face))))
+
+(defun org-dog--file-repository-annotation (obj)
+  (propertize (oref obj root) 'face 'org-dog-repository-face))
+
+(defun org-dog--file-tags-annotation (obj)
+  (when-let (file-tags (org-dog-file-tags obj))
+    (org-make-tag-string file-tags)))
+
 (defun org-dog--annotate-file (file)
   "Annotation function for `org-dog-file'."
   (when-let (obj (gethash file org-dog--file-table))
-    (let* ((class (eieio-object-class obj))
-           (file-tags (org-dog-file-tags obj)))
+    (cl-flet
+        ((wrap (f) (funcall f obj)))
       (thread-last
         (mapconcat #'identity
-                   (list (unless (eq class org-dog-default-file-class)
-                           (propertize (org-dog--format-class class)
-                                       'face 'org-dog-file-class-face))
-                         (propertize (oref obj root) 'face 'org-dog-repository-face)
-                         (when file-tags
-                           (org-make-tag-string file-tags)))
+                   (mapcar #'wrap org-dog-file-annotation-sections)
                    " ")
         (concat " ")))))
 
