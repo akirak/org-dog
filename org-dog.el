@@ -310,6 +310,12 @@ This is mostly for optimization."
   (org-dog-find-file file #'find-file-other-window))
 
 ;;;###autoload
+(defun org-dog-find-file-other-tab (file)
+  "Open an Org FILE in other tab."
+  (interactive (list (org-dog-complete-file)))
+  (org-dog-find-file file #'find-file-other-tab))
+
+;;;###autoload
 (defun org-dog-search-in-file (file)
   "Open an Org FILE."
   (interactive (list (org-dog-complete-file)))

@@ -59,6 +59,7 @@
     (define-key map "L" #'org-dog-insert-link-to-file)
     (define-key map "r" #'org-dog-refile-to-file)
     (define-key map "c" #'org-dog-capture-to-file)
+    (define-key map "t" #'org-dog-find-file-other-tab)
     map))
 
 (add-to-list 'embark-keymap-alist '(org-dog-file . org-dog-embark-file-map))
