@@ -37,6 +37,14 @@ creates a new heading in the file and clock into the heading."
 `org-clock-marker', so you can use it in the hook."
   :type 'hook)
 
+(defcustom org-dog-clock-default-query-prefix nil
+  "Default query prefix passed to `org-ql-completing-read'."
+  :type '(choice string (const nil)))
+
+(defcustom org-dog-clock-default-query-filter nil
+  "Default query filter passed to `org-ql-completing-read'."
+  :type '(choice function (const nil)))
+
 (defvar org-dog-clock-last-marker nil
   "`org-clock-marker' before `org-dog-clock-in' is called.")
 
@@ -60,8 +68,10 @@ This is an example implementation of
   (let ((marker (if (and org-dog-clock-use-ql
                          (fboundp 'org-ql-completing-read))
                     (org-ql-completing-read files
-                      :query-prefix query-prefix
-                      :query-filter query-filter
+                      :query-prefix (or query-prefix
+                                        org-dog-clock-default-query-prefix)
+                      :query-filter (or query-filter
+                                        org-dog-clock-default-query-filter)
                       :prompt prompt)
                   (org-dog-read-heading-default
                    files prompt))))
