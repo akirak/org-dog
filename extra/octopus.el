@@ -759,11 +759,11 @@ marker to an Org entry or nil."
             (save-excursion
               (org-super-links-insert-link))
             ;; Update the description of the inserted link.
-            (when description
-              (if (thing-at-point org-link-bracket-re)
-                  (let ((link (match-string-no-properties 1)))
-                    (delete-region (match-beginning 0) (match-end 0))
-                    (insert (org-link-make-string link description))))))
+            (when-let (link (and description
+                                 (thing-at-point org-link-bracket-re)
+                                 (match-string-no-properties 1)))
+              (delete-region (match-beginning 0) (match-end 0))
+              (insert (org-link-make-string link description))))
         (with-current-buffer (marker-buffer marker)
           (org-with-wide-buffer
            (goto-char marker)
