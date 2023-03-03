@@ -731,14 +731,20 @@ marker to an Org entry or nil."
 
 (cl-defmethod octopus--dispatch ((_cmd (eql 'octopus-insert-link))
                                  target)
-  (let* ((region (when (use-region-p)
-                   (car (region-bounds))))
-         (description (when region
-                        (buffer-substring-no-properties
-                         (car region) (cdr region))))
-         (marker (if (markerp target)
-                     target
-                   (org-ql-completing-read target :prompt "Insert a link: "))))
+  (pcase-let*
+      ((`(,region . ,description)
+        (cond
+         ((use-region-p)
+          (cons (car (region-bounds))
+                (buffer-substring-no-properties
+                 (region-beginning) (region-end))))
+         ((thing-at-point-looking-at org-link-bracket-re)
+          (cons (cons (match-beginning 0)
+                      (match-end 0))
+                (match-string-no-properties 2)))))
+       (marker (if (markerp target)
+                   target
+                 (org-ql-completing-read target :prompt "Insert a link: "))))
     (atomic-change-group
       (when octopus-enable-transclusion-link
         (unless (bolp)
