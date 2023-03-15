@@ -35,6 +35,8 @@
 (declare-function org-refile "ext:org-refile")
 (declare-function org-agenda-refile "ext:org-agenda")
 (declare-function org-reverse-datetree-num-levels "ext:org-reverse-datetree")
+(declare-function org-with-base-buffer "ext:org-macs")
+(declare-function org-clocking-p "ext:org-clock")
 
 (defgroup org-dog-facade nil
   "Support for facade Org files."
@@ -145,6 +147,60 @@
                                    (org-dog-symbol-value (oref file sections))))))
          (not (and (<= level (org-reverse-datetree-num-levels))
                    (string-match-p "\\`[[:digit:]]\\{4\\}" heading))))))
+
+(defun org-dog-facade-move (file)
+  "Move the subtree to another file according to the outline path."
+  (interactive (list (completing-read "File: "
+                                      (org-dog-file-completion
+                                       :class 'org-dog-facade-datetree-file)
+                                      nil t)))
+  (unless (derived-mode-p 'org-mode)
+    (user-error "Not in org-mode"))
+  (when (org-before-first-heading-p)
+    (user-error "Before first heading"))
+  (unless (object-of-class-p (org-dog-buffer-object)
+                             'org-dog-facade-datetree-file)
+    (user-error "Wrong source class"))
+  (let* ((pos (point))
+         (buffer (org-base-buffer (current-buffer)))
+         (start (org-entry-beginning-position))
+         (end (save-excursion
+                (org-end-of-subtree)))
+         (clock-pos (and (org-clocking-p)
+                         (eq buffer (marker-buffer org-clock-marker))
+                         (>= (marker-position org-clock-marker)
+                             start)
+                         (< (marker-position org-clock-marker)
+                            end)
+                         (- (marker-position org-clock-marker)
+                            start)))
+         (heading (org-get-heading t t t t))
+         (olp (org-get-outline-path))
+         (diff (- pos start))
+         (marker (org-with-base-buffer (or (find-buffer-visiting file)
+                                           (find-file-noselect file))
+                   (or (org-find-olp olp t)
+                       ;; TODO: Create the parent
+                       (error "The parent does not exist"))))
+         (rfloc (list (cl-etypecase olp
+                        (string olp)
+                        (list (org-format-outline-path olp)))
+                      file
+                      nil
+                      marker)))
+    (when clock-pos
+      (org-clock-out))
+    (org-refile nil nil rfloc)
+    (message "Moved the subtree to %s" file)
+    (org-goto-marker-or-bmk marker)
+    (re-search-forward (format org-complex-heading-regexp-format heading))
+    (org-back-to-heading)
+    (when clock-pos
+      (save-excursion
+        (forward-char clock-pos)
+        (org-clock-in)))
+    (recenter-top-bottom)
+    (forward-char diff)))
 
 (provide 'org-dog-facade)
 ;;; org-dog-facade.el ends here
