@@ -354,15 +354,15 @@
   :files-suffix octopus-language-files-suffix
   :setup-suffix octopus-setup-language-file-targets)
 
-(octopus-define-context "org"
-  :context-key org
-  :initial-key "o"
-  :description-label "Org"
-  :description-body (let* ((plist (cdar octopus--org-context))
-                           (tags (plist-get plist :tags)))
-                      (org-no-properties (org-make-tag-string tags)))
-  :files-suffix octopus-org-files-suffix
-  :setup-suffix octopus-setup-org-file-targets)
+(octopus-define-context "org-tags"
+  :context-key org-tags
+  :initial-key "t"
+  :description-label "Org Tags"
+  :description-body (if-let (tags (cdar octopus--org-tags-context))
+                        (org-no-properties (org-make-tag-string tags))
+                      "")
+  :files-suffix octopus-org-tags-files-suffix
+  :setup-suffix octopus-setup-org-tags-file-targets)
 
 (octopus-define-context "machine"
   :context-key machine
@@ -390,9 +390,9 @@
      :if octopus--language-p
      :setup-children octopus-setup-language-file-targets)
     (:description
-     octopus--org-description
-     :if octopus--org-p
-     :setup-children octopus-setup-org-file-targets)
+     octopus--org-tags-description
+     :if octopus--org-tags-p
+     :setup-children octopus-setup-org-tags-file-targets)
     (:description
      octopus--machine-description
      :if octopus--machine-p
@@ -410,7 +410,7 @@
     ("m" octopus-major-mode-files-suffix)
     ("f" octopus-path-files-suffix)
     ("l" octopus-language-files-suffix)
-    ("o" octopus-org-files-suffix)
+    ("t" octopus-org-tags-files-suffix)
     ("M" octopus-machine-files-suffix))
   "List of context file targets."
   :type '(repeat (list (string :tag "Key")
@@ -817,10 +817,6 @@ marker to an Org entry or nil."
       (if (org-match-line org-complex-heading-regexp)
           (org-link-display-format (match-string-no-properties 4))
         (error "Not on a heading")))))
-
-(defun octopus--org-mode-p ()
-  "Return non-nil if the current buffer is in `org-mode'."
-  (derived-mode-p 'org-mode))
 
 (defvar octopus--path-separator nil)
 
