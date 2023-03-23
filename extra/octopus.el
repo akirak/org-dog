@@ -304,15 +304,14 @@
          :description ',description-sym
          :if #',predicate-sym
          (interactive)
-         (if-let (files (thread-last
-                          (org-dog-overview-scan
-                           (thread-last
-                             (cdr ,var-sym)
-                             (org-dog-context-file-objects)
-                             (mapcar (lambda (obj) (oref obj absolute))))
-                           :fast t)
-                          (mapcar #'car)
-                          (reverse)))
+         (if-let* ((value (cdr ,var-sym))
+                   (files (thread-last
+                            (org-dog-context-file-objects value)
+                            (mapcar (lambda (obj) (oref obj absolute)))))
+                   (files (thread-last
+                            (org-dog-overview-scan files :fast t)
+                            (mapcar #'car)
+                            (reverse))))
              (octopus--dispatch (octopus-current-command)
                                 files)
            (user-error "No file in the context"))))))
