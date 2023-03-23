@@ -243,6 +243,9 @@
          (format "%s: %s" ,description-label ,description-body))
 
        (defun ,setup-suffix (_children)
+         (cl-assert (cdr ,var-sym) nil
+                    "%s returns a non-nil value (%s), but %s is nil"
+                    ',predicate-sym (,predicate-sym) ',var-sym)
          (let* ((files (thread-last
                          (cdr ,var-sym)
                          (org-dog-context-file-objects)
