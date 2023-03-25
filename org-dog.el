@@ -884,7 +884,8 @@ nil."
                (buffer-live-p buffer)
                (with-current-buffer buffer
                  (and (buffer-narrowed-p)
-                      (>= (point-min) (marker-position marker)))))
+                      (<= (point-min) (marker-position marker))
+                      (>= (point-max) (marker-position marker)))))
           (setq org-dog-new-indirect-buffer-p nil)
         ;; Create a new indirect buffer
         (setq buffer (with-current-buffer (org-get-indirect-buffer
