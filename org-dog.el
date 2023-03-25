@@ -865,7 +865,9 @@ nil."
                       ((numberp entry)
                        (copy-marker entry))
                       (t
-                       (point-marker)))))
+                       (save-excursion
+                         (org-back-to-heading)
+                         (point-marker))))))
          (`(,id ,headline) (if element-marker
                                (list (org-element-property :ID entry)
                                      (org-element-property :raw-value entry))
