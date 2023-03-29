@@ -529,9 +529,13 @@
 
 ;;;;; org-super-link
 
+(defun octopus--super-link-available-p ()
+  (require 'org-super-link nil t))
+
 (defvar octopus-enable-super-link nil)
 
 (transient-define-infix octopus-infix-super-link ()
+  :if 'octopus--super-link-available-p
   :description "Insert a backlink into the target"
   :class 'octopus-boolean-variable
   :variable 'octopus-enable-super-link)
@@ -541,6 +545,7 @@
   :type '(choice string))
 
 (transient-define-infix octopus-infix-super-link-drawer ()
+  :if 'octopus--super-link-available-p
   :description "org-super-links drawer"
   :class 'octopus-completion
   :variable 'org-super-links-related-into-drawer
@@ -549,9 +554,13 @@
 
 ;;;;; org-transclusion
 
+(defun octopus--transclusion-available-p ()
+  (require 'org-transclution nil t))
+
 (defvar octopus-enable-transclusion-link nil)
 
 (transient-define-infix octopus-infix-transclusion-link ()
+  :if 'octopus--transclusion-available-p
   :description "Insert transclusion"
   :class 'octopus-boolean-variable
   :variable 'octopus-enable-transclusion-link)
