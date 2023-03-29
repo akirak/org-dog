@@ -851,7 +851,7 @@ If the point is before the first headline, the function returns
 nil."
   (unless org-dog--indirect-buffers
     (setq org-dog--indirect-buffers (make-hash-table :test #'equal)))
-  (unless (org-before-first-heading-p)
+  (catch 'org-dog-indirect-buffer
     (pcase-let*
         ((element-marker (and entry
                               (sequencep entry)
@@ -865,13 +865,13 @@ nil."
                       ((numberp entry)
                        (copy-marker entry))
                       (t
-                       (save-excursion
-                         (org-back-to-heading)
-                         (point-marker))))))
+                       (point-marker)))))
          (`(,id ,headline) (if element-marker
                                (list (org-element-property :ID entry)
                                      (org-element-property :raw-value entry))
                              (org-with-point-at marker
+                               (when (org-before-first-heading-p)
+                                 (throw 'org-dog-indirect-buffer nil))
                                ;; The ID is used as a key in the hash table, so
                                ;; it is mandatory.
                                (list (org-id-get-create)
