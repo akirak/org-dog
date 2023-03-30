@@ -132,7 +132,8 @@ or READ-DATE is non-nil, the user will be asked for a date."
 (defun org-dog-datetree--refile-blocked-p ()
   "Return non-nil if the entry at point should not be refiled."
   (or (and org-dog-datetree-block-refiling
-           (org-entry-blocked-p))
+           (org-entry-blocked-p)
+           (not (org-in-archived-heading-p t)))
       (when org-dog-datetree-refile-block-hook
         (save-excursion
           (org-back-to-heading t)
