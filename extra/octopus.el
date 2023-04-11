@@ -530,7 +530,7 @@
 ;;;;; org-super-link
 
 (defun octopus--super-link-available-p ()
-  (require 'org-super-link nil t))
+  (require 'org-super-links nil t))
 
 (defvar octopus-enable-super-link nil)
 
