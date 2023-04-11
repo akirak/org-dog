@@ -164,9 +164,9 @@ This variable is set while the function is run, so the user can
 
 ;;;; Associating the file object with a buffer
 
-(defun org-dog-buffer-object ()
+(defun org-dog-buffer-object (&optional buffer)
   "Return the `org-dog-file' object for the current buffer, if any."
-  (when-let (filename (buffer-file-name (org-base-buffer (current-buffer))))
+  (when-let (filename (buffer-file-name (org-base-buffer (or buffer (current-buffer)))))
     (when (string-match-p org-dog--root-regexp filename)
       (org-dog-file-object (abbreviate-file-name filename)))))
 
