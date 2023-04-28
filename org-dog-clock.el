@@ -30,6 +30,13 @@ arguments to `org-dog-clock-in' are passed as is. It should
 creates a new heading in the file and clock into the heading."
   :type 'function)
 
+(defcustom org-dog-before-clock-in-functions nil
+  "List of functions called before clocking in from `org-clock-in'.
+
+Each function is called with one argument, the marker to the
+entry being clocked in."
+  :type 'hook)
+
 (defcustom org-dog-clock-in-hook nil
   "Hook to run after clocking in in `org-dog-clock-in'.
 
@@ -80,6 +87,7 @@ This is an example implementation of
           (org-with-wide-buffer
            (goto-char marker)
            (setq org-dog-clock-last-marker org-clock-marker)
+           (run-hook-with-args 'org-dog-before-clock-in-functions org-clock-marker)
            (org-clock-in)
            (run-hooks 'org-dog-clock-in-hook)))
       ;; HACK: Retrieve the last input from `minibuffer-history'. It is
