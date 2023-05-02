@@ -294,7 +294,10 @@ This is mostly for optimization."
   "Open an Org FILE."
   (interactive (list (org-dog-complete-file)))
   (funcall (or find-file-fn #'find-file)
-           (if (file-name-absolute-p file)
+           (if (and (file-name-absolute-p file)
+                    (or (file-exists-p file)
+                        (yes-or-no-p "File \"%s\" does not exist. Create it? ")
+                        (user-error "Aborted")))
                file
              (expand-file-name file
                                (completing-read
