@@ -297,10 +297,10 @@ This is mostly for optimization."
            (if (file-name-absolute-p file)
                file
              (expand-file-name file
-                               (completing-read (format "Choose a repository for %s: "
-                                                        file)
-                                                (map-keys org-dog--repository-table)
-                                                nil t))))
+                               (completing-read
+                                (format "Choose a repository for %s: " file)
+                                (map-keys org-dog--repository-table)
+                                nil t))))
   (run-hooks 'org-dog-find-file-hook))
 
 ;;;###autoload
