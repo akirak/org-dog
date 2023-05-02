@@ -398,32 +398,39 @@ To customize the annotation, override `org-dog-annotate-file' method.
 
 For a usage example, see the implementation of
 `org-dog-complete-file'."
-  (let* ((objs (if files
-                   (thread-last
-                     files
-                     (mapcar (lambda (file)
-                               (org-dog-file-object file :allow-missing t)))
-                     (delq nil))
-                 (org-dog-select nil
-                   (or pred
-                       (when class `(class ,class))))))
-         (files (mapcar (lambda (obj)
-                          (let ((absolute (substring (oref obj absolute))))
-                            (when-let (dir (file-name-directory absolute))
-                              (put-text-property 0 (length dir)
-                                                 'face 'org-dog-file-directory-face
-                                                 absolute))
-                            (put-text-property 0 (length (oref obj root))
-                                               'invisible t
-                                               absolute)
-                            absolute))
-                        objs)))
-    ;; (mapc #'org-dog-get-annotation-info objs)
-    `(lambda (string pred action)
-       (if (eq action 'metadata)
-           '(metadata . ((category . ,(or class 'org-dog-file))
-                         (annotation-function . org-dog--annotate-file)))
-         (complete-with-action action ',files string pred)))))
+  `(lambda (string pred action)
+     (if (eq action 'metadata)
+         '(metadata . ((category . ,(or class 'org-dog-file))
+                       (annotation-function . org-dog--annotate-file)))
+       (complete-with-action
+        action
+        ',(org-dog--file-candidates
+           :class class
+           :pred pred
+           :files files)
+        string pred))))
+
+(cl-defun org-dog--file-candidates (&key class pred files)
+  (thread-last
+    (if files
+        (thread-last
+          files
+          (mapcar (lambda (file)
+                    (org-dog-file-object file :allow-missing t)))
+          (delq nil))
+      (org-dog-select nil
+        (or pred
+            (when class `(class ,class)))))
+    (mapcar (lambda (obj)
+              (let ((file (substring (slot-value obj 'absolute))))
+                (when-let (dir (file-name-directory file))
+                  (put-text-property 0 (length dir)
+                                     'face 'org-dog-file-directory-face
+                                     file))
+                (put-text-property 0 (length (slot-value obj 'root))
+                                   'invisible t
+                                   file)
+                file)))))
 
 (cl-defun org-dog-complete-file (&optional prompt initial-input _history)
   "Complete an Org file.
