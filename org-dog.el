@@ -926,26 +926,20 @@ nil."
   (org-dog--build-link-target-cache)
   (let ((alist (org-dog--link-target-alist files)))
     (cl-labels
-        ((group (candidate transform)
-           (if transform
-               candidate
-             (if-let (filename (cdr (assoc candidate alist)))
-                 (concat " " filename)
-               "")))
+        ((annotate (candidate)
+           (when-let (cell (assoc candidate alist))
+             (concat " " (string-join (cdr cell) ", "))))
          (completions (string pred action)
            (if (eq action 'metadata)
                (cons 'metadata
-                     (list (cons 'category 'category)
-                           (cons 'group-function #'group)))
+                     (list (cons 'category 'org-target)
+                           (cons 'annotation-function #'annotate)))
              (complete-with-action action alist string pred)))
          (match-name (entry cell)
            (org-dog-case-fold-equal (car cell) entry)))
       (let ((name (completing-read prompt #'completions nil t)))
-        (cons name
-              (thread-last
-                alist
-                (seq-filter (apply-partially #'match-name name))
-                (mapcar #'cdr)))))))
+        (or (assoc name alist)
+            (cons name nil))))))
 
 (defun org-dog--link-target-alist (&optional files)
   "Return an alist of link targets and their contained files.
@@ -961,7 +955,10 @@ to the value."
       (when (or (not files)
                 (member file files))
         (dolist (target entries)
-          (push (cons target file) alist))))
+          (if-let (cell (assoc target alist))
+              (setcdr cell (cons file (cdr cell)))
+            (push (cons target (list file))
+                  alist)))))
     alist))
 
 (defun org-dog--build-link-target-cache ()
