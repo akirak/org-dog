@@ -53,6 +53,7 @@
 (declare-function org-agenda-get-any-marker "org-agenda")
 (declare-function org-ql-search "ext:org-ql-search")
 (declare-function thing-at-point-looking-at "thingatpt")
+(defvar org-ql-view-buffers-files)
 (defvar org-capture-last-stored-marker)
 (defvar avy-goto-line)
 
@@ -447,14 +448,32 @@
 
 (transient-define-suffix octopus-this-file-suffix ()
   :description #'octopus--this-file-description
-  :if (lambda () (and (derived-mode-p 'org-mode)
-                      (octopus--base-buffer-file)))
+  :if (lambda ()
+        (or (and (derived-mode-p 'org-mode)
+                 (octopus--base-buffer-file))
+            (bound-and-true-p org-ql-view-buffers-files)))
   (interactive)
   (octopus--dispatch (octopus-current-command)
-                     (octopus--base-buffer-file)))
+                     (or (octopus--base-buffer-file)
+                         (if (= 1 (length org-ql-view-buffers-files))
+                             (car org-ql-view-buffers-files)
+                           (unless (seq-every-p #'stringp
+                                                org-ql-view-buffers-files)
+                             (user-error
+                              "Non-file entry is currently unsupported: %s"
+                              org-ql-view-buffers-files))
+                           (completing-read "File: " org-ql-view-buffers-files
+                                            nil t)))))
 
 (defun octopus--this-file-description ()
-  (format "This file: %s" (file-name-nondirectory (octopus--base-buffer-file))))
+  (format "This file: %s"
+          (if-let (filename (octopus--base-buffer-file))
+              (file-name-nondirectory filename)
+            (pcase org-ql-view-buffers-files
+              (`(,file)
+               (file-name-nondirectory file))
+              (_
+               "(multiple)")))))
 
 (defun octopus--base-buffer-file ()
   "Return the file name for the base buffer."
