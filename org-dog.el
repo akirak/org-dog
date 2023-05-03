@@ -921,10 +921,10 @@ nil."
 
 ;;;; Targets
 
-(defun org-dog-search-link-target ()
+(cl-defun org-dog-search-link-target (prompt &key files)
   "Select a link target from the registered files."
   (org-dog--build-link-target-cache)
-  (let ((alist (org-dog--link-target-alist)))
+  (let ((alist (org-dog--link-target-alist files)))
     (cl-labels
         ((group (candidate transform)
            (if transform
@@ -940,8 +940,7 @@ nil."
              (complete-with-action action alist string pred)))
          (match-name (entry cell)
            (org-dog-case-fold-equal (car cell) entry)))
-      (let ((name (completing-read "Find a link target: "
-                                   #'completions nil t)))
+      (let ((name (completing-read prompt #'completions nil t)))
         (cons name
               (thread-last
                 alist
