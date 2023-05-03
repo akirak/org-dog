@@ -922,6 +922,51 @@ nil."
 ;;;; Targets
 
 (defun org-dog-search-link-target ()
+  "Select a link target from the registered files."
+  (org-dog--build-link-target-cache)
+  (let ((alist (org-dog--link-target-alist)))
+    (cl-labels
+        ((group (candidate transform)
+           (if transform
+               candidate
+             (if-let (filename (cdr (assoc candidate alist)))
+                 (concat " " filename)
+               "")))
+         (completions (string pred action)
+           (if (eq action 'metadata)
+               (cons 'metadata
+                     (list (cons 'category 'category)
+                           (cons 'group-function #'group)))
+             (complete-with-action action alist string pred)))
+         (match-name (entry cell)
+           (org-dog-case-fold-equal (car cell) entry)))
+      (let ((name (completing-read "Find a link target: "
+                                   #'completions nil t)))
+        (cons name
+              (thread-last
+                alist
+                (seq-filter (apply-partially #'match-name name))
+                (mapcar #'cdr)))))))
+
+(defun org-dog--link-target-alist (&optional files)
+  "Return an alist of link targets and their contained files.
+
+Before you call this function, you have to build cache using
+`org-dog--build-link-target-cache' function.
+
+If FILES is a non-nil list of file names, limit the source files
+to the value."
+  (let (alist)
+    (pcase-dolist (`(,file ,_ . ,entries)
+                   org-dog-link-target-cache)
+      (when (or (not files)
+                (member file files))
+        (dolist (target entries)
+          (push (cons target file) alist))))
+    alist))
+
+(defun org-dog--build-link-target-cache ()
+  "Update `org-dog-link-target-cache'."
   (dolist (file (org-dog-select 'absolute))
     (let ((mtime (file-attribute-modification-time
                   (file-attributes file)))
@@ -946,34 +991,7 @@ nil."
           (if cell
               (setcdr cell (cons mtime targets))
             (push (cons file (cons mtime targets))
-                  org-dog-link-target-cache))))))
-  (let (alist)
-    (pcase-dolist (`(,file ,_ . ,entries)
-                   org-dog-link-target-cache)
-      (dolist (target entries)
-        (push (cons target file) alist)))
-    (cl-labels
-        ((group (candidate transform)
-           (if transform
-               candidate
-             (if-let (filename (cdr (assoc candidate alist)))
-                 (concat " " filename)
-               "")))
-         (completions (string pred action)
-           (if (eq action 'metadata)
-               (cons 'metadata
-                     (list (cons 'category 'category)
-                           (cons 'group-function #'group)))
-             (complete-with-action action alist string pred)))
-         (match-name (entry cell)
-           (org-dog-case-fold-equal (car cell) entry)))
-      (let ((name (completing-read "Find a link target: "
-                                   #'completions nil t)))
-        (cons name
-              (thread-last
-                alist
-                (seq-filter (apply-partially #'match-name name))
-                (mapcar #'cdr)))))))
+                  org-dog-link-target-cache)))))))
 
 ;;;; Meaningful entries
 
