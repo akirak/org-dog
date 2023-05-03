@@ -160,10 +160,14 @@ SOURCES default to `consult-org-dog-sources'."
 (defun consult-org-dog-view-tag-default (tag)
   (require 'org-ql-search)
   (org-ql-search (org-dog-select 'absolute
-                   `(regexp ,(regexp-quote
-                              (org-make-tag-string tag))))
+                   `(regexp ,(consult-org-dog--tag-regexp tag)))
     `(tags ,tag)
     :buffer (get-buffer-create (format "*Org Tag<%s>*" tag))))
+
+(defun consult-org-dog--tag-regexp (tag)
+  (rx-to-string `(and bol (+ "*") blank (+ nonl) blank
+                      ,(org-make-tag-string (list tag))
+                      (* blank) eol)))
 
 (defun consult-org-dog-view-target-default (target files)
   (org-dog-link-target-occur
