@@ -989,6 +989,35 @@ to the value."
             (push (cons file (cons mtime targets))
                   org-dog-link-target-cache)))))))
 
+(defun org-dog-link-target-occur (target &optional file)
+  "Pop up an `org-occur' buffer that highlights links to a target."
+  (let* ((file (or file
+                   (when (derived-mode-p 'org-mode)
+                     (buffer-file-name
+                      (org-base-buffer (current-buffer))))
+                   (user-error "Not in org-mode")))
+         (buffer-name (format "%s:<<%s>>"
+                              (file-name-nondirectory file)
+                              target)))
+    (when (get-buffer buffer-name)
+      (kill-buffer buffer-name))
+    (with-current-buffer (make-indirect-buffer
+                          (or (org-find-base-buffer-visiting file)
+                              (find-file-noselect file))
+                          buffer-name
+                          'clone)
+      (org-occur (org-dog--make-target-regexp target))
+      (setq next-error-last-buffer (current-buffer))
+      (goto-char (point-min))
+      (next-error)
+      (pop-to-buffer (current-buffer))
+      (recenter))))
+
+(defun org-dog--make-target-regexp (target)
+  (rx-to-string `(or ,(format "<<%s>>" target)
+                     (and "[[" ,target "]"
+                          "[" (* nonl) "]]"))))
+
 ;;;; Meaningful entries
 
 (defun org-dog-meaningful-p ()
