@@ -736,6 +736,7 @@ ROOT is the path to a directory."
 
 (org-link-set-parameters "org-dog"
                          :follow #'org-dog-follow-link
+                         :insert-description #'org-dog-link-description
                          :complete #'org-dog-complete-link)
 
 (defun org-dog-store-file-link ()
@@ -749,6 +750,13 @@ ROOT is the path to a directory."
 
 (defun org-dog-make-file-link (obj)
   (concat "org-dog:" (oref obj relative)))
+
+(defun org-dog-link-description (link _description)
+  (pcase link
+    ((rx bos "org-dog:" (group (+ anything)))
+     (pcase (org-dog-select nil `(relative ,(match-string 1 link)))
+       (`(,obj)
+        (org-dog-file-title obj))))))
 
 ;;;###autoload
 (defun org-dog-add-header-link (target &optional source)
