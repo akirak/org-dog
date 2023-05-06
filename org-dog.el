@@ -375,12 +375,9 @@ This is mostly for optimization."
     (user-error "Point is at link"))
   (cl-etypecase file
     (string (org-dog-insert-link-to-file (org-dog-file-object file)))
-    (org-dog-file (let ((title (or (org-dog-with-file-header (oref file absolute)
-                                     (org-dog-search-keyword-line "title"))
-                                   (read-string "Title: "))))
-                    (insert (org-link-make-string
-                             (concat "org-dog:" (oref file relative))
-                             title))))))
+    (org-dog-file (insert (org-link-make-string
+                           (concat "org-dog:" (oref file relative))
+                           (org-dog-file-title file))))))
 
 ;;;; Completion
 (cl-defun org-dog-file-completion (&key class pred files)
