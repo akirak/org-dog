@@ -700,6 +700,10 @@ ROOT is the path to a directory."
           tags)
       value)))
 
+(defun org-dog-file-title (obj)
+  (org-dog-with-file-header-1 (oref obj absolute)
+    (org-dog-search-keyword-line "title" 'noprops)))
+
 ;;;; Links
 
 (defun org-dog-follow-link (ref _arg)
@@ -742,8 +746,7 @@ ROOT is the path to a directory."
   (interactive)
   (if-let (obj (org-dog-buffer-object))
       (push (list (org-dog-make-file-link obj)
-                  (org-dog-with-file-header (oref obj absolute)
-                    (org-dog-search-keyword-line "title")))
+                  (org-dog-file-title obj))
             org-stored-links)
     (user-error "Not in an org-dog buffer")))
 
@@ -774,8 +777,7 @@ ROOT is the path to a directory."
                                    (goto-char (point-max)))))
                               ,(concat (org-link-make-string
                                         (org-dog-make-file-link target)
-                                        (org-dog-with-file-header (oref target absolute)
-                                          (org-dog-search-keyword-line "title")))
+                                        (org-dog-file-title target))
                                        "%?")
                               :unnarrowed t))
          (org-capture-templates-contexts nil))
