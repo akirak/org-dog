@@ -2,6 +2,7 @@
 
 (require 'eieio)
 (require 'seq)
+(require 'map)
 (require 'org)
 (require 'cl-lib)
 

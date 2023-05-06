@@ -3,6 +3,7 @@
 (require 'org-macs)
 (require 'org-capture)
 (require 'org-dog)
+(require 'map)
 
 (defvar org-capture-entry)
 (declare-function org-ql-completing-read "ext:org-ql")

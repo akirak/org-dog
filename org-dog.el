@@ -33,6 +33,7 @@
 
 (require 'org-dog-core)
 (require 'org-dog-utils)
+(require 'map)
 
 (declare-function org-link-set-parameters "ext:ol")
 (declare-function org-element-property "ext:org-element")

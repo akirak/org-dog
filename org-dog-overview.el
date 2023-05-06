@@ -3,6 +3,7 @@
 (require 'org-dog)
 (require 'eieio)
 (require 'subr-x)
+(require 'map)
 
 (defgroup org-dog-overview nil
   "Visualize links between Org files."
