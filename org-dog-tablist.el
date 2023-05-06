@@ -11,6 +11,8 @@
 (defcustom org-dog-tablist-columns
   '((relative
      ("Relative" 36 t))
+    (org-dog-file-title
+     ("Title" 25 t))
     (root
      ("Repo" 12 t))
     (org-dog-tablist--format-class
@@ -18,7 +20,7 @@
     (org-dog-tablist--format-agenda-p
      ("Agenda" 3 t))
     (org-dog-tablist--format-file-tags
-     ("File tags" 9 t))
+     ("File tags" 14 t))
     (org-dog-tablist--format-inactive-ts
      ("Activity" 10 t)))
   "List of columns in the tabulated list."
