@@ -19,6 +19,15 @@
     };
   };
 
+  nixConfig = {
+    extra-substituters = [
+      "https://emacs-ci.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "emacs-ci.cachix.org-1:B5FVOrxhXXrOL0S+tQ7USrhjMT5iOPH+QN9q0NItom4="
+    ];
+  };
+
   outputs =
     { self
     , nomake
