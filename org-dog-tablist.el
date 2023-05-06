@@ -34,6 +34,8 @@
 
 (defvar org-dog-tablist--agenda-files nil)
 
+(defvar-local org-dog-tablist-query nil)
+
 ;;;###autoload
 (defun org-dog-tablist-files ()
   "Browse org-dog files in a tabulated list interface."
@@ -63,7 +65,7 @@
           (mapcar #'abbreviate-file-name)))
   (setq tabulated-list-entries
         (thread-last
-          (org-dog-select-files)
+          (org-dog-select nil org-dog-tablist-query)
           (mapcar (lambda (obj)
                     (list (oref obj absolute)
                           (thread-last
@@ -75,6 +77,41 @@
                                              (slot-value ,obj key))
                                            "")))
                             (apply #'vector))))))))
+
+;;;; Tweak the view
+
+(defun org-dog-tablist-revert-with-query ()
+  "Revert the current buffer with a new query."
+  (interactive)
+  (let ((query (minibuffer-with-setup-hook
+                   (lambda ()
+                     (lisp-data-mode))
+                 (read-from-minibuffer "Query: "
+                                       (when org-dog-tablist-query
+                                         (prin1-to-string org-dog-tablist-query))
+                                       nil
+                                       #'read))))
+    (setq org-dog-tablist-query query)
+    (tabulated-list-revert)))
+
+(defun org-dog-tablist-sort ()
+  "Revert the current buffer with a new sort."
+  (interactive)
+  (setq-local tabulated-list-sort-key
+              (cons (completing-read "Sort key: "
+                                     (mapcar #'caadr org-dog-tablist-columns)
+                                     nil t
+                                     nil (car tabulated-list-sort-key))
+                    (cdr tabulated-list-sort-key)))
+  (tabulated-list-revert))
+
+(defun org-dog-tablist-reverse ()
+  "Reverse items in the current buffer."
+  (interactive)
+  (setq-local tabulated-list-sort-key
+              (cons (car tabulated-list-sort-key)
+                    (not (cdr tabulated-list-sort-key))))
+  (tabulated-list-revert))
 
 ;;;; Functions for formatting a column
 
