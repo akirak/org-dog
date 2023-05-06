@@ -3,6 +3,10 @@
 (require 'org-dog)
 (require 'tabulated-list)
 
+(defgroup org-dog-tablist nil
+  "Browse the Org files via a tabulated list interface."
+  :group 'org-dog)
+
 (defvar org-dog-tablist-files-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map "g" #'tabulated-list-revert)
