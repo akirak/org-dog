@@ -6,6 +6,7 @@
 (defvar org-dog-tablist-files-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map "g" #'tabulated-list-revert)
+    (define-key map "o" #'org-dog-tablist-open-file)
     map))
 
 (defcustom org-dog-tablist-columns
@@ -112,6 +113,16 @@
               (cons (car tabulated-list-sort-key)
                     (not (cdr tabulated-list-sort-key))))
   (tabulated-list-revert))
+
+;;;; Other commands that can be used in the buffer
+
+(defun org-dog-tablist-open-file ()
+  "Find the file at point."
+  (interactive)
+  (if-let* ((absolute (tabulated-list-get-id))
+            (obj (org-dog-file-object absolute)))
+      (org-dog-find-file-other-window (oref obj absolute))
+    (user-error "No file at point")))
 
 ;;;; Functions for formatting a column
 
