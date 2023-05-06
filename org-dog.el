@@ -366,7 +366,7 @@ This is mostly for optimization."
 
 ;;;###autoload
 (defun org-dog-insert-link-to-file (file)
-  "Refile the current entry to FILE."
+  "Insert an Org link to FILE."
   (interactive (list (org-dog-complete-file)))
   (unless (derived-mode-p 'org-mode)
     (user-error "Not in org-mode"))
