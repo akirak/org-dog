@@ -377,7 +377,7 @@ as the initial input."
       (goto-char (point-min))
       (org-mode)
       (setq-local org-startup-folded 'showeverything)
-      (org-set-startup-visibility)
+      (org-cycle-set-startup-visibility)
       (when (and initial-loc
                  (search-forward (nth 1 initial-loc) nil t)
                  (car initial-loc)
