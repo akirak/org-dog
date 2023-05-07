@@ -71,6 +71,24 @@ is about 25% faster."
        (org-set-regexps-and-options)
        ,@progn)))
 
+(defmacro org-dog-with-file-content (file &rest progn)
+  "Evaluate a block with the headers of an Org file as buffer.
+
+Like `org-dog-with-file-header-1', but without narrowing."
+  (declare (indent 1))
+  `(if-let (buf (find-buffer-visiting ,file))
+       (with-current-buffer buf
+         (org-with-wide-buffer
+          (goto-char (point-min))
+          ,@progn))
+     (with-temp-buffer
+       ;; You can add this if necessary
+       ;; (setq-local org-dog-visited-file-name ,file)
+       (insert-file-contents ,file)
+       (goto-char (point-min))
+       (org-set-regexps-and-options)
+       ,@progn)))
+
 (defun org-dog-search-keyword-line (keyword &optional noprops)
   "Find a next header matching a keyword.
 

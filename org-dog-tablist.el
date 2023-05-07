@@ -144,12 +144,10 @@
   (string-join (org-dog-file-tags obj) ","))
 
 (defun org-dog-tablist--format-inactive-ts (obj)
-  (with-current-buffer (org-dog-file-buffer obj)
-    (org-with-wide-buffer
-     (goto-char (point-min))
-     (if-let (ts (org-dog--latest-inactive-ts))
-         (ts-format "%F" ts)
-       ""))))
+  (if-let (ts (org-dog-with-file-content (oref obj absolute)
+                (org-dog--latest-inactive-ts)))
+      (ts-format "%F" ts)
+    ""))
 
 (provide 'org-dog-tablist)
 ;;; org-dog-tablist.el ends here
