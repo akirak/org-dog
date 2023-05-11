@@ -225,7 +225,7 @@ or READ-DATE is non-nil, the user will be asked for a date."
                                                        &key local
                                                        date subtree)
   "Transclude this entry from other date trees sharing tags."
-  (interactive (list t :subtree (eql current-prefix-arg '(4))))
+  (interactive (list t :subtree (equal current-prefix-arg '(4))))
   (if-let (obj (org-dog-buffer-object))
       (if subtree
           (let ((end (save-excursion
