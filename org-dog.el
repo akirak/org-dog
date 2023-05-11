@@ -190,6 +190,8 @@ For now, this is only used for enabling `org-dog-file-mode-map'."
   :lighter org-dog-file-mode-lighter
   (when org-dog-file-mode
     (let ((obj (and (string-match-p org-dog--root-regexp (buffer-file-name))
+                    (not (string-match-p org-dog-exclude-file-pattern
+                                         (buffer-file-name)))
                     (or (org-dog-buffer-object)
                         (org-dog--new-object)))))
       (unless obj
