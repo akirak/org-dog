@@ -74,6 +74,12 @@ The function is called with one argument, the string entered by
 the user to the minibuffer."
   :type 'function)
 
+(defcustom consult-org-dog-tag-super-groups nil
+  "Alist of mappings from a tag to a list of `org-super-agenda' groups."
+  :type '(alist :key-type (choice (string :tag "Org tag")
+                                  (const t))
+                :value-type '(sexp :tag "Org Super Agenda groups")))
+
 ;;;; Variables
 
 (defvar consult-org-dog--file-source
@@ -162,6 +168,9 @@ SOURCES default to `consult-org-dog-sources'."
   (org-ql-search (org-dog-select 'absolute
                    `(regexp ,(consult-org-dog--tag-regexp tag)))
     `(tags ,tag)
+    :super-groups
+    (cdr (or (assoc tag consult-org-dog-tag-super-groups)
+             (assq t consult-org-dog-tag-super-groups)))
     :buffer (get-buffer-create (format "*Org Tag<%s>*" tag))))
 
 (defun consult-org-dog--tag-regexp (tag)
