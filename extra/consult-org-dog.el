@@ -171,7 +171,7 @@ SOURCES default to `consult-org-dog-sources'."
     :super-groups
     (cdr (or (assoc tag consult-org-dog-tag-super-groups)
              (assq t consult-org-dog-tag-super-groups)))
-    :buffer (get-buffer-create (format "*Org Tag<%s>*" tag))))
+    :buffer (format "*Org Tag<%s>*" tag)))
 
 (defun consult-org-dog--tag-regexp (tag)
   (rx-to-string `(and bol (+ "*") blank (+ nonl) blank
