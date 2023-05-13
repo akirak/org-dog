@@ -929,6 +929,25 @@ nil."
                   org-dog--indirect-buffers)
       (mapcar #'cdr))))
 
+;;;; Tags
+
+(defun org-dog-all-tags (&optional files)
+  "Return a list of all tags.
+
+If FILES is not specified, the function collects tags from all
+registered files."
+  (let (tags)
+    ;; It might be better to temporarily increase the GC threshold, but GC
+    ;; doesn't happen within this function on my machine.
+    (dolist (file (or files (org-dog-select 'absolute)))
+      (org-dog-with-file-content file
+        (setq tags (append (thread-last
+                             (org-get-buffer-tags)
+                             (mapcar #'car)
+                             (mapcar #'org-no-properties))
+                           tags))))
+    (org-uniquify tags)))
+
 ;;;; Targets
 
 (cl-defun org-dog-search-link-target (prompt &key files)
