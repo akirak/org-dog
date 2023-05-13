@@ -63,6 +63,8 @@
   (add-hook 'tabulated-list-revert-hook #'org-dog-tablist-files-refresh nil t)
   (tabulated-list-init-header))
 
+(put 'org-dog-tablist-files-mode 'completion-predicate #'ignore)
+
 (defun org-dog-tablist-files-refresh ()
   (setq org-dog-tablist--agenda-files
         (thread-last
@@ -87,7 +89,7 @@
 
 (defun org-dog-tablist-revert-with-query ()
   "Revert the current buffer with a new query."
-  (interactive)
+  (interactive nil org-dog-tablist-files-mode)
   (let ((query (minibuffer-with-setup-hook
                    (lambda ()
                      (lisp-data-mode))
@@ -101,7 +103,7 @@
 
 (defun org-dog-tablist-sort ()
   "Revert the current buffer with a new sort."
-  (interactive)
+  (interactive nil org-dog-tablist-files-mode)
   (setq-local tabulated-list-sort-key
               (cons (completing-read "Sort key: "
                                      (mapcar #'caadr org-dog-tablist-columns)
@@ -112,7 +114,7 @@
 
 (defun org-dog-tablist-reverse ()
   "Reverse items in the current buffer."
-  (interactive)
+  (interactive nil org-dog-tablist-files-mode)
   (setq-local tabulated-list-sort-key
               (cons (car tabulated-list-sort-key)
                     (not (cdr tabulated-list-sort-key))))
@@ -122,7 +124,7 @@
 
 (defun org-dog-tablist-open-file ()
   "Find the file at point."
-  (interactive)
+  (interactive nil org-dog-tablist-files-mode)
   (if-let* ((absolute (tabulated-list-get-id))
             (obj (org-dog-file-object absolute)))
       (org-dog-find-file-other-window (oref obj absolute))
