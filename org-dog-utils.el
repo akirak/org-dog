@@ -106,6 +106,14 @@ This should be called inside `org-dog-with-file-header'.
                  (string-trim (match-string 2))))))
     nil))
 
+(defun org-dog-insert-keyword-line (keyword content)
+  (when (looking-at org-property-drawer-re)
+    (goto-char (match-end 0))
+    (forward-line 1))
+  (while (looking-at org-keyword-regexp)
+    (forward-line 1))
+  (insert "#+" keyword ": " content "\n"))
+
 (defun org-dog--latest-inactive-ts ()
   "Return the latest inactive timestamp in the buffer."
   (let (result)

@@ -931,6 +931,27 @@ nil."
 
 ;;;; Tags
 
+(defun org-dog-set-file-tags (file &optional tags)
+  "Set the file tags of FILE."
+  (interactive (list (org-dog-complete-file)))
+  (let* ((tags (or tags
+                   (completing-read-multiple
+                    (format "Set the file tags of %s: "
+                            (abbreviate-file-name file))
+                    (org-dog-all-tags)
+                    nil nil
+                    (string-join (org-dog-file-tags (org-dog-file-object file))
+                                 crm-separator))))
+         (keyword-content (string-join tags " ")))
+    (org-dog-with-file-header file
+      (if (org-dog-search-keyword-line "filetags" nil)
+          (if (org-match-line org-keyword-regexp)
+              (progn
+                (delete-region (match-beginning 2) (match-end 2))
+                (insert keyword-content))
+            (error "Failed to match on the keyword line at %d" (point)))
+        (org-dog-insert-keyword-line "filetags" keyword-content)))))
+
 (defun org-dog-all-tags (&optional files)
   "Return a list of all tags.
 
