@@ -94,7 +94,7 @@ Like `org-dog-with-file-header-1', but without narrowing."
 
 This should be called inside `org-dog-with-file-header'.
  Otherwise, it will look in the entire buffer, which can take
- longer than it needs."
+ longer than it should have done."
 
   (catch 'org-dog-header
     (while (re-search-forward org-keyword-regexp nil t)
