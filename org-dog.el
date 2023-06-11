@@ -1047,9 +1047,9 @@ to the value."
                      (buffer-file-name
                       (org-base-buffer (current-buffer))))
                    (user-error "Not in org-mode")))
-         (buffer-name (format "%s:<<%s>>"
-                              (file-name-nondirectory file)
-                              target)))
+         (buffer-name (format "*org-dog-occur<[%s] in %s>*"
+                              target
+                              (file-name-nondirectory file))))
     (when (get-buffer buffer-name)
       (kill-buffer buffer-name))
     (with-current-buffer (make-indirect-buffer
