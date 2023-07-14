@@ -169,7 +169,10 @@ This variable is set while the function is run, so the user can
 (defun org-dog-buffer-object (&optional buffer)
   "Return the `org-dog-file' object for the current buffer, if any."
   (when org-dog--root-regexp
-    (when-let (filename (buffer-file-name (org-base-buffer (or buffer (current-buffer)))))
+    (when-let (filename (thread-last
+                          (or buffer (current-buffer))
+                          (org-base-buffer)
+                          (buffer-file-name)))
       (when (string-match-p org-dog--root-regexp filename)
         (org-dog-file-object (abbreviate-file-name filename))))))
 
