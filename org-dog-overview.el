@@ -172,7 +172,7 @@ the file unless it is already open."
                        dog-file
                        (or (buffer-file-name)
                            org-dog-visited-file-name)))))))
-    result))
+    (nreverse result)))
 
 ;;;###autoload
 (defun org-dog-overview (files)
