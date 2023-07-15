@@ -117,13 +117,6 @@ ignored. The returned strings are joined with space in between."
 It should contain \"%s\" which is replaced with the file name of the buffer."
   :type 'string)
 
-(defcustom org-dog-file-header-display-action '(display-buffer-below-selected)
-  "Display buffer action used in `org-dog-open-file-header'.
-
-The value is passed as the second argument to `pop-to-buffer'.
-For definition of the argument, see `display-buffer'."
-  :type 'sexp)
-
 ;;;; Faces
 
 (defface org-dog-file-directory-face
@@ -422,7 +415,7 @@ This is mostly for optimization."
     (rename-buffer (format org-dog-file-header-buffer-name
                            (file-name-nondirectory file))
                    'unique)
-    (pop-to-buffer (current-buffer) org-dog-file-header-display-action)))
+    (pop-to-buffer (current-buffer))))
 
 ;;;; Completion
 (cl-defun org-dog-file-completion (&key class pred files)
