@@ -111,6 +111,19 @@ ignored. The returned strings are joined with space in between."
   :group 'org-dog
   :type '(repeat function))
 
+(defcustom org-dog-file-header-buffer-name "org-dog header<%s>"
+  "Name template for indirect buffers created by `org-dog-open-file-header'.
+
+It should contain \"%s\" which is replaced with the file name of the buffer."
+  :type 'string)
+
+(defcustom org-dog-file-header-display-action '(display-buffer-below-selected)
+  "Display buffer action used in `org-dog-open-file-header'.
+
+The value is passed as the second argument to `pop-to-buffer'.
+For definition of the argument, see `display-buffer'."
+  :type 'sexp)
+
 ;;;; Faces
 
 (defface org-dog-file-directory-face
@@ -386,6 +399,30 @@ This is mostly for optimization."
     (org-dog-file (insert (org-link-make-string
                            (concat "org-dog:" (oref file relative))
                            (org-dog-file-title file))))))
+
+;;;###autoload
+(defun org-dog-open-file-header (file)
+  "Go to the beginning of an Org FILE."
+  (interactive (list (org-dog-complete-file)))
+  (with-current-buffer (org-get-indirect-buffer
+                        (or (org-find-base-buffer-visiting file)
+                            (find-file-noselect file 'nowarn)))
+    (widen)
+    (goto-char (point-min))
+    (if (looking-at-p org-heading-regexp)
+        (progn
+          ;; TODO: Insert a template
+          (org-open-line 1)
+          (narrow-to-region (point-min) (line-beginning-position 2)))
+      (narrow-to-region (point-min)
+                        (save-excursion
+                          (if (re-search-forward org-heading-regexp nil t)
+                              (line-beginning-position 1)
+                            (point-max)))))
+    (rename-buffer (format org-dog-file-header-buffer-name
+                           (file-name-nondirectory file))
+                   'unique)
+    (pop-to-buffer (current-buffer) org-dog-file-header-display-action)))
 
 ;;;; Completion
 (cl-defun org-dog-file-completion (&key class pred files)
