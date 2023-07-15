@@ -191,6 +191,14 @@
   :default nil
   :description "Other window")
 
+(defvar octopus-file-header nil)
+
+(transient-define-infix octopus-infix-goto-file-header ()
+  :class 'octopus-boolean-variable
+  :variable 'octopus-file-header
+  :default nil
+  :description "Display the file header")
+
 ;;;;; Static files
 
 (defun octopus-setup-static-targets (_children)
@@ -617,7 +625,9 @@ function as the argument."
 ;;;###autoload (autoload 'octopus-find-file "octopus" nil t)
 (transient-define-prefix octopus-find-file ()
   ["Options"
-   ("-o" octopus-infix-other-window)]
+   :class transient-row
+   ("-o" octopus-infix-other-window)
+   ("-h" octopus-infix-goto-file-header)]
   ["Context"
    :class transient-columns
    :setup-children octopus-setup-context-file-subgroups]
@@ -634,12 +644,16 @@ function as the argument."
 
 (cl-defmethod octopus--dispatch ((_cmd (eql 'octopus-find-file))
                                  target)
-  (funcall (if octopus-other-window
-               #'org-dog-find-file-other-window
-             #'org-dog-find-file)
-           (cl-etypecase target
-             (org-dog-file (oref target absolute))
-             (string target))))
+  (if octopus-file-header
+      (org-dog-open-file-header (cl-etypecase target
+                                  (org-dog-file (oref target absolute))
+                                  (string target)))
+    (funcall (if octopus-other-window
+                 #'org-dog-find-file-other-window
+               #'org-dog-find-file)
+             (cl-etypecase target
+               (org-dog-file (oref target absolute))
+               (string target)))))
 
 ;;;###autoload (autoload 'octopus-find-node "octopus" nil 'interactive)
 (transient-define-prefix octopus-find-node ()
