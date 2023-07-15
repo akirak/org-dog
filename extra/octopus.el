@@ -67,6 +67,10 @@
   :type '(repeat (list (string :tag "Key")
                        (string :tag "Relative path or absolute path"))))
 
+(defcustom octopus-category-max-entries 3
+  "The maximum number of file entries displayed in each context type."
+  :type 'number)
+
 ;;;; Generic
 
 ;;;;; Generic functions
@@ -260,7 +264,7 @@
                 result)
            (when (catch 'toomany
                    (dolist (file files)
-                     (when (> i 2)
+                     (when (>= i octopus-category-max-entries)
                        (throw 'toomany t))
                      (let ((symbol (intern (format "octopus--context-file-suffix-%s-%d"
                                                    ,initial-key i)))
