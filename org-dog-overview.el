@@ -90,7 +90,11 @@ If CLEAR is non-nil, the existing value of
 If FAST is non-nil, it operates in fast mode. This mode does not
 keep buffers created for the function to run, so markers are
 unusable. It can be useful if you are interested in only the
-resulting file set, and not their contexts."
+resulting file set, and not their contexts.
+
+Note that the links will be returned in a reversed order. This is
+actually useful if you use the result in another loop where you collect items
+using `push', but you should be aware of that."
   (let* ((queue (mapcar #'abbreviate-file-name files))
          (result (unless (or clear fast)
                    org-dog-overview-backlinks))
