@@ -1074,7 +1074,7 @@ to the value."
             (push (cons file (cons mtime targets))
                   org-dog-link-target-cache)))))))
 
-(defun org-dog-link-target-occur (target &optional file)
+(cl-defun org-dog-link-target-occur (target &optional file &key radio)
   "Pop up an `org-occur' buffer that highlights links to a target."
   (let* ((file (or file
                    (when (derived-mode-p 'org-mode)
@@ -1091,7 +1091,9 @@ to the value."
                               (find-file-noselect file))
                           buffer-name
                           'clone)
-      (org-occur (org-dog--make-target-regexp target))
+      (org-occur (if radio
+                     (regexp-quote target)
+                   (org-dog--make-target-regexp target)))
       (setq next-error-last-buffer (current-buffer))
       (goto-char (point-min))
       (next-error)
