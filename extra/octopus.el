@@ -290,7 +290,9 @@
                        (push `(,transient--default-child-level
                                transient-suffix
                                ,(list :key key
-                                      :description (file-name-nondirectory file)
+                                      :description (octopus--short-filename
+                                                    (oref (org-dog-file-object file)
+                                                          relative))
                                       :command symbol))
                              result)
                        (cl-incf i)
@@ -893,6 +895,17 @@ marker to an Org entry or nil."
     file
     (string-remove-suffix (octopus--path-separator))
     (file-name-nondirectory)))
+
+(defun octopus--short-filename (file)
+  (let ((nondir (file-name-nondirectory file)))
+    (with-temp-buffer
+      (insert (file-name-directory file))
+      (goto-char (point-min))
+      (while (re-search-forward (rx (+ (not (any "/")))) nil t)
+        (replace-match (substring (match-string 0) 0 1)))
+      (goto-char (point-max))
+      (insert nondir)
+      (buffer-string))))
 
 (provide 'octopus)
 ;;; octopus.el ends here
