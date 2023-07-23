@@ -115,6 +115,7 @@ ignored. The returned strings are joined with space in between."
   "Name template for indirect buffers created by `org-dog-open-file-header'.
 
 It should contain \"%s\" which is replaced with the file name of the buffer."
+  :group 'org-dog
   :type 'string)
 
 ;;;; Faces
