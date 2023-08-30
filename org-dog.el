@@ -457,6 +457,7 @@ For a usage example, see the implementation of
       (org-dog-select nil
         (or pred
             (when class `(class ,class)))))
+    (org-dog--reorder-completed-files)
     (mapcar (lambda (obj)
               (let ((file (substring (slot-value obj 'absolute))))
                 (when-let (dir (file-name-directory file))
@@ -467,6 +468,12 @@ For a usage example, see the implementation of
                                    'invisible t
                                    file)
                 file)))))
+
+(defun org-dog--reorder-completed-files (file-objs)
+  (let ((obj (org-dog-buffer-object)))
+    (if (member obj file-objs)
+        (cons obj (delq obj file-objs))
+      file-objs)))
 
 (cl-defun org-dog-complete-file (&optional prompt initial-input _history)
   "Complete an Org file.
