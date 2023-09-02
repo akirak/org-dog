@@ -163,5 +163,39 @@ This should be called inside `org-dog-with-file-header'.
     (setf (decoded-time-hour decoded) (or org-extend-today-until 0))
     (encode-time decoded)))
 
+;;;; Formatting
+
+(defun org-dog--format-time-human-1 (time)
+  "Format TIME in a human-friendly way."
+  (let ((duration (- (float-time) (float-time time))))
+    (cond
+     ((< duration 120)
+      "just now")
+     ((< duration 3600)
+      (format "%.f minutes" (/ duration 60)))
+     ((< duration 5400)
+      "1 hour")
+     ((> duration (* 7 86400))
+      (format-time-string "%F" time))
+     ((> duration (* 14 86400))
+      nil)
+     (t
+      (let ((dec (decode-time time))
+            (now-dec (decode-time)))
+        (cond
+         ((and (< duration 86400)
+               (< (decoded-time-hour dec) (decoded-time-hour now-dec)))
+          (format-time-string "%R today" time))
+         ((let ((yesterday (decoded-time-add now-dec (make-decoded-time :day -1))))
+            (and (= (decoded-time-year dec)
+                    (decoded-time-year yesterday))
+                 (= (decoded-time-month dec)
+                    (decoded-time-month yesterday))
+                 (= (decoded-time-day dec)
+                    (decoded-time-day yesterday))))
+          "yesterday")
+         (t
+          (format-time-string "%A" time))))))))
+
 (provide 'org-dog-utils)
 ;;; org-dog-utils.el ends here

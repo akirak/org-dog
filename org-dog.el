@@ -102,7 +102,8 @@ See also `org-dog-find-file-hook'."
 (defcustom org-dog-file-annotation-sections
   '(org-dog--file-class-annotation
     org-dog--file-repository-annotation
-    org-dog--file-tags-annotation)
+    org-dog--file-tags-annotation
+    org-dog--file-time-annotation)
   "List of functions that builds an annotation string.
 
 Each function should take a file object as an argument return
@@ -519,6 +520,9 @@ properly handle it."
 (defun org-dog--file-tags-annotation (obj)
   (when-let (file-tags (org-dog-file-tags obj))
     (org-make-tag-string file-tags)))
+
+(defun org-dog--file-time-annotation (obj)
+  (org-dog--format-time-human-1 (org-dog--visited-time obj)))
 
 (defun org-dog--annotate-file (file)
   "Annotation function for `org-dog-file'."
