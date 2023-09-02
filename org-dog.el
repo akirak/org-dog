@@ -186,13 +186,18 @@ This variable is set while the function is run, so the user can
 (defun org-dog-maybe-file-buffer (file-obj)
   "Return a file buffer visiting X if any."
   (let ((file (oref file-obj absolute)))
-    (find-buffer-visiting file)))
+    ;; The file name in FILE-OBJ is already abbreviated, so you can directly
+    ;; match against `buffer-file-truename'. This is faster than
+    ;; `find-buffer-visiting', which calls `file-truename' internally.
+    (cl-find-if `(lambda (buffer)
+                   (string-equal (buffer-local-value 'buffer-file-truename buffer)
+                                 ,file))
+                (buffer-list))))
 
 (defun org-dog-file-buffer (file-obj)
   "Return a file buffer visiting X."
-  (let ((file (oref file-obj absolute)))
-    (or (find-buffer-visiting file)
-        (find-file-noselect file))))
+  (or (org-dog-maybe-file-buffer file-obj)
+      (find-file-noselect (oref file-obj absolute))))
 
 ;;;###autoload
 (define-minor-mode org-dog-file-mode
