@@ -89,6 +89,9 @@ Like `org-dog-with-file-header-1', but without narrowing."
        (org-set-regexps-and-options)
        ,@progn)))
 
+(cl-defsubst org-dog--time> (t1 t2)
+  (not (time-less-p t1 t2)))
+
 (defun org-dog-search-keyword-line (keyword &optional noprops)
   "Find a next header matching a keyword.
 

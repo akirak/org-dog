@@ -477,8 +477,23 @@ For a usage example, see the implementation of
 (defun org-dog--reorder-completed-files (file-objs)
   (let ((obj (org-dog-buffer-object)))
     (if (member obj file-objs)
-        (cons obj (delq obj file-objs))
-      file-objs)))
+        (cons obj (org-dog--sort-file-objs-by-recency (delq obj file-objs)))
+      (org-dog--sort-file-objs-by-recency file-objs))))
+
+(defun org-dog--sort-file-objs-by-recency (file-objs)
+  (thread-last
+    file-objs
+    (mapcar (lambda (file-obj)
+              (cons (org-dog--visited-time file-obj)
+                    file-obj)))
+    (seq-sort-by #'car #'org-dog--time>)
+    (mapcar #'cdr)))
+
+(defun org-dog--visited-time (file-obj)
+  (if-let (buffer (org-dog-maybe-file-buffer file-obj))
+      (buffer-local-value 'buffer-display-time buffer)
+    (file-attribute-modification-time
+     (file-attributes (slot-value file-obj 'absolute)))))
 
 (cl-defun org-dog-complete-file (&optional prompt initial-input _history)
   "Complete an Org file.
