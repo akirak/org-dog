@@ -191,6 +191,14 @@
   :default nil
   :description "Other window")
 
+(defvar octopus-other-tab nil)
+
+(transient-define-infix octopus-infix-other-tab ()
+  :class 'octopus-boolean-variable
+  :variable 'octopus-other-tab
+  :default nil
+  :description "Other tab")
+
 (defvar octopus-file-header nil)
 
 (transient-define-infix octopus-infix-goto-file-header ()
@@ -629,6 +637,7 @@ function as the argument."
   ["Options"
    :class transient-row
    ("-o" octopus-infix-other-window)
+   ("-t" octopus-infix-other-tab)
    ("-h" octopus-infix-goto-file-header)]
   ["Context"
    :class transient-columns
@@ -650,9 +659,10 @@ function as the argument."
       (org-dog-open-file-header (cl-etypecase target
                                   (org-dog-file (oref target absolute))
                                   (string target)))
-    (funcall (if octopus-other-window
-                 #'org-dog-find-file-other-window
-               #'org-dog-find-file)
+    (funcall (cond
+              (octopus-other-tab #'org-dog-find-file-other-tab)
+              (octopus-other-window #'org-dog-find-file-other-window)
+              (t #'org-dog-find-file))
              (cl-etypecase target
                (org-dog-file (oref target absolute))
                (string target)))))
