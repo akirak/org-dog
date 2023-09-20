@@ -914,7 +914,7 @@ marker to an Org entry or nil."
       (while (re-search-forward (rx (+ (not (any "/")))) nil t)
         (replace-match (substring (match-string 0) 0 1)))
       (goto-char (point-max))
-      (insert nondir)
+      (insert (truncate-string-to-width nondir 12))
       (buffer-string))))
 
 (provide 'octopus)
