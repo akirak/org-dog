@@ -363,9 +363,34 @@ This is mostly for optimization."
 (defun org-dog-refile-1 (file)
   "Refile the current entry to FILE."
   (cl-check-type file string)
-  (let ((org-refile-targets (list (cons file '(:maxlevel . 99))))
-        (org-refile-target-verify-function nil))
-    (org-refile)))
+  (let* ((org-refile-targets (list (cons file '(:maxlevel . 99))))
+         (org-refile-target-verify-function nil)
+         (default-buffer (current-buffer))
+         (rfloc (org-refile-get-location "Refile to" default-buffer
+                                         org-refile-allow-creating-parent-nodes)))
+    (if (derived-mode-p 'org-agenda-mode)
+        (if org-agenda-bulk-marked-entries
+            ;; Based on `org-agenda-bulk-action’ for org 9.6.7.
+            (progn
+              (dolist (e (cl-sort org-agenda-bulk-marked-entries
+                                  (mapcar (let ((c))
+                                            (cond
+                                             ((eq (marker-buffer a) (marker-buffer b))
+                                              (< (marker-position a) (marker-position b)))
+                                             (t
+                                              (string< (buffer-name (marker-buffer a))
+                                                       (buffer-name (marker-buffer b)))))))))
+                (let ((pos (text-property-any (point-min) (point-max) 'org-hd-marker e)))
+                  (if (not pos)
+                      (message "Skipping removed entry at %s" e)
+                    (org-with-point-at pos
+                      (let (org-loop-over-headlines-in-active-region)
+                        (org-agenda-refile nil rfloc 'no-update))
+                      (when org-log-setup (org-add-log-note))))))
+              (org-agenda-redo)
+              (org-agenda-bulk-unmark-all))
+          (org-agenda-refile nil rfloc nil))
+      (org-refile nil default-buffer rfloc))))
 
 ;;;###autoload
 (defun org-dog-capture-to-file (file)
