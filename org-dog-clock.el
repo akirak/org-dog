@@ -45,6 +45,13 @@ entry being clocked in."
 `org-clock-marker', so you can use it in the hook."
   :type 'hook)
 
+(defcustom org-dog-clock-in-success-hook nil
+  "Hook run after `org-dog-clock-in' successfully starts a clock on a marker.
+
+Each function in the hook will be called with the marker clocked
+in as the argument. In fallback cases, this hook is not run."
+  :type 'hook)
+
 (defcustom org-dog-clock-default-query-prefix nil
   "Default query prefix passed to `org-ql-completing-read'."
   :type '(choice string (const nil)))
@@ -84,13 +91,15 @@ This is an example implementation of
                   (org-dog-read-heading-default
                    files prompt))))
     (if marker
-        (with-current-buffer (marker-buffer marker)
-          (org-with-wide-buffer
-           (goto-char marker)
-           (setq org-dog-clock-last-marker org-clock-marker)
-           (run-hook-with-args 'org-dog-before-clock-in-functions org-clock-marker)
-           (org-clock-in)
-           (run-hooks 'org-dog-clock-in-hook)))
+        (progn
+          (with-current-buffer (marker-buffer marker)
+            (org-with-wide-buffer
+             (goto-char marker)
+             (setq org-dog-clock-last-marker org-clock-marker)
+             (run-hook-with-args 'org-dog-before-clock-in-functions org-clock-marker)
+             (org-clock-in)
+             (run-hooks 'org-dog-clock-in-hook)))
+          (run-hook-with-args 'org-dog-clock-in-success-hook marker))
       ;; HACK: Retrieve the last input from `minibuffer-history'. It is
       ;; currently impossible to use org-ql-completing-read to read an input
       ;; that does not match any of the candidates. See
