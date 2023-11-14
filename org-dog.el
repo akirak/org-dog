@@ -1090,8 +1090,7 @@ to the value."
               ((scan-targets ()
                  (goto-char (point-min))
                  (while (re-search-forward org-target-regexp nil t)
-                   (unless (save-match-data
-                             (thing-at-point-looking-at org-radio-target-regexp))
+                   (when (looking-back org-link-bracket-re (match-beginning 0))
                      (push (match-string-no-properties 1)
                            targets)))))
             (if-let (buffer (find-buffer-visiting file))
