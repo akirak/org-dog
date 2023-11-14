@@ -1094,8 +1094,8 @@ to the value."
                              (thing-at-point-looking-at org-radio-target-regexp))
                      (push (match-string-no-properties 1)
                            targets)))))
-            (if (find-buffer-visiting file)
-                (with-current-buffer (find-buffer-visiting file)
+            (if-let (buffer (find-buffer-visiting file))
+                (with-current-buffer buffer
                   (org-with-wide-buffer
                    (scan-targets)))
               (with-temp-buffer
