@@ -361,6 +361,14 @@
   :files-suffix octopus-major-mode-files-suffix
   :setup-suffix octopus-setup-major-mode-file-targets)
 
+(octopus-define-context "mime-type"
+  :context-key mime-type
+  :initial-key "m"
+  :description-label "Mime Type"
+  :description-body (cdar octopus--mime-type-context)
+  :files-suffix octopus-mime-type-files-suffix
+  :setup-suffix octopus-setup-mime-type-file-targets)
+
 (octopus-define-context "path"
   :context-key path
   :initial-key "f"
@@ -407,6 +415,10 @@
      :if octopus--major-mode-p
      :setup-children octopus-setup-major-mode-file-targets)
     (:description
+     octopus--mime-type-description
+     :if octopus--mime-type-p
+     :setup-children octopus-setup-mime-type-file-targets)
+    (:description
      octopus--path-description
      :if octopus--path-p
      :setup-children octopus-setup-path-file-targets)
@@ -433,6 +445,7 @@
 (defcustom octopus-context-files-targets
   '(("p" octopus-project-files-suffix)
     ("m" octopus-major-mode-files-suffix)
+    ("m" octopus-mime-type-files-suffix)
     ("f" octopus-path-files-suffix)
     ("l" octopus-language-files-suffix)
     ("t" octopus-org-tags-files-suffix)
