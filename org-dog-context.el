@@ -2,9 +2,13 @@
 
 (require 'org-dog)
 
+;; Silence byte-compiler
 (declare-function with-electric-help "ehelp")
 (declare-function project-root "ext:project")
 (declare-function org-clocking-p "ext:org-clock")
+(declare-function mailcap-file-name-to-mime-type "mailcap")
+
+(defvar nov-file-name)
 
 (defgroup org-dog-context nil
   "Foundation for contextual Org mode."
@@ -56,6 +60,13 @@
     (major-mode
      :key ?m
      :callback org-dog-context-major-mode-1)
+    ;; major-mode and mime-type contexts are mutually exclusive. The latter
+    ;; requires the major mode is inherited from `special-mode', which makes the
+    ;; former nil.
+    (mime-type
+     :key ?m
+     :value-fn org-dog-context-mime-type-value
+     :callback org-dog-context-mime-type-1)
     (language
      :key ?l
      :value-fn org-dog-context-language-value
@@ -225,6 +236,29 @@ as returned by :value-fn function in the settings.")
       (make-org-dog-context-in-directory
        :directory "programming/"
        :filenames (nreverse filenames)))))
+
+(defun org-dog-context-mime-type-value ()
+  (when (derived-mode-p 'special-mode)
+    (when-let* ((file (if (eq major-mode 'nov-mode)
+                          ;; `nov-mode' doesn't set `buffer-file-name', so this
+                          ;; workaround is needed.
+                          nov-file-name
+                        (buffer-file-name (buffer-base-buffer))))
+                (mime-type (mailcap-file-name-to-mime-type file)))
+      mime-type)))
+
+(defun org-dog-context-mime-type-1 (mime-type)
+  (save-match-data
+    (when (string-match (rx bol (group (+ alpha))
+                            "/" (group (+ (any "-." alnum))))
+                        mime-type)
+      (let ((super (match-string 1 mime-type))
+            (sub (match-string 2 mime-type)))
+        (make-org-dog-context-in-directory
+         :directory "media/"
+         :filenames (if (equal super "application")
+                        (list sub)
+                      (list sub super)))))))
 
 (defun org-dog-context-language-value ()
   (save-match-data
