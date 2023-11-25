@@ -78,7 +78,7 @@ the user to the minibuffer."
   "Alist of mappings from a tag to a list of `org-super-agenda' groups."
   :type '(alist :key-type (choice (string :tag "Org tag")
                                   (const t))
-                :value-type '(sexp :tag "Org Super Agenda groups")))
+                :value-type (sexp :tag "Org Super Agenda groups")))
 
 ;;;; Variables
 
