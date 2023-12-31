@@ -504,7 +504,7 @@
   (format "This file: %s"
           (if-let (filename (octopus--base-buffer-file))
               (file-name-nondirectory filename)
-            (pcase org-ql-view-buffers-files
+            (pcase (bound-and-true-p org-ql-view-buffers-files)
               (`(,file)
                (file-name-nondirectory file))
               (_
