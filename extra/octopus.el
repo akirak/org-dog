@@ -545,16 +545,37 @@
 ;;;;; Capture locations
 
 (transient-define-suffix octopus-last-capture-marker-suffix ()
-  :description (lambda ()
-                 (format "Last capture: \"%s\""
-                         (octopus--marker-heading org-capture-last-stored-marker)))
-  :if (lambda ()
-        (and (bound-and-true-p org-capture-last-stored-marker)
-             (buffer-live-p (marker-buffer org-capture-last-stored-marker))
-             (org-match-line org-heading-regexp)))
+  :description #'octopus--last-captured-heading-description
+  :if #'octopus--last-captured-heading-p
   (interactive)
   (octopus--dispatch (octopus-current-command)
                      org-capture-last-stored-marker))
+
+(defun octopus--last-captured-heading-description ()
+  (format "Last capture: \"%s\""
+          (octopus--marker-heading org-capture-last-stored-marker)))
+
+(defun octopus--last-captured-heading-p ()
+  (and (bound-and-true-p org-capture-last-stored-marker)
+       (buffer-live-p (marker-buffer org-capture-last-stored-marker))
+       (org-with-point-at org-capture-last-stored-marker
+         (org-match-line org-heading-regexp))))
+
+(transient-define-suffix octopus-last-captured-file-suffix ()
+  :description #'octopus--last-captured-file-description
+  :if #'octopus--last-captured-heading-p
+  (interactive)
+  (octopus--dispatch (octopus-current-command)
+                     (octopus--last-captured-file)))
+
+(defun octopus--last-captured-file-description ()
+  (format "Last captured file: \"%s\""
+          (file-name-nondirectory (octopus--last-captured-file))))
+
+(defun octopus--last-captured-file ()
+  (thread-last
+    (marker-buffer org-capture-last-stored-marker)
+    (buffer-file-name)))
 
 ;;;;; Avy
 
@@ -662,7 +683,8 @@ function as the argument."
    :class transient-row
    ;; Select the base buffer of an indirect bufer
    ("\\" octopus-this-file-suffix :if buffer-base-buffer)
-   ("/" octopus-read-dog-file-suffix)]
+   ("/" octopus-read-dog-file-suffix)
+   ("$" octopus-last-captured-file-suffix)]
   (interactive)
   (transient-setup 'octopus-find-file))
 
@@ -694,7 +716,8 @@ function as the argument."
    :class transient-row
    ("\\" octopus-in-file-suffix)
    ("/" octopus-read-dog-file-suffix)
-   ("#" octopus-clocked-file-suffix)]
+   ("#" octopus-clocked-file-suffix)
+   ("$" octopus-last-captured-file-suffix)]
   (interactive)
   (transient-setup 'octopus-find-node))
 
