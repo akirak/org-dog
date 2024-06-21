@@ -15,11 +15,21 @@
 (defcustom org-dog-clock-use-ql t
   "Whether to use `org-ql-completing-read' to select a heading.
 
+This option is deprecated. Set `org-dog-clock-completion-backend' to
+@\'org-ql instead.
+
 It is recommended to set this option to t. Otherwise,
 `org-dog-read-heading-default' will be used, but it does not
 support creating a new todo heading."
   :group 'org-dog-clock
   :type 'boolean)
+
+(defcustom org-dog-clock-completion-backend 'org-pivot-search
+  "Completion function used to select a heading to clock into."
+  :group 'org-dog-clock
+  :type '(choice (const :tag "org-ql-completing-read" org-ql)
+                 (const :tag "org-pivot-search" org-pivot-search)
+                 (const :tag "Default (built-in org-dog function)" nil)))
 
 (defcustom org-dog-clock-in-fallback-fn
   #'org-dog-clock-in-fallback-1
@@ -80,46 +90,64 @@ This is an example implementation of
                                   (prompt "Clock in: ")
                                   &allow-other-keys)
   "Clock in to some heading in one of the files."
-  (let ((marker (if (and org-dog-clock-use-ql
-                         (fboundp 'org-ql-completing-read))
-                    (org-ql-completing-read files
-                      :query-prefix (or query-prefix
-                                        org-dog-clock-default-query-prefix)
-                      :query-filter (or query-filter
-                                        org-dog-clock-default-query-filter)
-                      :prompt prompt)
-                  (org-dog-read-heading-default
-                   files prompt))))
-    (if marker
-        (progn
-          (with-current-buffer (marker-buffer marker)
-            (org-with-wide-buffer
-             (goto-char marker)
-             (setq org-dog-clock-last-marker org-clock-marker)
-             (run-hook-with-args 'org-dog-before-clock-in-functions org-clock-marker)
-             (org-clock-in)
-             (run-hooks 'org-dog-clock-in-hook)))
-          (run-hook-with-args 'org-dog-clock-in-success-hook marker))
-      ;; HACK: Retrieve the last input from `minibuffer-history'. It is
-      ;; currently impossible to use org-ql-completing-read to read an input
-      ;; that does not match any of the candidates. See
-      ;; https://github.com/alphapapa/org-ql/issues/299#issuecomment-1230170675
-      (let ((title (car minibuffer-history)))
-        (apply org-dog-clock-in-fallback-fn
-               (cond
-                ((stringp files)
-                 files)
-                ((= 1 (length files))
-                 (car files))
-                (t
-                 (completing-read (format "Files in which you'll create \"%s\": " title)
-                                  (org-dog-file-completion :files files))))
-               title
-               (thread-first
-                 args
-                 (map-delete :prompt)
-                 (map-delete :query-prefix)
-                 (map-delete :query-filter)))))))
+  (pcase (pcase org-dog-clock-completion-backend
+           ((and `org-pivot-search
+                 (guard (fboundp 'org-pivot-search-from-files)))
+            (org-pivot-search-from-files files
+              :noninteractive t
+              :types '(heading)
+              :query-prefix (or query-prefix
+                                org-dog-clock-default-query-prefix)
+              :query-filter (or query-filter
+                                org-dog-clock-default-query-filter)
+              :prompt prompt))
+           ((and (or `org-ql
+                     (guard org-dog-clock-use-ql))
+                 (guard (fboundp 'org-ql-completing-read)))
+            (org-ql-completing-read files
+              :query-prefix (or query-prefix
+                                org-dog-clock-default-query-prefix)
+              :query-filter (or query-filter
+                                org-dog-clock-default-query-filter)
+              :prompt prompt))
+           (_
+            (org-dog-read-heading-default
+             files prompt)))
+    ((or (and marker
+              (pred markerp))
+         (and `(org-headline . ,text)
+              (let marker (get-char-property 0 'org-marker text))
+              (guard (markerp marker))))
+     (progn
+       (with-current-buffer (marker-buffer marker)
+         (org-with-wide-buffer
+          (goto-char marker)
+          (setq org-dog-clock-last-marker org-clock-marker)
+          (run-hook-with-args 'org-dog-before-clock-in-functions org-clock-marker)
+          (org-clock-in)
+          (run-hooks 'org-dog-clock-in-hook)))
+       (run-hook-with-args 'org-dog-clock-in-success-hook marker)))
+    (_
+     ;; HACK: Retrieve the last input from `minibuffer-history'. It is
+     ;; currently impossible to use org-ql-completing-read to read an input
+     ;; that does not match any of the candidates. See
+     ;; https://github.com/alphapapa/org-ql/issues/299#issuecomment-1230170675
+     (let ((title (car minibuffer-history)))
+       (apply org-dog-clock-in-fallback-fn
+              (cond
+               ((stringp files)
+                files)
+               ((= 1 (length files))
+                (car files))
+               (t
+                (completing-read (format "Files in which you'll create \"%s\": " title)
+                                 (org-dog-file-completion :files files))))
+              title
+              (thread-first
+                args
+                (map-delete :prompt)
+                (map-delete :query-prefix)
+                (map-delete :query-filter)))))))
 
 (provide 'org-dog-clock)
 ;;; org-dog-clock.el ends here
