@@ -1067,14 +1067,14 @@ Before you call this function, you have to build cache using
 If FILES is a non-nil list of file names, limit the source files
 to the value."
   (let (alist)
-    (pcase-dolist (`(,file ,_ . ,entries)
+    (pcase-dolist (`(,file ,_ . ,targets-with-info)
                    org-dog-link-target-cache)
       (when (or (not files)
                 (member file files))
-        (dolist (target entries)
+        (pcase-dolist (`(,target . ,info) targets-with-info)
           (if-let (cell (assoc target alist))
-              (setcdr cell (cons file (cdr cell)))
-            (push (cons target (list file))
+              (setcdr cell (cons (cons file info) (cdr cell)))
+            (push (cons target (list (cons file info)))
                   alist)))))
     alist))
 
@@ -1083,15 +1083,19 @@ to the value."
   (dolist (file (org-dog-select 'absolute))
     (let ((mtime (file-attribute-modification-time
                   (file-attributes file)))
-          (cell (assoc file org-dog-link-target-cache)))
+          (cell (assoc file org-dog-link-target-cache))
+          (cache nil))
       (unless (and cell (time-equal-p (cadr cell) mtime))
-        (let (targets)
+        (let (targets-with-info)
           (cl-flet
               ((scan-targets ()
                  (goto-char (point-min))
                  (while (re-search-forward org-target-regexp nil t)
-                   (push (match-string-no-properties 1)
-                         targets))))
+                   (push (cons (match-string-no-properties 1)
+                               (list :occurrence (thing-at-point 'line t)
+                                     :olp (org-get-outline-path t cache)))
+                         targets-with-info)
+                   (setq cache t))))
             (if-let (buffer (org-find-base-buffer-visiting file))
                 (with-current-buffer buffer
                   (org-with-wide-buffer
@@ -1104,8 +1108,8 @@ to the value."
                   (delay-mode-hooks (org-mode)))
                 (scan-targets))))
           (if cell
-              (setcdr cell (cons mtime targets))
-            (push (cons file (cons mtime targets))
+              (setcdr cell (cons mtime targets-with-info))
+            (push (cons file (cons mtime targets-with-info))
                   org-dog-link-target-cache)))))))
 
 (cl-defun org-dog-link-target-occur (target &optional file &key radio)
