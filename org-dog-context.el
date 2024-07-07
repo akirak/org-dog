@@ -355,5 +355,23 @@ given, you will be asked for a directory."
         (find-file (oref (car objs) absolute))
       (user-error "No associated Org file"))))
 
+(defun org-dog-context-files (type &optional deep)
+  "Return a list of Org files associated with the current buffer by context."
+  (pcase (org-dog-context-edge type)
+    (`(,_ . ,ctx)
+     (when ctx
+       (let (files)
+         (dolist (file-obj (org-dog-context-file-objects ctx))
+           (let ((fpath (oref file-obj absolute)))
+             (if deep
+                 (setq files (if deep
+                                 (thread-last
+                                   (org-dog-overview-scan (list fpath) :fast t)
+                                   (mapcar #'car)
+                                   (append files))))
+               (push fpath files))))
+         (cl-remove-duplicates (nreverse files)
+                               :test #'equal))))))
+
 (provide 'org-dog-context)
 ;;; org-dog-context.el ends here
