@@ -1098,6 +1098,10 @@ to the value."
                    (scan-targets)))
               (with-temp-buffer
                 (insert-file-contents file)
+                (let ((org-inhibit-startup t)
+                      ;; Don't load modules.
+                      (org-modules-loaded t))
+                  (delay-mode-hooks (org-mode)))
                 (scan-targets))))
           (if cell
               (setcdr cell (cons mtime targets))
