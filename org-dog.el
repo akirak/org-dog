@@ -1093,7 +1093,7 @@ to the value."
                    (when (looking-back org-link-bracket-re (match-beginning 0))
                      (push (match-string-no-properties 1)
                            targets)))))
-            (if-let (buffer (find-buffer-visiting file))
+            (if-let (buffer (org-find-base-buffer-visiting file))
                 (with-current-buffer buffer
                   (org-with-wide-buffer
                    (scan-targets)))
