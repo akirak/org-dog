@@ -114,7 +114,7 @@ the user to the minibuffer."
           :action ,(lambda (target)
                      (funcall consult-org-dog-view-target-fn
                               target
-                              (cdr (assoc target consult-org-dog--target-alist))))
+                              (cadr (assoc target consult-org-dog--target-alist))))
           :annotate ,#'consult-org-dog--annotate-target
           :items
           ,(lambda ()
@@ -153,7 +153,7 @@ SOURCES default to `consult-org-dog-sources'."
 
 (defun consult-org-dog--annotate-target (target)
   (when-let (cell (assoc target consult-org-dog--target-alist))
-    (concat " " (string-join (cdr cell) ", "))))
+    (concat " " (string-join (mapcar #'car (cdr cell)) ", "))))
 
 (defun consult-org-dog-fallback-default (string)
   "Default implementation of `consult-org-dog-fallback-fn'."
