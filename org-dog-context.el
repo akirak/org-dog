@@ -54,25 +54,30 @@
 (defcustom org-dog-context-alist
   '((project
      :key ?p
+     :help-modes t
      :value-fn project-current
      :test equal
      :callback org-dog-context-project-1)
     (major-mode
      :key ?m
+     :help-modes t
      :callback org-dog-context-major-mode-1)
     ;; major-mode and mime-type contexts are mutually exclusive. The latter
     ;; requires the major mode is inherited from `special-mode', which makes the
     ;; former nil.
     (mime-type
      :key ?m
+     :help-modes t
      :value-fn org-dog-context-mime-type-value
      :callback org-dog-context-mime-type-1)
     (language
      :key ?l
+     :help-modes (text-mode)
      :value-fn org-dog-context-language-value
      :callback org-dog-context-language-1)
     (path
      :key ?f
+     :help-modes t
      :value-fn org-dog-context-path-value
      :callback org-dog-context-path-1)
     (org-tags
@@ -94,7 +99,10 @@
                                        (list (const :test)
                                              function)
                                        (list (const :callback)
-                                             function)))))
+                                             function)
+                                       (list (const :help-modes)
+                                             (choice (const :tag "All modes" t)
+                                                     (repeat (symbol :tag "Major modes"))))))))
 
 (defun org-dog-context-set-alist (key &rest plist)
   "Override properties of an entry in `org-dog-context-alist'.
