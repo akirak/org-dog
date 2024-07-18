@@ -373,5 +373,23 @@ given, you will be asked for a directory."
          (cl-remove-duplicates (nreverse files)
                                :test #'equal))))))
 
+;;;###autoload
+(defun org-dog-context-help-target (keyword)
+  "Find occurrences of the target at point from Org files."
+  (interactive (list (if current-prefix-arg
+                         (read-string "Target: " (thing-at-point 'symbol t))
+                       (thing-at-point 'symbol t))))
+  (let (files)
+    ;; Collect files by all contexts.
+    (pcase-dolist (`(,type . ,(map :help-modes)) org-dog-context-alist)
+      (when (or (eq t help-modes)
+                (derived-mode-p help-modes))
+        (setq files (append files (org-dog-context-files type 'deep)))))
+    (cl-delete-duplicates files :test #'equal)
+    (org-dog--build-link-target-cache)
+    (pcase-dolist (`(,target ,file) (org-dog--link-target-alist files))
+      (let ((case-fold-search t))
+        (when (string-match-p (regexp-quote keyword) target))))))
+
 (provide 'org-dog-context)
 ;;; org-dog-context.el ends here
