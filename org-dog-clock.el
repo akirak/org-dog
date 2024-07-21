@@ -94,7 +94,6 @@ This is an example implementation of
            ((and `org-pivot-search
                  (guard (fboundp 'org-pivot-search-from-files)))
             (org-pivot-search-from-files files
-              :noninteractive t
               :types '(heading)
               :query-prefix (or query-prefix
                                 org-dog-clock-default-query-prefix)
