@@ -1,0 +1,126 @@
+{
+  "buttercup": {
+    "author": "Jorgen Schaefer <contact@jorgenschaefer.de>",
+    "meta": {
+      "description": "Behavior-Driven Emacs Lisp Testing",
+      "homepage": "https://github.com/jorgenschaefer/emacs-buttercup",
+      "maintainers": [
+        "Ola Nilsson <ola.nilsson@gmail.com>"
+      ]
+    },
+    "narHash": "sha256-7K4QtQnrO6uB7laTpwfNrq/foAnIveGEia/RK8Q28+0=",
+    "packageRequires": {
+      "emacs": "24.4"
+    },
+    "version": "1.35"
+  },
+  "compat": {
+    "author": "Philip Kaludercic <philipk@posteo.net>, Daniel Mendler <mail@daniel-mendler.de>",
+    "meta": {
+      "description": "Emacs Lisp Compatibility Library",
+      "homepage": "https://github.com/emacs-compat/compat",
+      "maintainers": [
+        "Compat Development <~pkal/compat-devel@lists.sr.ht>"
+      ]
+    },
+    "narHash": "sha256-IrShpeA17hFAzZsOjGk92OifWucL0XrNPFD5qBiShGc=",
+    "packageRequires": {
+      "emacs": "24.4",
+      "seq": "2.23"
+    },
+    "version": "30.0.0.0"
+  },
+  "consult": {
+    "author": "Daniel Mendler and Consult contributors",
+    "meta": {
+      "description": "Consulting completing-read",
+      "maintainers": [
+        "Daniel Mendler <mail@daniel-mendler.de>"
+      ]
+    },
+    "narHash": "sha256-GHKYz9HygjMrHJqIZcz4tEtDDQwHfqhW2l6AkNcrMks=",
+    "packageRequires": {
+      "compat": "30",
+      "emacs": "27.1"
+    },
+    "version": "1.7"
+  },
+  "dash": {
+    "author": "Magnar Sveen <magnars@gmail.com>",
+    "meta": {
+      "description": "A modern list library for Emacs"
+    },
+    "narHash": "sha256-at42NCcdF9g7a55asnOCSqsvG+XhWuvVsHFT6kU9f9o=",
+    "packageRequires": {
+      "emacs": "24"
+    },
+    "version": "2.19.1"
+  },
+  "doct": {
+    "author": "Nicholas Vollmer <progfolio@protonmail.com>",
+    "meta": {
+      "description": "DOCT: Declarative Org capture templates",
+      "homepage": "https://github.com/progfolio/doct"
+    },
+    "narHash": "sha256-csuDGwrNL7I651rdwa7dtE7DlpXhnmyZvmVpA1U+cmQ=",
+    "packageRequires": {
+      "emacs": "25.1"
+    },
+    "version": "3.2.0"
+  },
+  "embark": {
+    "author": "Omar Antolín Camarena <omar@matem.unam.mx>",
+    "meta": {
+      "description": "Conveniently act on minibuffer completions",
+      "maintainers": [
+        "Omar Antolín Camarena <omar@matem.unam.mx>"
+      ]
+    },
+    "narHash": "sha256-lSr0hvOaZzwHW+2y0it0ByuCbJpiJoWywnqiM2duKSQ=",
+    "packageRequires": {
+      "compat": "30",
+      "emacs": "27.1"
+    },
+    "version": "1.1"
+  },
+  "org-reverse-datetree": {
+    "author": "Akira Komamura <akira.komamura@gmail.com>",
+    "meta": {
+      "description": "Create reverse date trees in org-mode",
+      "homepage": "https://github.com/akirak/org-reverse-datetree"
+    },
+    "narHash": "sha256-OMDS7Dz/xiXxIV53txx7g+jp9eAADJ3U+zBbTsgolSA=",
+    "packageRequires": {
+      "dash": "2.19.1",
+      "emacs": "29.1",
+      "org": "9.6"
+    },
+    "version": "0.4.2.2"
+  },
+  "s": {
+    "author": "Magnar Sveen <magnars@gmail.com>",
+    "meta": {
+      "description": "The long lost Emacs string manipulation library.",
+      "maintainers": [
+        "Jason Milkins <jasonm23@gmail.com>"
+      ]
+    },
+    "narHash": "sha256-fbF/SyPwEiJICaPBq0xWj2yLWjdNwkaLF2iYvZ2EO1k=",
+    "packageRequires": {},
+    "version": "1.13.1"
+  },
+  "ts": {
+    "author": "Adam Porter <adam@alphapapa.net>",
+    "meta": {
+      "description": "Timestamp and date/time library",
+      "homepage": "http://github.com/alphapapa/ts.el"
+    },
+    "narHash": "sha256-2UU1cPaB+hyEtk4rjwoC54BERcAup99aCrTZn0pwkaI=",
+    "packageRequires": {
+      "dash": "2.14.1",
+      "emacs": "26.1",
+      "s": "1.12.0"
+    },
+    "version": "0.3"
+  }
+}

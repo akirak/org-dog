@@ -20,12 +20,6 @@
       repo = "consult";
       type = "github";
     };
-    consult-org-dog = {
-      flake = false;
-      owner = "akirak";
-      repo = "org-dog";
-      type = "github";
-    };
     dash = {
       flake = false;
       owner = "magnars";
@@ -42,30 +36,6 @@
       flake = false;
       owner = "oantolin";
       repo = "embark";
-      type = "github";
-    };
-    octopus = {
-      flake = false;
-      owner = "akirak";
-      repo = "org-dog";
-      type = "github";
-    };
-    org-dog = {
-      flake = false;
-      owner = "akirak";
-      repo = "org-dog";
-      type = "github";
-    };
-    org-dog-embark = {
-      flake = false;
-      owner = "akirak";
-      repo = "org-dog";
-      type = "github";
-    };
-    org-dog-facade = {
-      flake = false;
-      owner = "akirak";
-      repo = "org-dog";
       type = "github";
     };
     org-reverse-datetree = {
