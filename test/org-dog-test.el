@@ -2,6 +2,14 @@
 
 (require 'buttercup)
 (require 'org-dog)
+(require 'org-dog-context)
+
+(defconst org-dog-test-directory
+  (file-name-directory (or load-file-name
+                           (buffer-file-name))))
+
+(defun org-dog-test-file (file)
+  (expand-file-name file org-dog-test-directory))
 
 ;;;; Contexts
 
@@ -59,18 +67,18 @@
 
 (describe "org-dog-search-keyword-line"
   (it "returns the value of a keyword line"
-    (expect (org-dog-with-file-header "data/keywords1.org"
+    (expect (org-dog-with-file-header (org-dog-test-file "data/keywords1.org")
               (org-dog-search-keyword-line "title"))
             :to-equal "Test Title")
-    (expect (org-dog-with-file-header "data/keywords1.org"
+    (expect (org-dog-with-file-header (org-dog-test-file "data/keywords1.org")
               (org-dog-search-keyword-line "subtitle"))
             :to-equal "Test Subtitle"))
   (it "case-insensitivity"
-    (expect (org-dog-with-file-header "data/keywords1.org"
+    (expect (org-dog-with-file-header (org-dog-test-file "data/keywords1.org")
               (org-dog-search-keyword-line "TITLE"))
             :to-equal "Test Title"))
   (it "org-dog-with-file-header ignores text after the first headline"
-    (expect (org-dog-with-file-header "data/keywords1.org"
+    (expect (org-dog-with-file-header (org-dog-test-file "data/keywords1.org")
               (org-dog-search-keyword-line "name"))
             :to-be nil)))
 
