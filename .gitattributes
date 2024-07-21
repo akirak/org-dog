@@ -1,2 +1,3 @@
 # Copied from the template
 justfile linguist-vendored
+.rice-lock/** linguist-generated
