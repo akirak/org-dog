@@ -7,6 +7,7 @@
 (declare-function project-root "ext:project")
 (declare-function org-clocking-p "ext:org-clock")
 (declare-function mailcap-file-name-to-mime-type "mailcap")
+(declare-function org-dog-overview-scan "org-dog-overview")
 
 (defvar nov-file-name)
 
