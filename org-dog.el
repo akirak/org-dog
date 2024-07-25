@@ -42,6 +42,7 @@
 (declare-function thing-at-point-looking-at "thingatpt")
 (declare-function org-show-children "ext:org")
 (declare-function org-refile-get-location "ext:org-refile")
+(declare-function lm-header "lisp-mnt")
 (defvar crm-separator)
 (defvar org-id-extra-files)
 (defvar org-id-track-globally)
