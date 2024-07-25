@@ -1160,5 +1160,61 @@ purposes. If the point is on such a heading, this function should
 return nil."
   t)
 
+;;;; Exporting
+
+(cl-defgeneric org-dog-file-properties (obj)
+  "Return an alist representing the file-specific properties of OBJ.
+
+This method returns extra attributes specific to the Org file depending
+on the class.
+
+For the most basic `org-dog-file' class, this method returns nil, but
+you can define custom properties that should be passed to non-Emacs Org
+applications.
+
+The data will be included in the output of
+`org-dog-export-repository-states' command, so the returned data of
+`org-dog-file-properties' should be serializable with `json-serialize'.")
+
+(cl-defmethod org-dog-file-properties ((_obj org-dog-file))
+  nil)
+
+;;;###autoload
+(defun org-dog-export-repository-states ()
+  "Persist the states of repositories."
+  (interactive)
+  (dolist (root (map-keys org-dog--repository-table))
+    (with-temp-file (expand-file-name "org-dog.json" root)
+      (insert (org-dog--serialize-repository-state root)))))
+
+(defun org-dog--version ()
+  "Return the version of org-dog parsed from the library header."
+  (require 'lisp-mnt)
+  (if-let (file (find-library-name "org-dog"))
+      (with-temp-buffer
+        (insert-file-contents file)
+        (lm-header "Version"))
+    (error "Library org-dog is not found")))
+
+(defun org-dog--serialize-repository-state (root)
+  "Return the JSON serialization of a repository state at ROOT."
+  (if (gethash root org-dog--repository-table)
+      (let ((files (make-hash-table :test #'equal :size (map-length org-dog--file-table))))
+        (dolist (obj (map-values org-dog--file-table))
+          (when (equal root (oref obj root))
+            (puthash (oref obj relative)
+                     (org-dog--file-info-alist obj)
+                     files)))
+        (json-serialize `((schema-version . 1)
+                          (files . ,files)
+                          (meta . ((org-version . ,(org-version))
+                                   (org-dog-version . ,(org-dog--version)))))))
+    (user-error "Repository %s is not registered" root)))
+
+(defun org-dog--file-info-alist (obj)
+  "Return information for exporting as an alist."
+  `((class . ,(symbol-name (eieio-object-class-name obj)))
+    (properties . ,(org-dog-file-properties obj))))
+
 (provide 'org-dog)
 ;;; org-dog.el ends here
