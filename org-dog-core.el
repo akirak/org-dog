@@ -228,9 +228,10 @@ instance if any of the properties has been changed.
     (dolist (dir (oref repo directories))
       (thread-last
         (directory-files dir t "^[a-zA-Z].*\\.org\\(?:\\.gpg\\)?\\'" 'nosort)
-        (cl-remove-if (lambda (name)
-                        (when org-dog-exclude-file-pattern
-                          (string-match-p org-dog-exclude-file-pattern name))))
+        (cl-remove-if (if org-dog-exclude-file-pattern
+                          (lambda (name)
+                            (string-match-p org-dog-exclude-file-pattern name))
+                        #'ignore))
         (mapcar #'abbreviate-file-name)
         (append result)
         (setq result)))
