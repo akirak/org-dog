@@ -193,7 +193,8 @@
     (org-refile nil nil rfloc)
     (message "Moved the subtree to %s" file)
     (org-goto-marker-or-bmk marker)
-    (re-search-forward (format org-complex-heading-regexp-format heading))
+    (re-search-forward (format org-complex-heading-regexp-format
+                               (regexp-quote heading)))
     (org-back-to-heading)
     (when clock-pos
       (save-excursion
