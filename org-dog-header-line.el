@@ -14,7 +14,10 @@
       (:eval (oref org-dog-buffer-file-object relative))))
     " "
     (org-dog-buffer-file-object
-     (:eval (org-dog-header-line-format-olp org-dog-buffer-file-object))
+     (:eval
+      (condition-case-unless-debug _
+          (org-dog-header-line-format-olp org-dog-buffer-file-object)
+        (error "(error)")))
      org-dog-header-line-fallback-olp))
   ""
   :type 'sexp
