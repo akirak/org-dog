@@ -174,7 +174,7 @@
                             end)
                          (- (marker-position org-clock-marker)
                             start)))
-         (heading (org-get-heading t t t t))
+         (heading (org-entry-get nil "ITEM"))
          (olp (org-get-outline-path))
          (diff (- pos start))
          (marker (org-with-base-buffer (or (find-buffer-visiting file)
