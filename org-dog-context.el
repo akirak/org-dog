@@ -296,12 +296,22 @@ as returned by :value-fn function in the settings.")
 
 (defun org-dog-context-path-1 (path)
   (catch 'org-dog-context-path
-    (pcase-dolist (`(,pattern . ,file) org-dog-context-path-patterns)
-      (when (string-match-p pattern path)
-        (throw 'org-dog-context-path
-               (make-org-dog-context-in-directory
-                :directory (file-name-directory file)
-                :filenames (list (file-name-nondirectory file))))))))
+    (pcase-dolist (`(,pattern . ,file-pattern) org-dog-context-path-patterns)
+      (when (string-match pattern path)
+        (let ((file (org-dog-context--fill-match-data file-pattern path (match-data))))
+          (throw 'org-dog-context-path
+                 (make-org-dog-context-in-directory
+                  :directory (file-name-directory file)
+                  :filenames (list (file-name-nondirectory file)))))))))
+
+(defun org-dog-context--fill-match-data (dest path match-data)
+  (while (string-match (rx "\\" (group (+ digit))) dest)
+    (let ((i (string-to-number (match-string 1 dest))))
+      (setq dest (replace-match (substring path
+                                           (elt match-data (* i 2))
+                                           (elt match-data (1+ (* i 2))))
+                                nil nil dest))))
+  dest)
 
 (defun org-dog-context-org-tags-value ()
   (seq-uniq (append (when (and (derived-mode-p 'org-mode)
