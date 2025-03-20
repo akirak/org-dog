@@ -133,8 +133,8 @@
        (pcase-dolist (`(,key ,olp . ,_) sections)
          ;; An error is shown when no olp is found, so suppress the error
          (let ((inhibit-message t))
-           (when-let (marker (ignore-errors
-                               (org-find-olp (if (stringp olp) (list olp) olp) t)))
+           (when-let* ((marker (ignore-errors
+                                 (org-find-olp (if (stringp olp) (list olp) olp) t))))
              (push (list key olp marker) result))))
        (nreverse result)))))
 

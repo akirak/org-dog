@@ -146,8 +146,8 @@
   (string-join (org-dog-file-tags obj) ","))
 
 (defun org-dog-tablist--format-inactive-ts (obj)
-  (if-let (ts (org-dog-with-file-content (oref obj absolute)
-                (org-dog--latest-inactive-ts)))
+  (if-let* ((ts (org-dog-with-file-content (oref obj absolute)
+                  (org-dog--latest-inactive-ts))))
       (ts-format "%F" ts)
     ""))
 

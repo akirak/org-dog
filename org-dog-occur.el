@@ -197,10 +197,10 @@ This function filters non-radio targets from the result of
 (defun org-dog-occur-show (&optional switch)
   "Display the source of the occurrence at point."
   (interactive)
-  (when-let (marker (catch 'marker
-                      (dolist (ov (overlays-at (point)))
-                        (when-let (marker (overlay-get ov 'marker))
-                          (throw 'marker marker)))))
+  (when-let* ((marker (catch 'marker
+                        (dolist (ov (overlays-at (point)))
+                          (when-let* ((marker (overlay-get ov 'marker)))
+                            (throw 'marker marker))))))
     (with-current-buffer (marker-buffer marker)
       (if switch
           (pop-to-buffer (current-buffer))
@@ -217,7 +217,7 @@ This function filters non-radio targets from the result of
       (while (setq pos (next-overlay-change (point)))
         (goto-char pos)
         (dolist (ov (overlays-at (point)))
-          (when-let (marker (overlay-get ov 'marker))
+          (when-let* ((marker (overlay-get ov 'marker)))
             (org-dog-occur-show)
             (throw 'found t)))))))
 
@@ -229,7 +229,7 @@ This function filters non-radio targets from the result of
       (while (setq pos (previous-overlay-change (point)))
         (goto-char pos)
         (dolist (ov (overlays-at (point)))
-          (when-let (marker (overlay-get ov 'marker))
+          (when-let* ((marker (overlay-get ov 'marker)))
             (org-dog-occur-show)
             (throw 'found t)))))))
 

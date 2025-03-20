@@ -108,7 +108,7 @@ using `push', but you should be aware of that."
            (if fast
                (org-dog-overview--header-links-fast file)
              (org-dog-overview--header-links file)))
-        (if-let (cell (assoc dest result))
+        (if-let* ((cell (assoc dest result)))
             (unless (member file (cdr cell))
               (setcdr cell (cons (cons (substring file) marker)
                                  (cdr (copy-sequence cell)))))
@@ -135,7 +135,7 @@ using `push', but you should be aware of that."
 
 This is a faster version, which does not keep a full buffer of
 the file unless it is already open."
-  (if-let (buf (find-buffer-visiting file))
+  (if-let* ((buf (find-buffer-visiting file)))
       (org-dog-overview--header-links file)
     (with-temp-buffer
       (setq-local org-dog-visited-file-name file)
@@ -165,10 +165,10 @@ the file unless it is already open."
                                                           (group (+ anything)))
                                                       href)
                                     (match-string 1 href)))))
-            (if-let (obj (org-dog-find-file-object
-                          `(lambda (obj)
-                             (equal (oref obj relative)
-                                    ,dog-file))))
+            (if-let* ((obj (org-dog-find-file-object
+                            `(lambda (obj)
+                               (equal (oref obj relative)
+                                      ,dog-file)))))
                 (push (cons (substring (oref obj absolute))
                             (copy-marker pos))
                       result)
@@ -301,7 +301,7 @@ as the initial input."
       (orphans
        (progn
          (render-nodes (cl-remove-if-not #'cdr graph))
-         (when-let (orphan-nodes (cl-remove-if #'cdr graph))
+         (when-let* ((orphan-nodes (cl-remove-if #'cdr graph)))
            (insert "subgraph cluster_orphans {\n")
            (render-nodes orphan-nodes)
            (insert "}\n"))))
@@ -341,8 +341,8 @@ as the initial input."
   "Return `org-dog-overview-sidebar-buffer' after initializing it."
   (with-current-buffer (get-buffer-create org-dog-overview-sidebar-buffer)
     (let ((initial-loc (when (> (point) (point-min))
-                         (list (when-let (subtree-end (save-excursion
-                                                        (org-end-of-subtree)))
+                         (list (when-let* ((subtree-end (save-excursion
+                                                          (org-end-of-subtree))))
                                  (when (> subtree-end (point))
                                    (beginning-of-line)
                                    (when (re-search-forward (rx " — " (+ nonl) eol)

@@ -132,7 +132,7 @@
     (set (oref obj variable) value)))
 
 (cl-defmethod transient-infix-read ((obj octopus-completion))
-  (if-let (value (oref obj value))
+  (if-let* ((value (oref obj value)))
       nil
     (let ((table (oref obj table)))
       (completing-read (oref obj prompt)
@@ -171,7 +171,7 @@
   (set (oref obj variable) (oset obj value value)))
 
 (cl-defmethod transient-format-value ((obj octopus-multiple-choice))
-  (if-let (value (oref obj value))
+  (if-let* ((value (oref obj value)))
       (concat
        (propertize "(" 'face 'transient-inactive-value)
        (propertize (format "%s" (nth 1 value))
@@ -406,7 +406,7 @@
   :context-key org-tags
   :initial-key "t"
   :description-label "Org Tags"
-  :description-body (if-let (tags (cdar octopus--org-tags-context))
+  :description-body (if-let* ((tags (cdar octopus--org-tags-context)))
                         (org-no-properties (org-make-tag-string tags))
                       "")
   :files-suffix octopus-org-tags-files-suffix
@@ -517,7 +517,7 @@
 
 (defun octopus--this-file-description ()
   (format "This file: %s"
-          (if-let (filename (octopus--base-buffer-file))
+          (if-let* ((filename (octopus--base-buffer-file)))
               (file-name-nondirectory filename)
             (pcase (bound-and-true-p org-ql-view-buffers-files)
               (`(,file)
@@ -598,10 +598,10 @@
   :description "Avy Org heading"
   :if (lambda () (require 'avy nil t))
   (interactive)
-  (when-let (marker (save-window-excursion
-                      (save-excursion
-                        (and (avy-jump (rx bol (+ "*") space))
-                             (point-marker)))))
+  (when-let* ((marker (save-window-excursion
+                        (save-excursion
+                          (and (avy-jump (rx bol (+ "*") space))
+                               (point-marker))))))
     (octopus--dispatch (octopus-current-command)
                        marker)))
 
@@ -878,9 +878,9 @@ marker to an Org entry or nil."
             (save-excursion
               (org-super-links-insert-link))
             ;; Update the description of the inserted link.
-            (when-let (link (and description
-                                 (thing-at-point org-link-bracket-re)
-                                 (match-string-no-properties 1)))
+            (when-let* ((link (and description
+                                   (thing-at-point org-link-bracket-re)
+                                   (match-string-no-properties 1))))
               (delete-region (match-beginning 0) (match-end 0))
               (insert (org-link-make-string link description))))
         (with-current-buffer (marker-buffer marker)
@@ -888,7 +888,7 @@ marker to an Org entry or nil."
            (goto-char marker)
            (let ((inhibit-message))
              (call-interactively #'org-store-link))))
-        (if-let (link (pop org-stored-links))
+        (if-let* ((link (pop org-stored-links)))
             (insert (org-link-make-string (car link)
                                           (or description
                                               (if octopus-edit-link-description

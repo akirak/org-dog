@@ -183,10 +183,10 @@ or READ-DATE is non-nil, the user will be asked for a date."
                 (message "Blocked entry: %s" (org-get-heading))
               (org-dog-datetree-refile-to-this-file read-date)))
            (org-agenda-bulk-unmark-all))
-       (if-let (marker (or (get-char-property (org-dog-datetree--pos-bol)
-                                              'org-marker)
-                           (get-char-property (org-dog-datetree--pos-bol)
-                                              'org-hd-marker)))
+       (if-let* ((marker (or (get-char-property (org-dog-datetree--pos-bol)
+                                                'org-marker)
+                             (get-char-property (org-dog-datetree--pos-bol)
+                                                'org-hd-marker))))
            (save-current-buffer
              (org-with-point-at marker
                (when (org-dog-datetree--refile-blocked-p)
@@ -226,7 +226,7 @@ or READ-DATE is non-nil, the user will be asked for a date."
                                                        date subtree)
   "Transclude this entry from other date trees sharing tags."
   (interactive (list t :subtree (equal current-prefix-arg '(4))))
-  (if-let (obj (org-dog-buffer-object))
+  (if-let* ((obj (org-dog-buffer-object)))
       (if subtree
           (let ((end (save-excursion
                        (org-end-of-subtree))))
@@ -238,9 +238,9 @@ or READ-DATE is non-nil, the user will be asked for a date."
                                                      :date date))
                 (unless (re-search-forward org-heading-regexp end t)
                   (throw 'no-subtree t)))))
-        (when-let (tags (seq-filter (or org-dog-datetree-tag-predicate
-                                        #'identity)
-                                    (org-get-tags nil local)))
+        (when-let* ((tags (seq-filter (or org-dog-datetree-tag-predicate
+                                          #'identity)
+                                      (org-get-tags nil local))))
           (let* ((this-file (oref obj absolute))
                  (root (oref obj root))
                  (date (or date (org-reverse-datetree-guess-date)))

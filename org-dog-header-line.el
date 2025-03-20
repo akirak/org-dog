@@ -26,8 +26,8 @@
 ;;;; Mode line constructs
 
 (defvar org-dog-header-line-fallback-olp
-  '(:eval (if-let (olp (ignore-errors
-                         (org-get-outline-path t t)))
+  '(:eval (if-let* ((olp (ignore-errors
+                           (org-get-outline-path t t))))
               (org-format-outline-path
                (thread-last
                  olp

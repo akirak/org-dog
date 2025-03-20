@@ -152,7 +152,7 @@ SOURCES default to `consult-org-dog-sources'."
       (funcall consult-org-dog-fallback-fn (car selected)))))
 
 (defun consult-org-dog--annotate-target (target)
-  (when-let (cell (assoc target consult-org-dog--target-alist))
+  (when-let* ((cell (assoc target consult-org-dog--target-alist)))
     (concat " " (string-join (mapcar #'car (cdr cell)) ", "))))
 
 (defun consult-org-dog-fallback-default (string)

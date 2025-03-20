@@ -178,10 +178,10 @@ This variable is set while the function is run, so the user can
 (defun org-dog-buffer-object (&optional buffer)
   "Return the `org-dog-file' object for the current buffer, if any."
   (when org-dog--root-regexp
-    (when-let (filename (thread-last
+    (when-let* ((filename (thread-last
                           (or buffer (current-buffer))
                           (org-base-buffer)
-                          (buffer-file-name)))
+                          (buffer-file-name))))
       (when (string-match-p org-dog--root-regexp filename)
         (org-dog-file-object (abbreviate-file-name filename))))))
 
@@ -244,10 +244,10 @@ For now, this is only used for enabling `org-dog-file-mode-map'."
   "Return a new object for the buffer."
   (unless (derived-mode-p 'org-mode)
     (error "This mode must be turned on in an `org-mode' buffer."))
-  (when-let (obj (thread-last
+  (when-let* ((obj (thread-last
                    (org-base-buffer (current-buffer))
                    (buffer-file-name)
-                   (org-dog-file-object)))
+                   (org-dog-file-object))))
     (when obj
       (let ((message-log-max nil))
         (message "Generated a new object typed %s for %s"
@@ -274,7 +274,7 @@ For now, this is only used for enabling `org-dog-file-mode-map'."
 You can add this function "
   (interactive)
   (let ((inhibit-message t))
-    (when-let (filename (buffer-file-name))
+    (when-let* ((filename (buffer-file-name)))
       ;; Use org-agenda-file-regexp to check if the file is not an archive file.
       (when (string-match-p org-agenda-file-regexp filename)
         (ignore-errors
@@ -383,7 +383,7 @@ This is mostly for optimization."
 (defun org-dog-capture-to-this-file ()
   "Capture an entry to the current buffer."
   (interactive)
-  (when-let (obj (org-dog-buffer-object))
+  (when-let* ((obj (org-dog-buffer-object)))
     (org-dog-capture-to-file obj)))
 
 ;;;###autoload
@@ -467,7 +467,7 @@ For a usage example, see the implementation of
     (org-dog--reorder-completed-files)
     (mapcar (lambda (obj)
               (let ((file (substring (slot-value obj 'absolute))))
-                (when-let (dir (file-name-directory file))
+                (when-let* ((dir (file-name-directory file)))
                   (put-text-property 0 (length dir)
                                      'face 'org-dog-file-directory-face
                                      file))
@@ -492,7 +492,7 @@ For a usage example, see the implementation of
     (mapcar #'cdr)))
 
 (defun org-dog--visited-time (file-obj)
-  (if-let (buffer (org-dog-maybe-file-buffer file-obj))
+  (if-let* ((buffer (org-dog-maybe-file-buffer file-obj)))
       (buffer-local-value 'buffer-display-time buffer)
     (file-attribute-modification-time
      (file-attributes (slot-value file-obj 'absolute)))))
@@ -519,7 +519,7 @@ properly handle it."
   (propertize (oref obj root) 'face 'org-dog-repository-face))
 
 (defun org-dog--file-tags-annotation (obj)
-  (when-let (file-tags (org-dog-file-tags obj))
+  (when-let* ((file-tags (org-dog-file-tags obj)))
     (org-make-tag-string file-tags)))
 
 (defun org-dog--file-time-annotation (obj)
@@ -527,7 +527,7 @@ properly handle it."
 
 (defun org-dog--annotate-file (file)
   "Annotation function for `org-dog-file'."
-  (when-let (obj (gethash file org-dog--file-table))
+  (when-let* ((obj (gethash file org-dog--file-table)))
     (cl-flet
         ((wrap (f) (funcall f obj)))
       (thread-last
@@ -688,7 +688,7 @@ ROOT is the path to a directory."
                                    (member tag ',tags))
                                  file-tags))))
              (with-file-content (&rest progn)
-               `(if-let (buf (find-buffer-visiting (oref obj absolute)))
+               `(if-let* ((buf (find-buffer-visiting (oref obj absolute))))
                     (with-current-buffer buf
                       (org-with-wide-buffer
                        (goto-char (point-min))
@@ -755,8 +755,8 @@ ROOT is the path to a directory."
 
 (defun org-dog-resolve-relative-file (path)
   "Return an absolute path for a relative PATH from a repository."
-  (when-let (obj (org-dog-find-file-object
-                  (org-dog-file-pred-1 `(relative ,path))))
+  (when-let* ((obj (org-dog-find-file-object
+                  (org-dog-file-pred-1 `(relative ,path)))))
     (oref obj absolute)))
 
 (defun org-dog-file-tags (obj)
@@ -813,7 +813,7 @@ ROOT is the path to a directory."
 (defun org-dog-store-file-link ()
   "Store a `org-dog' file link to the current buffer."
   (interactive)
-  (if-let (obj (org-dog-buffer-object))
+  (if-let* ((obj (org-dog-buffer-object)))
       (push (list (org-dog-make-file-link obj)
                   (org-dog-file-title obj))
             org-stored-links)
@@ -1045,7 +1045,7 @@ registered files."
   (let ((alist (org-dog--link-target-alist files)))
     (cl-labels
         ((annotate (candidate)
-           (when-let (cell (assoc candidate alist))
+           (when-let* ((cell (assoc candidate alist)))
              (concat " " (string-join (cdr cell) ", "))))
          (completions (string pred action)
            (if (eq action 'metadata)
@@ -1073,7 +1073,7 @@ to the value."
       (when (or (not files)
                 (member file files))
         (pcase-dolist (`(,target . ,info) targets-with-info)
-          (if-let (cell (assoc target alist))
+          (if-let* ((cell (assoc target alist)))
               (setcdr cell (cons (cons file info) (cdr cell)))
             (push (cons target (list (cons file info)))
                   alist)))))
@@ -1097,7 +1097,7 @@ to the value."
                                      :olp (org-get-outline-path t cache)))
                          targets-with-info)
                    (setq cache t))))
-            (if-let (buffer (org-find-base-buffer-visiting file))
+            (if-let* ((buffer (org-find-base-buffer-visiting file)))
                 (with-current-buffer buffer
                   (org-with-wide-buffer
                    (scan-targets)))
@@ -1148,7 +1148,7 @@ to the value."
 
 (defun org-dog-meaningful-p ()
   "Return non-nil if the point is on a meaningful entry."
-  (when-let (obj (org-dog-buffer-object))
+  (when-let* ((obj (org-dog-buffer-object)))
     (org-dog-meaningful-in-file-p obj)))
 
 (cl-defgeneric org-dog-meaningful-in-file-p (_x)
@@ -1191,7 +1191,7 @@ The data will be included in the output of
 (defun org-dog--version ()
   "Return the version of org-dog parsed from the library header."
   (require 'lisp-mnt)
-  (if-let (file (find-library-name "org-dog"))
+  (if-let* ((file (find-library-name "org-dog")))
       (with-temp-buffer
         (insert-file-contents file)
         (lm-header "Version"))

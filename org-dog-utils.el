@@ -21,7 +21,7 @@
 (defmacro org-dog-with-file-header (file &rest progn)
   "Evaluate a block with the headers of an Org file as buffer."
   (declare (indent 1))
-  `(if-let (buf (find-buffer-visiting ,file))
+  `(if-let* ((buf (find-buffer-visiting ,file)))
        (with-current-buffer buf
          (org-with-wide-buffer
           (goto-char (point-min))
@@ -51,7 +51,7 @@ This is like `org-dog-with-file-header', but call
 `org-set-regexps-and-options' instead of running `org-mode'. This
 is about 25% faster."
   (declare (indent 1))
-  `(if-let (buf (find-buffer-visiting ,file))
+  `(if-let* ((buf (find-buffer-visiting ,file)))
        (with-current-buffer buf
          (org-with-wide-buffer
           (goto-char (point-min))
@@ -76,7 +76,7 @@ is about 25% faster."
 
 Like `org-dog-with-file-header-1', but without narrowing."
   (declare (indent 1))
-  `(if-let (buf (find-buffer-visiting ,file))
+  `(if-let* ((buf (find-buffer-visiting ,file)))
        (with-current-buffer buf
          (org-with-wide-buffer
           (goto-char (point-min))

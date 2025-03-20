@@ -37,7 +37,7 @@
                       `(relative :regexp ,(rx-to-string `(and bol (or ,@dir))))))))
     (cl-flet
         ((make-pred (basename)
-           (when-let (objs (org-dog-select nil `(and ,dir-pred (basename ,basename))))
+           (when-let* ((objs (org-dog-select nil `(and ,dir-pred (basename ,basename)))))
              objs)))
       (seq-some (apply-partially #'make-pred)
                 (org-dog-context-in-directory-filenames context)))))
@@ -112,7 +112,7 @@ This is a configuration helper. It updates the properties of an
 entry at KEY with PLIST, leaving the other existing properties
 unchanged."
   (declare (indent 1))
-  (when-let (cell (assq key org-dog-context-alist))
+  (when-let* ((cell (assq key org-dog-context-alist)))
     (let ((new-plist (cdr cell)))
       (cl-loop for (prop value) on plist by #'cddr
                do (plist-put new-plist prop value))
@@ -147,7 +147,7 @@ as returned by :value-fn function in the settings.")
                        (message "Missing :callback for %s" type)))
          (arg (cond
                (arg arg)
-               ((when-let (cell (assq type org-dog-context-override-alist))
+               ((when-let* ((cell (assq type org-dog-context-override-alist)))
                   (cdr cell)))
                ((plist-get plist :value-fn)
                 (funcall (plist-get plist :value-fn)))
@@ -230,7 +230,7 @@ as returned by :value-fn function in the settings.")
         ;; The mode context is unapplicable
         (when (memq mode '(fundamental-mode special-mode))
           (throw 'mode-context nil))
-        (if-let (lang (cdr (assq mode org-dog-context-major-mode-aliases)))
+        (if-let* ((lang (cdr (assq mode org-dog-context-major-mode-aliases))))
             (push lang filenames)
           (let* ((src-lang (car (rassq (intern (string-remove-suffix "-mode" (symbol-name mode)))
                                        org-src-lang-modes)))
@@ -334,7 +334,7 @@ as returned by :value-fn function in the settings.")
 
 (defun org-dog-context-org-project-roots ()
   "Return project roots associated with the current Org buffer."
-  (if-let (obj (org-dog-buffer-object))
+  (if-let* ((obj (org-dog-buffer-object)))
       (seq-filter (apply-partially #'org-dog-context--project-org-file
                                    (oref obj absolute))
                   (project-known-project-roots))
@@ -345,7 +345,7 @@ as returned by :value-fn function in the settings.")
                (equal (oref obj absolute) ,org-file))
             (let* ((enable-dir-local-variables nil)
                    (default-directory root))
-              (when-let (ctx (cdr (org-dog-context-edge 'project)))
+              (when-let* ((ctx (cdr (org-dog-context-edge 'project))))
                 (org-dog-context-file-objects ctx)))))
 
 ;;;###autoload
@@ -356,7 +356,7 @@ ROOT can be a file directory. If a universal prefix argument is
 given, you will be asked for a directory."
   (interactive (list (if current-prefix-arg
                          (read-directory-name "Project: ")
-                       (if-let (pr (project-current))
+                       (if-let* ((pr (project-current)))
                            (project-root pr)
                          (user-error "Not in a project")))))
   (let* ((enable-dir-local-variables nil)

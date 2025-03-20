@@ -254,13 +254,13 @@ explicitly given. Maybe unnecessary."
                                    (not (string-match-p "/" relative)))
                               (eq pattern t))
                       (throw 'route ent))))))
-    (when-let (instance
-               (apply #'make-instance (or (car route)
-                                          org-dog-default-file-class)
-                      :absolute absolute
-                      :relative relative
-                      :root (oref repo root)
-                      (cdr route)))
+    (when-let* ((instance
+                 (apply #'make-instance (or (car route)
+                                            org-dog-default-file-class)
+                        :absolute absolute
+                        :relative relative
+                        :root (oref repo root)
+                        (cdr route))))
       (puthash absolute instance org-dog--file-table)
       (with-demoted-errors "Error in org-dog-file-registration-hook: %S"
         (run-hook-with-args 'org-dog-file-registration-hook instance))

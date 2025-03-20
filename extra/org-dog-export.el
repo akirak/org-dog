@@ -102,7 +102,7 @@
                                        ;; uuid
                                        (org-element-property :ID element)
                                        ;; link
-                                       (when-let (title (car (org-element-property :title element)))
+                                       (when-let* ((title (car (org-element-property :title element))))
                                          (when (eq 'link (org-element-type title))
                                            (org-element-property :raw-link title))))))))
                   (dolist (tag (org-element-property :tags element))
