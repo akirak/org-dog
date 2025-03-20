@@ -240,6 +240,15 @@
   (octopus--dispatch (octopus-current-command)
                      (buffer-file-name (org-base-buffer (current-buffer)))))
 
+;;;;; Options that are integrated into the octopus-define-context macro
+
+(defvar octopus-narrow-context nil)
+
+(transient-define-infix octopus-infix-narrow-context ()
+  :class 'octopus-boolean-variable
+  :description "Narrow context"
+  :variable 'octopus-narrow-context)
+
 ;;;;; Contexts
 
 (cl-defmacro octopus-define-context (name &key context-key
@@ -334,7 +343,13 @@
                    (files (thread-last
                             (org-dog-overview-scan files :fast t)
                             (mapcar #'car)
-                            (reverse))))
+                            (reverse)))
+                   (files (if octopus-narrow-context
+                              (completing-read-multiple
+                               ,(format "Select files in the %s context: " name)
+                               files
+                               nil t)
+                            files)))
              (octopus--dispatch (octopus-current-command)
                                 files)
            (user-error "No file in the context"))))))
@@ -705,7 +720,9 @@ function as the argument."
 ;;;###autoload (autoload 'octopus-find-node "octopus" nil 'interactive)
 (transient-define-prefix octopus-find-node ()
   ["Options"
-   ("-" octopus-infix-find-node-verb)]
+   :class transient-row
+   ("-" octopus-infix-find-node-verb)
+   ("<" octopus-infix-narrow-context)]
   ["Context"
    :class transient-row
    :setup-children octopus-setup-context-files-targets]
