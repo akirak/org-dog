@@ -10,6 +10,11 @@ on:
     paths-ignore:
       - 'README.*'
   workflow_dispatch:
+
+concurrency:
+  group: '${{ github.workflow }}-${{ github.ref }}'
+  cancel-in-progress: true
+
 jobs:
   byte-compile:
     uses: emacs-twist/elisp-workflows/.github/workflows/compile-and-test.yml@master
