@@ -35,7 +35,9 @@
 (require 'eieio)
 (require 'transient)
 (require 'org-clock)
-(require 'org-dog)
+;; Needed at compile time for `org-dog-capture-refile-with' macro.
+(eval-and-compile
+  (require 'org-dog))
 (require 'org-dog-context)
 (require 'org-dog-overview)
 (require 'project)
@@ -53,6 +55,13 @@
 (declare-function org-agenda-get-any-marker "org-agenda")
 (declare-function org-ql-search "ext:org-ql-search")
 (declare-function thing-at-point-looking-at "thingatpt")
+(declare-function org-dog-datetree-refile-to-this-file "org-dog-datetree")
+(declare-function org-capture-refile "ext:org-capture")
+(declare-function org-capture-put "ext:org-capture")
+(declare-function org-capture-finalize "ext:org-capture")
+(defvar org-capture-is-refiling)
+(defvar org-dog-file-refile-targets)
+(defvar org-capture-mode)
 (defvar org-ql-view-buffers-files)
 (defvar org-capture-last-stored-marker)
 (defvar avy-goto-line)
@@ -764,11 +773,21 @@ marker to an Org entry or nil."
   (when (derived-mode-p 'org-agenda-mode)
     (org-agenda-get-any-marker)))
 
+(defvar octopus-capture-is-refiling nil
+  "Non-nil if the current command is `octopus-capture-refile'.")
+
 (defun octopus--refiled-entry ()
   "Return a marker to an Org entry to be refiled."
-  (if (derived-mode-p 'org-mode)
-      (point-marker)
-    (run-hook-with-args-until-success 'octopus-refiled-entry-functions)))
+  (cond
+   ((and org-capture-mode
+         octopus-capture-is-refiling)
+    (let ((marker (make-marker)))
+      (set-marker marker (point-min))
+      marker))
+   ((derived-mode-p 'org-mode)
+    (point-marker))
+   (t
+    (run-hook-with-args-until-success 'octopus-refiled-entry-functions))))
 
 ;;;###autoload (autoload 'octopus-refile "octopus" nil 'interactive)
 (transient-define-prefix octopus-refile ()
@@ -776,7 +795,7 @@ marker to an Org entry or nil."
    ("-d" octopus-infix-refile-to-datetree)]
   ["Other targets"
    :class transient-row
-   ("D" "Date tree in this file" org-dog-datetree-refile-to-this-file)
+   ("D" "Date tree in this file" octopus-refile-to-this-file-datetree)
    ("'" "Avy" octopus-refile-to-avy-as-child
     :if (lambda () (fboundp 'avy-org-refile-as-child)))
    ("/" octopus-read-dog-file-suffix)
@@ -787,20 +806,46 @@ marker to an Org entry or nil."
     (user-error "Support `octopus-refiled-entry-functions'"))
   ;; Load avy-org-refile-as-child
   (require 'avy nil t)
+  (setq octopus-capture-is-refiling (eq this-command 'octopus-capture-refile))
   (transient-setup 'octopus-refile))
 
 (cl-defmethod octopus--dispatch ((_cmd (eql 'octopus-refile))
                                  target)
   (org-with-point-at (octopus--refiled-entry)
-    (if (markerp target)
-        (org-dog-refile-to-marker target)
-      (if octopus-refile-to-datetree
-          (progn
-            (require 'org-dog-datetree)
-            (org-dog-datetree-refile target))
-        (org-dog-refile-1 (cl-etypecase target
-                            (org-dog-file (oref target absolute))
-                            (string target)))))))
+    (cond
+     ((markerp target)
+      (org-dog-refile-to-marker target
+        :capture-is-refiling octopus-capture-is-refiling))
+     (octopus-refile-to-datetree
+      (progn
+        (require 'org-dog-datetree)
+        (if octopus-capture-is-refiling
+            (org-dog-capture-refile-with
+             (org-dog-datetree-refile target))
+          (org-dog-datetree-refile target))))
+     (octopus-capture-is-refiling
+      (org-capture-put :refile-targets (list (cons (buffer-file-name
+                                                    (org-base-buffer (current-buffer)))
+                                                   org-dog-file-refile-targets)))
+      (org-capture-refile))
+     (t
+      (org-dog-refile-1 (cl-etypecase target
+                          (org-dog-file (oref target absolute))
+                          (string target)))))))
+
+(defun octopus-refile-to-this-file-datetree ()
+  (interactive)
+  (if octopus-capture-is-refiling
+      (org-with-point-at (octopus--refiled-entry)
+        (org-dog-capture-refile-with
+         (org-dog-datetree-refile-to-this-file)))
+    (org-dog-datetree-refile-to-this-file)))
+
+(defalias 'octopus-capture-refile #'octopus-refile
+  "Dispatch a transient for refiling the currently captured entry.
+
+Use this command as a drop-in replacement for `org-capture-refile'. A
+recommended way to integrate it is to remap the original command.")
 
 (defun octopus-refile-to-avy-as-child ()
   (interactive)
