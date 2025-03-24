@@ -120,6 +120,12 @@ It should contain \"%s\" which is replaced with the file name of the buffer."
   :group 'org-dog
   :type 'string)
 
+(defcustom org-dog-file-refile-target
+  '(:maxlevel . 99)
+  "Per-file `org-refile-targets' entry for refiling to the same file."
+  :group 'org-dog
+  :type 'plist)
+
 ;;;; Faces
 
 (defface org-dog-file-directory-face
@@ -364,7 +370,7 @@ This is mostly for optimization."
 (defun org-dog-refile-1 (file)
   "Refile the current entry to FILE."
   (cl-check-type file string)
-  (let ((org-refile-targets (list (cons file '(:maxlevel . 99))))
+  (let ((org-refile-targets (list (cons file org-dog-file-refile-target)))
         (org-refile-target-verify-function nil))
     (org-refile)))
 
