@@ -43,6 +43,9 @@
 (declare-function org-show-children "ext:org")
 (declare-function org-refile-get-location "ext:org-refile")
 (declare-function lm-header "lisp-mnt")
+(declare-function org-capture-finalize "ext:org-capture")
+(declare-function org-capture-put "ext:org-capture")
+(defvar org-capture-is-refiling)
 (defvar crm-separator)
 (defvar org-id-extra-files)
 (defvar org-id-track-globally)
@@ -374,17 +377,32 @@ This is mostly for optimization."
         (org-refile-target-verify-function nil))
     (org-refile)))
 
-(defun org-dog-refile-to-marker (target)
+(defmacro org-dog-capture-refile-with (&rest body)
+  ;; Based on the version 9.7.11 of Org.
+  `(let ((pos (make-marker))
+         (org-capture-is-refiling t))
+     (set-marker pos (point) (org-base-buffer (current-buffer)))
+     ;; TODO: Replicate kill-buffer and jump-to-captured options.
+     (org-capture-put :kill-buffer nil :jump-to-captured nil)
+     (org-capture-finalize)
+     (org-with-point-at pos
+       ,@body)))
+
+(cl-defun org-dog-refile-to-marker (target &key capture-is-refiling)
   "Refile the current entry to the TARGET at a marker."
+  (declare (indent 1))
   (cl-check-type target marker)
-  (org-refile nil nil
-              (with-current-buffer (marker-buffer target)
-                (org-with-wide-buffer
-                 (goto-char target)
-                 (list (org-get-heading t t t t)
-                       (buffer-file-name (org-base-buffer (marker-buffer target)))
-                       nil
-                       (marker-position target))))))
+  (if capture-is-refiling
+      (org-dog-capture-refile-with
+       (org-dog-refile-to-marker target))
+    (org-refile nil nil
+                (with-current-buffer (marker-buffer target)
+                  (org-with-wide-buffer
+                   (goto-char target)
+                   (list (org-get-heading t t t t)
+                         (buffer-file-name (org-base-buffer (marker-buffer target)))
+                         nil
+                         (marker-position target)))))))
 
 ;;;###autoload
 (defun org-dog-capture-to-file (file)
