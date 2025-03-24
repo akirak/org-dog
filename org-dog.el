@@ -1,6 +1,6 @@
 ;;; org-dog.el --- A programmable workflow layer for Org mode -*- lexical-binding: t -*-
 
-;; Copyright (C) 2022-2024 Akira Komamura
+;; Copyright (C) 2022-2025 Akira Komamura
 
 ;; Author: Akira Komamura <akira.komamura@gmail.com>
 ;; Version: 0.1
