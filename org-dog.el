@@ -368,6 +368,18 @@ This is mostly for optimization."
         (org-refile-target-verify-function nil))
     (org-refile)))
 
+(defun org-dog-refile-to-marker (target)
+  "Refile the current entry to the TARGET at a marker."
+  (cl-check-type target marker)
+  (org-refile nil nil
+              (with-current-buffer (marker-buffer target)
+                (org-with-wide-buffer
+                 (goto-char target)
+                 (list (org-get-heading t t t t)
+                       (buffer-file-name (org-base-buffer (marker-buffer target)))
+                       nil
+                       (marker-position target))))))
+
 ;;;###autoload
 (defun org-dog-capture-to-file (file)
   "Capture an entry to FILE."

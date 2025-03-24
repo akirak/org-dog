@@ -793,14 +793,7 @@ marker to an Org entry or nil."
                                  target)
   (org-with-point-at (octopus--refiled-entry)
     (if (markerp target)
-        (org-refile nil nil
-                    (with-current-buffer (marker-buffer target)
-                      (org-with-wide-buffer
-                       (goto-char target)
-                       (list (org-get-heading t t t t)
-                             (buffer-file-name (org-base-buffer (marker-buffer target)))
-                             nil
-                             (marker-position target)))))
+        (org-dog-refile-to-marker target)
       (if octopus-refile-to-datetree
           (progn
             (require 'org-dog-datetree)
