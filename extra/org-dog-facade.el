@@ -63,6 +63,7 @@
   "Key used to select the datetree of a facade file."
   :type 'character)
 
+;;;###autoload
 (defclass org-dog-facade-datetree-file (org-dog-datetree-file)
   ((sections :initarg :sections
              :initform 'org-dog-facade-default-sections)))

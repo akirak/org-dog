@@ -111,6 +111,7 @@ will not be propagated to a file with the tag."
       (defalias 'org-dog-datetree--pos-bol #'pos-bol)
     (defalias 'org-dog-datetree--pos-bol #'line-beginning-position)))
 
+;;;###autoload
 (defclass org-dog-datetree-file (org-dog-file)
   ((journal-capture-templates
     :initform 'org-dog-datetree-default-templates

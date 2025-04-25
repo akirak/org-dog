@@ -74,6 +74,7 @@ The functions in this hook take no argument."
    (routes :initarg :routes)
    (directories :initarg :directories)))
 
+;;;###autoload
 (defclass org-dog-file ()
   ((absolute :initarg :absolute)
    (relative :initarg :relative)
