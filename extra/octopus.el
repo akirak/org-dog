@@ -60,7 +60,7 @@
 (declare-function org-capture-put "ext:org-capture")
 (declare-function org-capture-finalize "ext:org-capture")
 (defvar org-capture-is-refiling)
-(defvar org-dog-file-refile-targets)
+(defvar org-dog-file-refile-target)
 (defvar org-capture-mode)
 (defvar org-ql-view-buffers-files)
 (defvar org-capture-last-stored-marker)
@@ -826,7 +826,7 @@ marker to an Org entry or nil."
      (octopus-capture-is-refiling
       (org-capture-put :refile-targets (list (cons (buffer-file-name
                                                     (org-base-buffer (current-buffer)))
-                                                   org-dog-file-refile-targets)))
+                                                   org-dog-file-refile-target)))
       (org-capture-refile))
      (t
       (org-dog-refile-1 (cl-etypecase target
