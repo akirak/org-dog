@@ -218,7 +218,7 @@
 
 ;;;;; Static files
 
-(defun octopus-setup-static-targets (_children)
+(defun octopus-generate-static-targets ()
   "Return a list of static file children as suffixes."
   (mapcar (pcase-lambda (`(,key ,filename))
             (let ((symbol (intern (format "octopus--static-file-%s" key))))
@@ -227,11 +227,9 @@
                        (interactive)
                        (octopus--run-file-suffix ,filename)))
               (put symbol 'interactive-only t)
-              `(,transient--default-child-level
-                transient-suffix
-                ,(list :key key
-                       :description (file-name-nondirectory filename)
-                       :command symbol))))
+              (list key
+                    (file-name-nondirectory filename)
+                    symbol)))
           octopus-static-file-list))
 
 (defun octopus--run-file-suffix (filename)
@@ -281,7 +279,7 @@
        (defun ,description-sym ()
          (format "%s: %s" ,description-label ,description-body))
 
-       (defun ,setup-suffix (_children)
+       (defun ,setup-suffix ()
          (cl-assert (cdr ,var-sym) nil
                     "%s returns a non-nil value (%s), but %s is nil"
                     ',predicate-sym (,predicate-sym) ',var-sym)
@@ -313,13 +311,11 @@
                                 (interactive)
                                 (octopus--run-file-suffix ,file)))
                        (put symbol 'interactive-only t)
-                       (push `(,transient--default-child-level
-                               transient-suffix
-                               ,(list :key key
-                                      :description (octopus--short-filename
-                                                    (oref (org-dog-file-object file)
-                                                          relative))
-                                      :command symbol))
+                       (push (list key
+                                   (octopus--short-filename
+                                    (oref (org-dog-file-object file)
+                                          relative))
+                                   symbol)
                              result)
                        (cl-incf i)
                        nil)))
@@ -333,11 +329,7 @@
                          (completing-read "Select a file: "
                                           (org-dog-file-completion :files ',files)))))
                (put symbol 'interactive-only t)
-               (push `(,transient--default-child-level
-                       transient-suffix
-                       ,(list :key key
-                              :description "more"
-                              :command symbol))
+               (push (list key "more" symbol)
                      result)))
            (nreverse result)))
 
@@ -461,10 +453,18 @@
   "List of context file subgroups displayed in transient."
   :type '(repeat plist))
 
-(defun octopus-setup-context-file-subgroups (_children)
-  (mapcar (lambda (spec)
-            (vector 1 'transient-column spec))
-          octopus-context-file-subgroups))
+(defun octopus-setup-context-file-subgroups ()
+  (thread-last
+    octopus-context-file-subgroups
+    (mapcar (lambda (subgroup)
+              (pcase subgroup
+                ((map :description :if :setup-children)
+                 (when (or (not if) (funcall if))
+                   (apply #'vector
+                          (funcall description)
+                          (funcall setup-children)))))))
+    (delq nil)
+    (apply #'vector)))
 
 (defcustom octopus-context-files-targets
   '(("p" octopus-project-files-suffix)
@@ -478,12 +478,9 @@
   :type '(repeat (list (string :tag "Key")
                        (symbol :tag "Transient suffix"))))
 
-(defun octopus-setup-context-files-targets (_children)
+(defun octopus-generate-context-files-targets ()
   (mapcar (pcase-lambda (`(,key ,suffix))
-            `(,transient--default-child-level
-              transient-suffix
-              ,(list :key key
-                     :command suffix)))
+            (list key suffix))
           octopus-context-files-targets))
 
 ;;;;; Refile
@@ -699,10 +696,14 @@ function as the argument."
    ("-h" octopus-infix-goto-file-header)]
   ["Context"
    :class transient-columns
-   :setup-children octopus-setup-context-file-subgroups]
+   :setup-children
+   (lambda (_)
+     (transient-parse-suffixes 'octopus-find-file (octopus-setup-context-file-subgroups)))]
   ["Static targets"
    :class transient-row
-   :setup-children octopus-setup-static-targets]
+   :setup-children
+   (lambda (_)
+     (transient-parse-suffixes 'octopus-find-file (octopus-generate-static-targets)))]
   ["Other targets"
    :class transient-row
    ;; Select the base buffer of an indirect bufer
@@ -734,10 +735,14 @@ function as the argument."
    ("<" octopus-infix-narrow-context)]
   ["Context"
    :class transient-row
-   :setup-children octopus-setup-context-files-targets]
+   :setup-children
+   (lambda (_)
+     (transient-parse-suffixes 'octopus-find-node (octopus-generate-context-files-targets)))]
   ["Static targets"
    :class transient-row
-   :setup-children octopus-setup-static-targets]
+   :setup-children
+   (lambda (_)
+     (transient-parse-suffixes 'octopus-find-file (octopus-generate-static-targets)))]
   ["Other targets"
    :class transient-row
    ("\\" octopus-in-file-suffix)
@@ -863,10 +868,14 @@ recommended way to integrate it is to remap the original command.")
    ("-d" octopus-infix-edit-link-description)]
   ["Context"
    :class transient-row
-   :setup-children octopus-setup-context-files-targets]
+   :setup-children
+   (lambda (_)
+     (transient-parse-suffixes 'octopus-find-node (octopus-generate-context-files-targets)))]
   ["Static targets"
    :class transient-row
-   :setup-children octopus-setup-static-targets]
+   :setup-children
+   (lambda (_)
+     (transient-parse-suffixes 'octopus-find-file (octopus-generate-static-targets)))]
   ["Other targets"
    :class transient-row
    ("'" octopus-avy-org-heading-suffix)
@@ -944,10 +953,14 @@ recommended way to integrate it is to remap the original command.")
   "Clock in to an existing heading or create a new heading."
   ["Context"
    :class transient-columns
-   :setup-children octopus-setup-context-file-subgroups]
+   :setup-children
+   (lambda (_children)
+     (transient-parse-suffixes 'octopus-clock-in octopus-context-file-subgroups))]
   ["Static targets"
    :class transient-row
-   :setup-children octopus-setup-static-targets]
+   :setup-children
+   (lambda (_)
+     (transient-parse-suffixes 'octopus-find-file (octopus-generate-static-targets)))]
   ["Other targets"
    :class transient-row
    ;; Select the base buffer of an indirect bufer
