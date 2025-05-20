@@ -453,7 +453,8 @@
   "List of context file subgroups displayed in transient."
   :type '(repeat plist))
 
-(defun octopus-setup-context-file-subgroups ()
+(defun octopus-generate-context-file-subgroups ()
+  "Generate subgroups for contextual files."
   (thread-last
     octopus-context-file-subgroups
     (mapcar (lambda (subgroup)
@@ -698,7 +699,7 @@ function as the argument."
    :class transient-columns
    :setup-children
    (lambda (_)
-     (transient-parse-suffixes 'octopus-find-file (octopus-setup-context-file-subgroups)))]
+     (transient-parse-suffixes 'octopus-find-file (octopus-generate-context-file-subgroups)))]
   ["Static targets"
    :class transient-row
    :setup-children
