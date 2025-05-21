@@ -956,7 +956,8 @@ recommended way to integrate it is to remap the original command.")
    :class transient-columns
    :setup-children
    (lambda (_children)
-     (transient-parse-suffixes 'octopus-clock-in octopus-context-file-subgroups))]
+     (transient-parse-suffixes 'octopus-clock-in
+                               (octopus-generate-context-file-subgroups)))]
   ["Static targets"
    :class transient-row
    :setup-children
