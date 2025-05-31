@@ -504,11 +504,12 @@
 ;;;;; Current file
 
 (transient-define-suffix octopus-this-file-suffix ()
-  :description #'octopus--this-file-description
+  "Dispatch the command on the current file."
   :if (lambda ()
         (or (and (derived-mode-p 'org-mode)
                  (octopus--base-buffer-file))
             (bound-and-true-p org-ql-view-buffers-files)))
+  :description #'octopus--this-file-description
   (interactive)
   (octopus--dispatch (octopus-current-command)
                      (or (octopus--base-buffer-file)
