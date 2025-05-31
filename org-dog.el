@@ -1197,6 +1197,31 @@ purposes. If the point is on such a heading, this function should
 return nil."
   t)
 
+;;;; Support for Project.el
+
+;;;###autoload
+(defun org-dog-find-project (dir)
+  "Return a project if inside an org-dog repository.
+
+To configure `project.el' to recognize org-dog repositories for eglot,
+for example, add this function to `project-find-functions':
+
+    (add-hook \='project-find-functions #\='org-dog-find-project)
+
+This function supports `project-external-roots', and it returns all
+the other repositories configured in `org-dog-repository-alist'."
+  (save-match-data
+    (when (string-match org-dog--root-regexp dir)
+      `(org-dog ,(abbreviate-file-name (match-string 0 dir))))))
+
+(cl-defmethod project-root ((project (head org-dog)))
+  (cadr project))
+
+(cl-defmethod project-external-roots ((project (head org-dog)))
+  (cl-remove (cadr project)
+             (mapcar #'car org-dog-repository-alist)
+             :test #'string=))
+
 ;;;; Exporting
 
 (cl-defgeneric org-dog-file-properties (obj)
