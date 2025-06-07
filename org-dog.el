@@ -324,6 +324,9 @@ This is mostly for optimization."
 (defun org-dog-find-file (file &optional find-file-fn)
   "Open an Org FILE."
   (interactive (list (org-dog-complete-file)))
+  (cl-assert (string-match-p org-agenda-file-regexp file) nil
+             "FILE must match `org-agenda-file-regexp' (typically *.org): %s"
+             file)
   (funcall (or find-file-fn #'find-file)
            (if (and (file-name-absolute-p file)
                     (or (file-exists-p file)
