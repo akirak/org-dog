@@ -19,11 +19,11 @@
     "compat": {
       "flake": false,
       "locked": {
-        "lastModified": 1749681785,
-        "narHash": "sha256-f0bcCb3N928Fo4EcokrimyIxlq6OUdhLMXvl32S2a2g=",
+        "lastModified": 1750343338,
+        "narHash": "sha256-pLb+dt/PPvKZi4sRN9/EPrKvEC1felBk9jJoXKq4fxI=",
         "owner": "emacs-compat",
         "repo": "compat",
-        "rev": "2577cc74d996620766adf1c9ec8f44ecbac32e79",
+        "rev": "cccd41f549fa88031a32deb26253b462021d7e12",
         "type": "github"
       },
       "original": {
@@ -35,11 +35,11 @@
     "consult": {
       "flake": false,
       "locked": {
-        "lastModified": 1749485780,
-        "narHash": "sha256-Cp1IiBFyyoBLUAhS7beJH5mZ1NWA23kAHinhA1QMFl8=",
+        "lastModified": 1750159531,
+        "narHash": "sha256-+DXH5CV6zFZ3Den+JzWd9qv2R8qsIcI9Wo4yHBKJgIQ=",
         "owner": "minad",
         "repo": "consult",
-        "rev": "7146596b564fb0a52b5bff420f27454911f603c8",
+        "rev": "b1b7abf5811b568d93d2f131804d890a9e2c3334",
         "type": "github"
       },
       "original": {
@@ -83,11 +83,11 @@
     "embark": {
       "flake": false,
       "locked": {
-        "lastModified": 1748634522,
-        "narHash": "sha256-ad5UcpsJnPg5IkHG808aMMo15hTLLdO+0+lH9IjdwpE=",
+        "lastModified": 1750572100,
+        "narHash": "sha256-TnQFdo2ECjFvmkRm9QrxHaLeYxEPkcBkEiQg3yQnAh8=",
         "owner": "oantolin",
         "repo": "embark",
-        "rev": "2941f2ea36d61c1a84c3f79ebe47d604c9a92b5d",
+        "rev": "e1bec660d10974b80a74b9e3dbf95899dccdaeac",
         "type": "github"
       },
       "original": {
