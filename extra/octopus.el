@@ -540,7 +540,8 @@
 ;;;;; Clock
 
 (defun octopus-clocked-entry-description ()
-  (format "Clock: \"%s\"" (octopus--marker-heading org-clock-hd-marker)))
+  (format "Clock: \"%s\"" (octopus--marker-heading (or org-clock-hd-marker
+                                                       org-clock-marker))))
 
 (transient-define-suffix octopus-clock-marker-suffix ()
   :description 'octopus-clocked-entry-description
