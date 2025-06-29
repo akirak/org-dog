@@ -540,8 +540,11 @@
 ;;;;; Clock
 
 (defun octopus-clocked-entry-description ()
-  (format "Clock: \"%s\"" (octopus--marker-heading (or org-clock-hd-marker
-                                                       org-clock-marker))))
+  (format "Clock: \"%s\""
+          (when-let* ((marker (or org-clock-hd-marker
+                                  org-clock-marker))
+                      (heading (octopus--marker-heading marker)))
+            heading)))
 
 (transient-define-suffix octopus-clock-marker-suffix ()
   :description 'octopus-clocked-entry-description
@@ -552,11 +555,13 @@
 
 (defun octopus-clocked-file-description ()
   (format "Clocked file: \"%s\""
-          (thread-last
-            (marker-buffer org-clock-marker)
-            (org-base-buffer)
-            (buffer-file-name)
-            (file-name-nondirectory))))
+          (when-let* ((marker (or org-clock-hd-marker
+                                  org-clock-marker)))
+            (thread-last
+              (marker-buffer marker)
+              (org-base-buffer)
+              (buffer-file-name)
+              (file-name-nondirectory)))))
 
 (transient-define-suffix octopus-clocked-file-suffix ()
   :description 'octopus-clocked-file-description
@@ -983,7 +988,8 @@ recommended way to integrate it is to remap the original command.")
   (save-current-buffer
     (org-with-point-at marker
       (if (org-match-line org-complex-heading-regexp)
-          (org-link-display-format (match-string-no-properties 4))
+          (when-let* ((headline (match-string-no-properties 4)))
+            (org-link-display-format headline))
         (error "Not on a heading")))))
 
 (defvar octopus--path-separator nil)
