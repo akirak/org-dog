@@ -83,11 +83,11 @@
     "embark": {
       "flake": false,
       "locked": {
-        "lastModified": 1751597156,
-        "narHash": "sha256-RqU3VZt/9IMm63k3uo8sNho5ZAwNjajJMEeoxr3UsKU=",
+        "lastModified": 1751917650,
+        "narHash": "sha256-ZSP+0lvXHUr79nqx+Fx5cEDNNk6NDXoM+o4HyzODD8c=",
         "owner": "oantolin",
         "repo": "embark",
-        "rev": "c7407905798be9f6403d28bafaa0a4f56c7a2c09",
+        "rev": "89c7610fa7988b6c93029f87afa4ba6b7768bf81",
         "type": "github"
       },
       "original": {
