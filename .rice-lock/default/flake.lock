@@ -3,11 +3,11 @@
     "buttercup": {
       "flake": false,
       "locked": {
-        "lastModified": 1739747704,
-        "narHash": "sha256-fhLbW7nwA1Yy4a9J7MvsCXBuQNOYd6IzVdl65CsNfD4=",
+        "lastModified": 1753649244,
+        "narHash": "sha256-2LoLoPF+nC+vfGXDh0SgHMLV1q0CJM5/FeTPESfNYRU=",
         "owner": "jorgenschaefer",
         "repo": "emacs-buttercup",
-        "rev": "c467c659b2c5b7029e20909331e072d7301af1d5",
+        "rev": "d9b22e69550cbffd3d19c56ba661583ccbef8219",
         "type": "github"
       },
       "original": {
