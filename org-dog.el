@@ -1036,6 +1036,38 @@ nil."
                   org-dog--indirect-buffers)
       (mapcar #'cdr))))
 
+;;;###autoload
+(defun org-dog-next-sibling-buffer (n)
+  "Switch to the indirect buffer of the N-th next sibling."
+  (interactive "p" org-mode)
+  (let* ((start (point-min))
+         (target (with-current-buffer (or (buffer-base-buffer)
+                                          (user-error "Not in an indirect buffer"))
+                   (save-excursion
+                     (goto-char start)
+                     (cond
+                      ((> n 0)
+                       (while (> n 0)
+                         (if (org-get-next-sibling)
+                             (cl-decf n)
+                           (user-error "No next sibling")))
+                       (point-marker))
+                      ((< n 0)
+                       (while (< n 0)
+                         (if (org-get-previous-sibling)
+                             (cl-incf n)
+                           (user-error "No next sibling")))
+                       (point-marker))
+                      ((= n 0)
+                       (user-error "Must be non-zero")))))))
+    (switch-to-buffer (org-dog-indirect-buffer target))))
+
+;;;###autoload
+(defun org-dog-previous-sibling-buffer (n)
+  "Switch to the indirect buffer of the N-th previous sibling."
+  (interactive "p" org-mode)
+  (org-dog-next-sibling-buffer (- n)))
+
 ;;;; Tags
 
 (defun org-dog-set-file-tags (file &optional tags)
