@@ -35,11 +35,11 @@
     "consult": {
       "flake": false,
       "locked": {
-        "lastModified": 1755797955,
-        "narHash": "sha256-Ff2x0k28ihHfsYukbMUlCBZflNkBtEbGipx9R3HEw8Y=",
+        "lastModified": 1757762106,
+        "narHash": "sha256-HGy6qBeIAqrEIVJaKG0Pcf9pmCkBqK0UPsxw1PZCak4=",
         "owner": "minad",
         "repo": "consult",
-        "rev": "c8bbb3f1e2fbbdcca773498e2db168c0929c3434",
+        "rev": "b1c0443c033ec619f8dafb377d7bd992f081b293",
         "type": "github"
       },
       "original": {
@@ -83,11 +83,11 @@
     "embark": {
       "flake": false,
       "locked": {
-        "lastModified": 1754425897,
-        "narHash": "sha256-pp3LpuCWBhZSjXRYbJ7wsOusFGacKsEBuXbnnjaMkZk=",
+        "lastModified": 1756129933,
+        "narHash": "sha256-bIueN2Z72uAtPdDTHtg3H+ZPX3to3fxLEsTiO25hKOo=",
         "owner": "oantolin",
         "repo": "embark",
-        "rev": "4f3ac585cd87affc1d208ea6f0fbb9798b88c1bb",
+        "rev": "1371a1e33e3a3d96557beb28dccf1fa762f6ae22",
         "type": "github"
       },
       "original": {
@@ -99,11 +99,11 @@
     "org-reverse-datetree": {
       "flake": false,
       "locked": {
-        "lastModified": 1747126118,
-        "narHash": "sha256-HnaqDAVJ/SVveuIVCNneW33QOYj3VmIuFuPLIa2CO0I=",
+        "lastModified": 1756724989,
+        "narHash": "sha256-4wbvUNrM4yiFmlV2hLn0VuDIoPt/OAkotEQszYP7AOI=",
         "owner": "akirak",
         "repo": "org-reverse-datetree",
-        "rev": "8466a3566292cf17e70e6ab4e7fb9e1b48831586",
+        "rev": "23c4063850f9bab47daac37e81ed366bdc8f769c",
         "type": "github"
       },
       "original": {
