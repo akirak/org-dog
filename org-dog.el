@@ -330,7 +330,8 @@ This is mostly for optimization."
   (funcall (or find-file-fn #'find-file)
            (if (and (file-name-absolute-p file)
                     (or (file-exists-p file)
-                        (yes-or-no-p "File \"%s\" does not exist. Create it? ")
+                        (yes-or-no-p (format "File \"%s\" does not exist. Create it? "
+                                             file))
                         (user-error "Aborted")))
                file
              (expand-file-name file
