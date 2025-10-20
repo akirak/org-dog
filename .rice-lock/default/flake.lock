@@ -35,11 +35,11 @@
     "consult": {
       "flake": false,
       "locked": {
-        "lastModified": 1759898046,
-        "narHash": "sha256-S/BcOpCL5M4ldcDmiupwd6VQ2fxWjVbuhDlj8GN34i4=",
+        "lastModified": 1760347494,
+        "narHash": "sha256-BXycTn4gI65A+n2QSQZRbU27iIAVdS5UDcxvFyI/vzs=",
         "owner": "minad",
         "repo": "consult",
-        "rev": "f0c896d32624ee6ca0bd7e9b9b7638154fa366ae",
+        "rev": "da62326326b9b121edb46b0f31adb2569e4e896a",
         "type": "github"
       },
       "original": {
@@ -51,11 +51,11 @@
     "dash": {
       "flake": false,
       "locked": {
-        "lastModified": 1755165091,
-        "narHash": "sha256-X1ugYAPFgoQoD6teyvGoqcfEau6Jp2akci2fAMgYkS0=",
+        "lastModified": 1760611661,
+        "narHash": "sha256-DjUHlCKt1mX72ahkxZxHywyw5pcS1JSFB2Rr+gnIGlQ=",
         "owner": "magnars",
         "repo": "dash.el",
-        "rev": "af5ea5d8a13735fa27d2c3e6f756d065639a7b45",
+        "rev": "fb443e7a6e660ba849cafcd01021d9aac3ac6764",
         "type": "github"
       },
       "original": {
