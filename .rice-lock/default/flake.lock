@@ -19,11 +19,11 @@
     "compat": {
       "flake": false,
       "locked": {
-        "lastModified": 1762266421,
-        "narHash": "sha256-xa/nV34mPTGvJGZaQU+8DPs3FaQl8FPsqlSLeg0ts7E=",
+        "lastModified": 1767538999,
+        "narHash": "sha256-AdS7H2Wd7Jdo5ukpdVKnIZV306znIo611FlP3d/G7q4=",
         "owner": "emacs-compat",
         "repo": "compat",
-        "rev": "ad6a2b82f7bc2ea698b9684501963dfa71ffdc27",
+        "rev": "cf142601916763ca6203c953b28055dce8cfd2e5",
         "type": "github"
       },
       "original": {
@@ -35,11 +35,11 @@
     "consult": {
       "flake": false,
       "locked": {
-        "lastModified": 1766935005,
-        "narHash": "sha256-aNwRvgfud/BnYlENnw0Y6vqV/5cqa7Jzl+Pd9uMn72k=",
+        "lastModified": 1767526522,
+        "narHash": "sha256-DQWxvcC3PwCN/LmTlFEHbIGpEqX8C4toj0WKs1efv3g=",
         "owner": "minad",
         "repo": "consult",
-        "rev": "e45184d15e473f842a5df81263d9d8c4b9df2f73",
+        "rev": "6eaf346b73c2a6f2898d1085e14b510902436ffe",
         "type": "github"
       },
       "original": {
