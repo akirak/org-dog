@@ -619,6 +619,17 @@
     (octopus--dispatch (octopus-current-command)
                        marker)))
 
+(transient-define-suffix octopus-this-org-heading-suffix ()
+  :description "This heading"
+  :if (lambda ()
+        (and (derived-mode-p 'org-mode)
+             (not (org-before-first-heading-p))))
+  (interactive)
+  (octopus--dispatch (octopus-current-command)
+                     (save-excursion
+                       (org-back-to-heading)
+                       (point-marker))))
+
 ;;;;; Link description
 
 (defvar octopus-edit-link-description nil)
