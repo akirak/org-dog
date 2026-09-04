@@ -106,7 +106,9 @@ ALLOW-MISSING is non-nil. Otherwise, it throws an error."
             (thread-last
               org-dog--repository-table
               (map-some `(lambda (root repo)
-                           (when (string-prefix-p root ,abbr)
+                           (when (and (string-prefix-p root ,abbr)
+                                      (member (file-name-directory ,abbr)
+                                              (oref repo directories)))
                              (org-dog--make-file-instance repo ,abbr)))))))
       (unless (or allow-missing
                   (file-readable-p file))

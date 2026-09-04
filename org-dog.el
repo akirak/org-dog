@@ -188,11 +188,12 @@ This variable is set while the function is run, so the user can
   "Return the `org-dog-file' object for the current buffer, if any."
   (when org-dog--root-regexp
     (when-let* ((filename (thread-last
-                          (or buffer (current-buffer))
-                          (org-base-buffer)
-                          (buffer-file-name))))
+                            (or buffer (current-buffer))
+                            (org-base-buffer)
+                            (buffer-file-name))))
       (when (string-match-p org-dog--root-regexp filename)
-        (org-dog-file-object (abbreviate-file-name filename))))))
+        (org-dog-file-object (abbreviate-file-name filename)
+                             :allow-missing t)))))
 
 (defun org-dog-maybe-file-buffer (file-obj)
   "Return a file buffer visiting X if any."
